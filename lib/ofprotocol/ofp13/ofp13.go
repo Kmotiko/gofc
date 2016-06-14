@@ -23,7 +23,7 @@ const OFP_ETH_ALEN = 6
 	OFPP_MAX				= 0xffffff00
 	OFPP_IN_PORT		= 0xfffffff8
 	OFPP_TABLE			= 0xfffffff9
-	OFPP_NORMAL		 = 0xfffffffa
+	OFPP_NORMAL			= 0xfffffffa
 	OFPP_FLOOD			= 0xfffffffb
 	OFPP_ALL				= 0xfffffffc
 	OFPP_CONTROLLER = 0xfffffffd
@@ -74,7 +74,7 @@ const(
 const(
 	OFPC_FLAG_NORMAL	= 0
 	OFPC_FLAG_DROP		= 1 << 0
-	OFPC_FLAG_REASM	 = 1 << 1
+	OFPC_FLAG_REASM		= 1 << 1
 	OFPC_FLAG_MASK		= 3
 )
 
@@ -89,48 +89,47 @@ const(
 )
 
 const(
-	OFPC_FLOW_STATS	 = 1 << 0
+	OFPC_FLOW_STATS		= 1 << 0
 	OFPC_TABLE_STATS	= 1 << 1
-	OFPC_PORT_STATS	 = 1 << 2
+	OFPC_PORT_STATS		= 1 << 2
 	OFPC_GROUP_STATS	= 1 << 3
-	OFPC_IP_REASM		 = 1 << 5
+	OFPC_IP_REASM			= 1 << 5
 	OFPC_QUEUE_STATS	= 1 << 6
 	OFPC_PORT_BLOCKED = 1 << 8
 )
 
 const(
-	OFPPC_PORT_DOWN		 = 1 << 0
-
-	OFPPC_NO_RECV			 = 1 << 2
+	OFPPC_PORT_DOWN			= 1 << 0
+	OFPPC_NO_RECV				= 1 << 2
 	OFPPC_NO_FWD				= 1 << 5
 	OFPPC_NO_PACKET_IN	= 1 <<	6
 )
 
 
 const(
-	OFPPS_LINK_DOWN = 1 << 0
-	OFPPS_BLOCKED	 = 1 << 1
-	OFPPS_LIVE			= 1 << 2
+	OFPPS_LINK_DOWN		= 1 << 0
+	OFPPS_BLOCKED			= 1 << 1
+	OFPPS_LIVE				= 1 << 2
 )
 
 
 const (
-	OFPPF_10MB_HD		 = 1 << 0
-	OFPPF_10MB_FD		 = 1 << 1
+	OFPPF_10MB_HD			= 1 << 0
+	OFPPF_10MB_FD			= 1 << 1
 	OFPPF_100MB_HD		= 1 << 2
 	OFPPF_100MB_FD		= 1 << 3
 	OFPPF_1GB_HD			= 1 << 4
 	OFPPF_1GB_FD			= 1 << 5
-	OFPPF_10GB_FD		 = 1 << 6
-	OFPPF_40GB_FD		 = 1 << 7
+	OFPPF_10GB_FD			= 1 << 6
+	OFPPF_40GB_FD			= 1 << 7
 	OFPPF_100GB_FD		= 1 << 8
 	OFPPF_1TB_FD			= 1 << 9
-	OFPPF_OTHER			 = 1 << 10
+	OFPPF_OTHER				= 1 << 10
 
 	OFPPF_COPPER			= 1 << 11
-	OFPPF_FIBER			 = 1 << 12
-	OFPPF_AUTONEG		 = 1 << 13
-	OFPPF_PAUSE			 = 1 << 14
+	OFPPF_FIBER				= 1 << 12
+	OFPPF_AUTONEG			= 1 << 13
+	OFPPF_PAUSE				= 1 << 14
 	OFPPF_PAUSE_ASYM	= 1 << 15
 )
 
@@ -154,8 +153,8 @@ const(
 const(
 	OFPXMC_NXM_0						= 0x0000
 	OFPXMC_NXM_1						= 0x0001
-	OFPXMC_OPENFLOW_BASIC	 = 0x8000
-	OFPXMC_EXPERIMENTER		 = 0xffff
+	OFPXMC_OPENFLOW_BASIC		= 0x8000
+	OFPXMC_EXPERIMENTER			= 0xffff
 )
 
 
@@ -258,42 +257,42 @@ const(
 var	OFPXMT_OFB_ALL uint64 = ((1 << 40) -1)
 var	OXM_OF_IN_PORT				= oxmHeader(0x8000, OFPXMT_OFB_IN_PORT, 4)
 var	OXM_OF_IN_PHY_PORT		= oxmHeader(0x8000, OFPXMT_OFB_IN_PHY_PORT, 4)
-var	OXM_OF_METADATA			 = oxmHeader(0x8000, OFPXMT_OFB_METADATA, 8)
-var	OXM_OF_METADATA_W		 = oxmHeaderW(0x8000, OFPXMT_OFB_METADATA, 8)
+var	OXM_OF_METADATA				= oxmHeader(0x8000, OFPXMT_OFB_METADATA, 8)
+var	OXM_OF_METADATA_W			= oxmHeaderW(0x8000, OFPXMT_OFB_METADATA, 8)
 var	OXM_OF_ETH_DST				= oxmHeader(0x8000, OFPXMT_OFB_ETH_DST, 6)
 var	OXM_OF_ETH_DST_W			= oxmHeaderW(0x8000, OFPXMT_OFB_ETH_DST, 6)
 var	OXM_OF_ETH_SRC				= oxmHeader(0x8000, OFPXMT_OFB_ETH_SRC, 6)
 var	OXM_OF_ETH_SRC_W			= oxmHeaderW(0x8000, OFPXMT_OFB_ETH_SRC, 6)
-var	OXM_OF_ETH_TYPE			 = oxmHeader(0x8000, OFPXMT_OFB_ETH_TYPE, 2)
-var	OXM_OF_VLAN_VID			 = oxmHeader(0x8000, OFPXMT_OFB_VLAN_VID, 2)
-var	OXM_OF_VLAN_VID_W		 = oxmHeaderW(0x8000, OFPXMT_OFB_VLAN_VID, 2)
-var	OXM_OF_VLAN_PCP			 = oxmHeader(0x8000, OFPXMT_OFB_VLAN_PCP, 1)
+var	OXM_OF_ETH_TYPE				= oxmHeader(0x8000, OFPXMT_OFB_ETH_TYPE, 2)
+var	OXM_OF_VLAN_VID				= oxmHeader(0x8000, OFPXMT_OFB_VLAN_VID, 2)
+var	OXM_OF_VLAN_VID_W			= oxmHeaderW(0x8000, OFPXMT_OFB_VLAN_VID, 2)
+var	OXM_OF_VLAN_PCP				= oxmHeader(0x8000, OFPXMT_OFB_VLAN_PCP, 1)
 var	OXM_OF_IP_DSCP				= oxmHeader(0x8000, OFPXMT_OFB_IP_DSCP, 1)
-var	OXM_OF_IP_ECN				 = oxmHeader(0x8000, OFPXMT_OFB_IP_ECN, 1)
-var	OXM_OF_IP_PROTO			 = oxmHeader(0x8000, OFPXMT_OFB_IP_PROTO, 1)
-var	OXM_OF_IPV4_SRC			 = oxmHeader(0x8000, OFPXMT_OFB_IPV4_SRC, 2)
-var	OXM_OF_IPV4_SRC_W		 = oxmHeaderW(0x8000, OFPXMT_OFB_IPV4_SRC, 2)
-var	OXM_OF_IPV4_DST			 = oxmHeader(0x8000, OFPXMT_OFB_IPV4_DST, 2)
-var	OXM_OF_IPV4_DST_W		 = oxmHeaderW(0x8000, OFPXMT_OFB_IPV4_DST, 2)
+var	OXM_OF_IP_ECN					= oxmHeader(0x8000, OFPXMT_OFB_IP_ECN, 1)
+var	OXM_OF_IP_PROTO				= oxmHeader(0x8000, OFPXMT_OFB_IP_PROTO, 1)
+var	OXM_OF_IPV4_SRC				= oxmHeader(0x8000, OFPXMT_OFB_IPV4_SRC, 2)
+var	OXM_OF_IPV4_SRC_W			= oxmHeaderW(0x8000, OFPXMT_OFB_IPV4_SRC, 2)
+var	OXM_OF_IPV4_DST				= oxmHeader(0x8000, OFPXMT_OFB_IPV4_DST, 2)
+var	OXM_OF_IPV4_DST_W			= oxmHeaderW(0x8000, OFPXMT_OFB_IPV4_DST, 2)
 var	OXM_OF_TCP_SRC				= oxmHeader(0x8000, OFPXMT_OFB_TCP_SRC, 2)
 var	OXM_OF_TCP_DST				= oxmHeader(0x8000, OFPXMT_OFB_TCP_DST, 2)
 var	OXM_OF_UDP_SRC				= oxmHeader(0x8000, OFPXMT_OFB_UDP_SRC, 2)
 var	OXM_OF_UDP_DST				= oxmHeader(0x8000, OFPXMT_OFB_UDP_DST, 2)
-var	OXM_OF_SCTP_SRC			 = oxmHeader(0x8000, OFPXMT_OFB_SCTP_SRC, 2)
-var	OXM_OF_SCTP_DST			 = oxmHeader(0x8000, OFPXMT_OFB_SCTP_DST, 2)
+var	OXM_OF_SCTP_SRC				= oxmHeader(0x8000, OFPXMT_OFB_SCTP_SRC, 2)
+var	OXM_OF_SCTP_DST				= oxmHeader(0x8000, OFPXMT_OFB_SCTP_DST, 2)
 var	OXM_OF_ICMPV4_TYPE		= oxmHeader(0x8000, OFPXMT_OFB_ICMPV4_TYPE, 1)
 var	OXM_OF_ICMPV4_CODE		= oxmHeader(0x8000, OFPXMT_OFB_ICMPV4_CODE, 1)
-var	OXM_OF_ARP_OP				 = oxmHeader(0x8000, OFPXMT_OFB_ARP_OP, 2)
+var	OXM_OF_ARP_OP					= oxmHeader(0x8000, OFPXMT_OFB_ARP_OP, 2)
 var	OXM_OF_ARP_SPA				= oxmHeader(0x8000, OFPXMT_OFB_ARP_SPA, 4)
 var	OXM_OF_ARP_SPA_W			= oxmHeaderW(0x8000, OFPXMT_OFB_ARP_SPA, 4)
 var	OXM_OF_ARP_TPA				= oxmHeader(0x8000, OFPXMT_OFB_ARP_TPA, 4)
 var	OXM_OF_ARP_TPA_W			= oxmHeaderW(0x8000, OFPXMT_OFB_ARP_TPA, 4)
 var	OXM_OF_ARP_SHA				= oxmHeader(0x8000, OFPXMT_OFB_ARP_SHA, 6)
 var	OXM_OF_ARP_THA				= oxmHeader(0x8000, OFPXMT_OFB_ARP_THA, 6)
-var	OXM_OF_IPV6_SRC			 = oxmHeader(0x8000, OFPXMT_OFB_IPV6_SRC, 16)
-var	OXM_OF_IPV6_SRC_W		 = oxmHeaderW(0x8000, OFPXMT_OFB_IPV6_SRC, 16)
-var	OXM_OF_IPV6_DST			 = oxmHeader(0x8000, OFPXMT_OFB_IPV6_DST, 16)
-var	OXM_OF_IPV6_DST_W		 = oxmHeaderW(0x8000, OFPXMT_OFB_IPV6_DST, 16)
+var	OXM_OF_IPV6_SRC				= oxmHeader(0x8000, OFPXMT_OFB_IPV6_SRC, 16)
+var	OXM_OF_IPV6_SRC_W			= oxmHeaderW(0x8000, OFPXMT_OFB_IPV6_SRC, 16)
+var	OXM_OF_IPV6_DST				= oxmHeader(0x8000, OFPXMT_OFB_IPV6_DST, 16)
+var	OXM_OF_IPV6_DST_W			= oxmHeaderW(0x8000, OFPXMT_OFB_IPV6_DST, 16)
 var	OXM_OF_IPV6_FLABEL		= oxmHeader(0x8000, OFPXMT_OFB_IPV6_FLABEL, 16)
 var	OXM_OF_IPV6_FLABEL_W	= oxmHeaderW(0x8000, OFPXMT_OFB_IPV6_FLABEL, 16)
 var	OXM_OF_ICMPV6_TYPE		= oxmHeader(0x8000, OFPXMT_OFB_ICMPV6_TYPE, 1)
@@ -301,11 +300,11 @@ var	OXM_OF_ICMPV6_CODE		= oxmHeader(0x8000, OFPXMT_OFB_ICMPV6_CODE, 1)
 var	OXM_OF_IPV6_ND_TARGET = oxmHeader(0x8000, OFPXMT_OFB_IPV6_ND_TARGET, 16)
 var	OXM_OF_IPV6_ND_SLL		= oxmHeader(0x8000, OFPXMT_OFB_IPV6_ND_SLL, 6)
 var	OXM_OF_IPV6_ND_TLL		= oxmHeader(0x8000, OFPXMT_OFB_IPV6_ND_TLL, 6)
-var	OXM_OF_MPLS_LABEL		 = oxmHeader(0x8000, OFPXMT_OFB_MPLS_LABEL, 4)
+var	OXM_OF_MPLS_LABEL			= oxmHeader(0x8000, OFPXMT_OFB_MPLS_LABEL, 4)
 var	OXM_OF_MPLS_TC				= oxmHeader(0x8000, OFPXMT_OFB_MPLS_TC, 1)
-var	OXM_OF_MPLS_BOS			 = oxmHeader(0x8000, OFPXMT_OFB_MPLS_BOS, 1)
-var	OXM_OF_PBB_ISID			 = oxmHeader(0x8000, OFPXMT_OFB_PBB_ISID, 3)
-var	OXM_OF_PBB_ISID_W		 = oxmHeaderW(0x8000, OFPXMT_OFB_PBB_ISID, 3)
+var	OXM_OF_MPLS_BOS				= oxmHeader(0x8000, OFPXMT_OFB_MPLS_BOS, 1)
+var	OXM_OF_PBB_ISID				= oxmHeader(0x8000, OFPXMT_OFB_PBB_ISID, 3)
+var	OXM_OF_PBB_ISID_W			= oxmHeaderW(0x8000, OFPXMT_OFB_PBB_ISID, 3)
 var	OXM_OF_TUNNEL_ID			= oxmHeader(0x8000, OFPXMT_OFB_TUNNEL_ID, 8)
 var	OXM_OF_TUNNEL_ID_W		= oxmHeaderW(0x8000, OFPXMT_OFB_TUNNEL_ID, 8)
 var	OXM_OF_IPV6_EXTHDR		= oxmHeader(0x8000, OFPXMT_OFB_IPV6_EXTHDR, 2)
@@ -314,12 +313,12 @@ var	OXM_OF_IPV6_EXTHDR_W	= oxmHeaderW(0x8000, OFPXMT_OFB_IPV6_EXTHDR, 2)
 
 // ofp_ipv6exthdr_flags
 const(
-	OFPIEH_NONEXT	 = 1 << 0
+	OFPIEH_NONEXT		= 1 << 0
 	OFPIEH_ESP			= 1 << 1
-	OFPIEH_AUTH		 = 1 << 2
-	OFPIEH_DEST		 = 1 << 3
-	OFPIEH_FRAG		 = 1 << 4
-	OFPIEH_ROUTER	 = 1 << 5
+	OFPIEH_AUTH			= 1 << 2
+	OFPIEH_DEST			= 1 << 3
+	OFPIEH_FRAG			= 1 << 4
+	OFPIEH_ROUTER		= 1 << 5
 	OFPIEH_HOP			= 1 << 6
 	OFPIEH_UNREP		= 1 << 7
 	OFPIEH_UNSEQ		= 1 << 8
@@ -330,20 +329,20 @@ const(
 const(
 	OFPAT_OUTPUT				= 0
 	OFPAT_COPY_TTL_OUT	= 11
-	OFPAT_COPY_TTL_IN	 = 12
+	OFPAT_COPY_TTL_IN		= 12
 	OFPAT_SET_MPLS_TTL	= 15
 	OFPAT_DEC_MPLS_TTL	= 16
-	OFPAT_PUSH_VLAN		 = 17
+	OFPAT_PUSH_VLAN			= 17
 	OFPAT_POP_VLAN			= 18
-	OFPAT_PUSH_MPLS		 = 19
+	OFPAT_PUSH_MPLS			= 19
 	OFPAT_POP_MPLS			= 20
-	OFPAT_SET_QUEUE		 = 21
-	OFPAT_GROUP				 = 22
+	OFPAT_SET_QUEUE			= 21
+	OFPAT_GROUP					= 22
 	OFPAT_SET_NE_TTL		= 23
 	OFPAT_DEC_NW_TTL		= 24
-	OFPAT_SET_FIELD		 = 25
+	OFPAT_SET_FIELD			= 25
 	OFPAT_PUSH_PBB			= 26
-	OFPAT_POP_PBB			 = 27
+	OFPAT_POP_PBB				= 27
 	OFPAT_EXPERIMENTER	= 0xffff
 )
 
@@ -359,16 +358,16 @@ const(
 const(
 	OFPIT_GOTO_TABLE			= 1
 	OFPIT_WRITE_METADATA	= 2
-	OFPIT_WRITE_ACTIONS	 = 3
-	OFPIT_APPLY_ACTIONS	 = 4
-	OFPIT_CLEAR_ACTIONS	 = 5
-	OFPIT_METER					 = 6
+	OFPIT_WRITE_ACTIONS		= 3
+	OFPIT_APPLY_ACTIONS		= 4
+	OFPIT_CLEAR_ACTIONS		= 5
+	OFPIT_METER						= 6
 	OFPIT_EXPERIMENTER		= 0xffff
 )
 
 
 const(
-	OFPFC_ADD	 = iota
+	OFPFC_ADD							= iota
 	OFPFC_MODIFY
 	OFPFC_MODIFY_STRICT
 
@@ -389,10 +388,10 @@ const(
 
 // ofp_flow_mod_flags
 const(
-	OFPFF_SEND_FLOW_REM	 = 1 << 0
-	OFPFF_CHECK_OVERLAP	 = 1 << 1
+	OFPFF_SEND_FLOW_REM		= 1 << 0
+	OFPFF_CHECK_OVERLAP		= 1 << 1
 	OFPFF_RESET_COUNTS		= 1 << 2
-	OFPFF_NO_PKT_COUNTS	 = 1 << 3
+	OFPFF_NO_PKT_COUNTS		= 1 << 3
 	OFPFF_NO_BYT_COUNTS	 = 1 << 4
 )
 
@@ -443,7 +442,7 @@ const(
 const(
 	OFPM_MAX				= 0xffff0000
 
-	OFPM_SLOWPATH	 = 0xfffffffd
+	OFPM_SLOWPATH		= 0xfffffffd
 	OFPM_CONTROLLER = 0xfffffffe
 	OFPM_ALL				= 0xffffffff
 )
@@ -451,7 +450,7 @@ const(
 
 // ofp_meter_band_type
 const(
-	OFPMBT_DROP				 = 1
+	OFPMBT_DROP					= 1
 	OFPMBT_DSCP_REMARK	= 2
 	OFPBMT_EXPERIMENTER = 0xFFFF
 )
@@ -470,9 +469,9 @@ const(
 // ofp_meter_flags
 const(
 	OFPMF_KBPS		= 1 << 0
-	OFPMF_PKTPS	 = 1 << 1
-	OFPMF_BURST	 = 1 << 2
-	OFPMF_STATS	 = 1 << 3
+	OFPMF_PKTPS		= 1 << 1
+	OFPMF_BURST		= 1 << 2
+	OFPMF_STATS		= 1 << 3
 )
 
 
@@ -715,7 +714,7 @@ const SERIAL_NUM_LEN	= 32
 
 // ofp_table_feature_prop_type
 const(
-	OFPTFPT_INSTRUCTIONS		= iota
+	OFPTFPT_INSTRUCTIONS				= iota
 	OFPTFPT_INSTRUCTIONS_MISS
 	OFPTFPT_NEXT_TABLES
 	OFPTFPT_NEXT_TABLES_MISS
@@ -736,17 +735,17 @@ const(
 
 // ofp_group_capabilities
 const(
-	OFPGC_SELECT_WEIGHT	 = 1 << 0
-	OFPGC_SELECT_LIVENESS = 1 << 1
-	OFPGC_CHAINING				= 1 << 2
-	OFPGC_CHAINING_CHECKS = 1 << 3
+	OFPGC_SELECT_WEIGHT			= 1 << 0
+	OFPGC_SELECT_LIVENESS		= 1 << 1
+	OFPGC_CHAINING					= 1 << 2
+	OFPGC_CHAINING_CHECKS		= 1 << 3
 )
 
-const OFPQ_ALL	= 0xffffffff
+const OFPQ_ALL							= 0xffffffff
 
-const OFPQ_MIN_RATE_UNCFG	 = 0xffff
+const OFPQ_MIN_RATE_UNCFG		= 0xffff
 
-const OFPQ_MAX_RATE_UNCFG	 = 0xffff
+const OFPQ_MAX_RATE_UNCFG		= 0xffff
 
 
 // ofp_queue_properties
@@ -759,9 +758,9 @@ const(
 
 // ofp_controller_role
 const(
-	OFPCR_ROLE_NOCHANGE	 = 0
+	OFPCR_ROLE_NOCHANGE		= 0
 	OFPCR_ROLE_EQUAL			= 1
-	OFPCT_ROLE_MASTER		 = 2
+	OFPCT_ROLE_MASTER			= 2
 	OFPCR_ROLE_SLAVE			= 3
 )
 
@@ -819,24 +818,24 @@ type OfpSwitchConfig struct{
 type OfpTableMod struct{
 	Header	OfpHeader
 	TableId uint8
-	Pad		 [3]uint8
+	Pad			[3]uint8
 	Config	uint32
 }
 
 
 type OfpPort struct{
 	PortNo			uint32
-	Pad				 [4]uint8
+	Pad					[4]uint8
 	HwAddr			[OFP_ETH_ALEN]uint8 //6
 	Pad2				[2]uint8
 	Name				[OFP_MAX_PORT_NAME_LEN]byte //16
 	Config			uint32
-	State			 uint32
+	State				uint32
 	Curr				uint32
-	Advertied	 uint32
-	Supported	 uint32
+	Advertied		uint32
+	Supported		uint32
 	Peer				uint32
-	CurrSpeed	 uint32
+	CurrSpeed		uint32
 	MaxSpped		uint32
 }
 
@@ -847,9 +846,9 @@ type OfpSwitchFeatures struct{
 	Header				OfpHeader
 	DatapathId		uint64
 	NBuffers			uint32
-	NTables			 uint8
-	AuxiliaryId	 uint8
-	Pad					 [2]uint8
+	NTables				uint8
+	AuxiliaryId		uint8
+	Pad						[2]uint8
 	Capabilities	uint32
 	Reserved			uint32
 }
@@ -858,7 +857,7 @@ type OfpSwitchFeatures struct{
 type OfpPortStatus struct{
 	Header	OfpHeader
 	Reason	uint8
-	Pad		 [7]uint8
+	Pad			[7]uint8
 	Desc		OfpPort
 }
 
@@ -866,20 +865,20 @@ type OfpPortStatus struct{
 type OfpPortMod struct{
 	Header	OfpHeader
 	PortNo	uint32
-	Pad		 [4]uint8
+	Pad			[4]uint8
 	HwAddr	[OFP_ETH_ALEN]byte //6
 }
 
 
 type OfpMatch struct{
-	OfpmType	uint16
-	Length		uint16
-	OxmFields	 []byte
-	Pad				 [4]uint8
+	Type				uint16
+	Length			uint16
+	OxmFields		[]byte
+	Pad					[4]uint8
 }
 
 type OfpOxmExperimenterHeader struct{
-	OxmHeader		 uint32
+	OxmHeader			uint32
 	Experimenter	uint32
 }
 
@@ -889,69 +888,69 @@ type OfpOxmExperimenterHeader struct{
  */
 
 type OfpActionHeader struct{
-	OfpaType	uint32
+	Type			uint32
 	Length		uint32
-	Pad			 [4]uint8
+	Pad				[4]uint8
 }
 
 
 type OfpActionOutput struct{
-	OfpaType		uint16
+	Type				uint16
 	Length			uint16
 	Port				uint32
 	MaxLen			uint16
-	Pad				 [6]uint8
+	Pad					[6]uint8
 }
 
 
 type OfpActionMplsTtl struct{
-	OfpaType		uint16
+	Type				uint16
 	Length			uint16
-	MplsTtl		 uint8
-	Pad				 [3]uint8
+	MplsTtl			uint8
+	Pad					[3]uint8
 }
 
 
 type OfpActionPush struct{
-	OfpaType		uint16
+	Type				uint16
 	Length			uint16
-	EtherType	 uint16
-	Pad				 [2]uint8
+	EtherType		uint16
+	Pad					[2]uint8
 }
 
 
 type OfpActionPopMpls struct{
-	OfpaType		uint16
+	Type				uint16
 	Length			uint16
-	EtherType	 uint16
-	Pad				 [2]uint8
+	EtherType		uint16
+	Pad					[2]uint8
 }
 
 
 type OfpActionGroup struct{
-	OfpaType		uint16
+	Type				uint16
 	Length			uint16
-	GroupId		 uint32
+	GroupId			uint32
 }
 
 
 type OfpActionNwTtl struct{
-	OfpaType		uint16
+	Type				uint16
 	Length			uint16
-	NwTtl			 uint8
-	Pad				 [3]uint8
+	NwTtl				uint8
+	Pad					[3]uint8
 }
 
 
 type OfpActionSetField struct{
-	OfpaType		uint16
+	Type				uint16
 	Length			uint16
-	Field			 [4]uint8
+	Field				[4]uint8
 }
 
 
 type OfpActionExperimenterHeader struct{
-	OfpaType			uint16
+	Type					uint16
 	Length				uint16
 	Experimenter	uint32
 }
@@ -962,43 +961,43 @@ type OfpActionExperimenterHeader struct{
  */
 
 type OfpInstruction struct{
-	OfpiType		uint16
+	Type				uint16
 	Length			uint16
 }
 
 
 type OfpInstructionGotoTable struct{
-	OfpiType		uint16
+	Type				uint16
 	Length			uint16
-	TableId		 uint8
-	Pad				 [3]uint8
+	TableId			uint8
+	Pad					[3]uint8
 }
 
 
 type OfpInstructionWriteMetadata struct{
-	OfpiType			uint16
+	Type					uint16
 	Length				uint16
-	Pad					 [4]uint8
+	Pad						[4]uint8
 	Metadata			uint64
 	MetadataMask	uint64
 }
 
 type OfpInstructionActions struct{
-	OfpiType			uint16
+	Type					uint16
 	Length				uint16
-	Pad					 [4]uint8
-	Actions			 []OfpActionHeader
+	Pad						[4]uint8
+	Actions				[]OfpActionHeader
 }
 
 type OfpInstructionMeter struct{
-	OfpiType			uint16
+	Type					uint16
 	Length				uint16
-	MeterId			 uint32
+	MeterId				uint32
 }
 
 
 type OfpInstructionExperimenter struct{
-	OfpiType			uint16
+	Type					uint16
 	Length				uint16
 	Experimenter	uint32
 }
@@ -1007,38 +1006,38 @@ type OfpInstructionExperimenter struct{
 type OfpFlowMod struct{
 	Header				OfpHeader
 	Cookie				uint64
-	Cookie_mask	 uint64
-	TableId			 uint8
-	Command			 uint8
-	IdleTimeout	 uint16
-	HardTimeout	 uint16
+	Cookie_mask		uint64
+	TableId				uint8
+	Command				uint8
+	IdleTimeout		uint16
+	HardTimeout		uint16
 	Priority			uint16
 	BufferId			uint32
-	OutPort			 uint32
+	OutPort				uint32
 	OutGroup			uint32
-	Flags				 uint16
-	Pad					 [2]uint8		// 2
-	Match				 OfpMatch
+	Flags					uint16
+	Pad						[2]uint8		// 2
+	Match					OfpMatch
 }
 
 
 type OfpBucket struct{
 	Length			uint16
 	Weight			uint16
-	WatchPort	 uint32
+	WatchPort		uint32
 	WatchGroup	uint32
-	Pad				 [4]uint8
-	Actions		 OfpActionHeader
+	Pad					[4]uint8
+	Actions			OfpActionHeader
 }
 
 
 type OfpGroupMod struct{
 	Header		OfpHeader
-	Command	 uint16
-	OfpgType	uint8
-	Pad			 uint8
-	GroupId	 uint32
-	Buckets	 []OfpBucket
+	Command		uint16
+	Type			uint8
+	Pad				uint8
+	GroupId		uint32
+	Buckets		[]OfpBucket
 }
 
 
@@ -1046,9 +1045,9 @@ type OfpPacketOut struct{
 	Header			OfpHeader
 	BufferId		uint32
 	InPort			uint32
-	ActionLen	 uint16
-	Pad				 [6]uint8
-	Actions		 []OfpActionHeader
+	ActionLen		uint16
+	Pad					[6]uint8
+	Actions			[]OfpActionHeader
 }
 
 
@@ -1057,9 +1056,9 @@ type OfpPacketIn struct{
 	BufferId	uint32
 	TotalLen	uint16
 	Reason		uint8
-	TableId	 uint8
+	TableId		uint8
 	Cookie		uint64
-	Match		 OfpMatch
+	Match			OfpMatch
 }
 
 
@@ -1068,64 +1067,64 @@ type OfpFlowRemoved struct{
 	Cookie				uint64
 	Priority			uint16
 	Reason				uint8
-	TableId			 uint8
-	DurationSec	 uint32
+	TableId				uint8
+	DurationSec		uint32
 	DurationNSec	uint32
-	IdleTimeout	 uint16
-	HardTimeout	 uint16
-	PacketCount	 uint64
-	ByteCount		 uint64
-	Match				 OfpMatch
+	IdleTimeout		uint16
+	HardTimeout		uint16
+	PacketCount		uint64
+	ByteCount			uint64
+	Match					OfpMatch
 }
 
 
 type OfpMeterBandHeader struct{
-	OfpbmType		 uint16
+	Type					uint16
 	Length				uint16
 	Rate					uint32
-	BurstSize		 uint32
+	BurstSize			uint32
 }
 
 
 type OfpMeterBandDrop struct{
-	OfpbmType	 uint16		// OFPBMT_DROP
+	Type				uint16		// OFPBMT_DROP
 	Length			uint16
 	Rate				uint32
-	BurstSize	 uint32
-	Pad				 [4]uint8
+	BurstSize		uint32
+	Pad					[4]uint8
 }
 
 
 type OfpMeterBandDscpRemark struct{
-	OfpbmType	 uint16		// OFPBMT_DSCP_REMARK
-	Length			uint16
-	Rate				uint32
-	BurstSize	 uint32
-	PrecLevel	 uint8
-	Pad				 [3]uint8
+	Type			uint16		// OFPBMT_DSCP_REMARK
+	Length		uint16
+	Rate			uint32
+	BurstSize	uint32
+	PrecLevel	uint8
+	Pad				[3]uint8
 }
 
 
 type OfpMeterBandExperimenter struct{
-	OfpbmType		 uint16		// One of OFPBMT_*
+	Type					uint16		// One of OFPBMT_*
 	Length				uint16
 	Rate					uint32
-	BurstSize		 uint32
+	BurstSize			uint32
 	Experimenter	uint32
 }
 
 
 type OfpMeterMod struct{
 	Header	OfpHeader
-	Flags	 uint16
+	Flags		uint16
 	MeterId uint32
-	Bands	 []OfpMeterBandHeader
+	Bands		[]OfpMeterBandHeader
 }
 
 
 type OfpErrorMsg struct{
 	Header		OfpHeader
-	OfpeType	 uint16
+	Type			uint16
 	Code			uint16
 	Data			[]uint8
 }
@@ -1133,9 +1132,8 @@ type OfpErrorMsg struct{
 
 type OfpErrorExperimenterMsg struct{
 	Header				OfpHeader
-
-	OfpeType			uint16
-	ExpType			 uint16
+	Type					uint16
+	ExpType				uint16
 	Experimenter	uint32
 	Data					[]uint8
 }
@@ -1143,9 +1141,9 @@ type OfpErrorExperimenterMsg struct{
 
 type OfpMultipartRequest struct{
 	Header		OfpHeader
-	OfpmpType uint16
-	Flags		 uint16
-	Pad			 [4]uint8
+	Type			uint16
+	Flags			uint16
+	Pad				[4]uint8
 	Body			[]uint8
 }
 
@@ -1153,87 +1151,87 @@ type OfpMultipartRequest struct{
 
 type OfpMultipartReply struct{
 	Header			OfpHeader
-	OfpmpType	 uint16
-	Flags			 uint16
-	Pad			 [4]uint8
-	Body			[]uint8
+	Type				uint16
+	Flags				uint16
+	Pad					[4]uint8
+	Body				[]uint8
 }
 
 
 type OfpDesc struct{
-	MfrDesc		 [DESC_STR_LEN]uint8
+	MfrDesc			[DESC_STR_LEN]uint8
 	HwDesc			[DESC_STR_LEN]uint8
 	SeDesc			[DESC_STR_LEN]uint8
-	SerialNum	 [SERIAL_NUM_LEN]uint8
+	SerialNum		[SERIAL_NUM_LEN]uint8
 	DpDesc			[DESC_STR_LEN]uint8
 }
 
 
 type OfpFlowStatsRequest struct{
-	TableId		 uint8
-	Pad				 [3]uint8
-	OutPort		 uint32
+	TableId			uint8
+	Pad					[3]uint8
+	OutPort			uint32
 	OutGroup		uint32
 	Pad2				[4]uint8
 	Cookie			uint64
 	CookieMask	uint64
-	Match			 OfpMatch
+	Match				OfpMatch
 }
 
 
 type OfpFlowStats struct{
 	Length				uint16
-	TableId			 uint8
-	Pad					 uint8
-	DurationSec	 uint32
+	TableId				uint8
+	Pad						uint8
+	DurationSec		uint32
 	DurationNSec	uint32
 	Priority			uint16
-	IdleTimeout	 uint16
-	HardTimeout	 uint16
-	Flags				 uint16
+	IdleTimeout		uint16
+	HardTimeout		uint16
+	Flags					uint16
 	Pad2					[4]uint8
 	Cookie				uint64
-	PacketCount	 uint64
-	ByteCount		 uint64
-	Match				 OfpMatch
+	PacketCount		uint64
+	ByteCount			uint64
+	Match					OfpMatch
 }
 
 
 type OfpAggregateStatsRequest struct{
-	TableId		 uint8
-	Pad				 [3]uint8
-	OutPort		 uint32
-	OutGroup		uint32
-	Pad2				[4]uint8
-	Cookie			uint64
-	CookieMask	uint64
-	Match			 OfpMatch
+	TableId				uint8
+	Pad						[3]uint8
+	OutPort				uint32
+	OutGroup			uint32
+	Pad2					[4]uint8
+	Cookie				uint64
+	CookieMask		uint64
+	Match					OfpMatch
 }
 
 
 type OfpAggregateStatsReply struct{
-	PacketCount	 uint64
+	PacketCount		uint64
 	ByteCounte		uint64
-	FlowCount		 uint64
-	Pad					 [4]uint8
+	FlowCount			uint64
+	Pad						[4]uint8
 }
 
 
 type OfpTableFeaturePropHeader struct{
-	OfptfpType		uint16
+	Type					uint16
 	Length				uint16
 }
 
 
 type OfpTableFeaturePropInstructions struct{
-	OfptfpType			uint16	// OFPTFPT_INSTRUCTIONS, 
+	Type						uint16	// OFPTFPT_INSTRUCTIONS, 
 	Length					uint16
 	InstructionIds	[]OfpInstruction
 }
 
 
 type OfpTableFeaturePropNextTables struct{
-	OfptfpType		uint16	// OFPTFPT_NEXT_TABLES, 
+	Type					uint16	// OFPTFPT_NEXT_TABLES, 
 												// OFPTFPT_NEXT_TABLES_MISS
 	Length				uint16
 	NextTableIds	[]uint8
@@ -1241,17 +1239,17 @@ type OfpTableFeaturePropNextTables struct{
 
 
 type OfpTableFeaturePropActions struct{
-	OfptfpType		uint16	// OFPTFPT_WRITE_ACTIONS, 
+	Type					uint16	// OFPTFPT_WRITE_ACTIONS, 
 												// OFPTFPT_WRITE_ACTIONS_MISS,
 												// OFPTFPT_APPLY_ACTIONS,
 												// OFPTFPT_APPLY_ACTIONS_MISS
 	Length				uint16
-	ActionIds		 []OfpActionHeader
+	ActionIds			[]OfpActionHeader
 }
 
 
 type OfpTableFeaturePropOxm struct{
-	OfptfpType		uint16	// OFPTFPT_MATCH,
+	Type					uint16	// OFPTFPT_MATCH,
 												// OFPTFPT_WILDCARDS,
 												// OFPTFPT_WRITE_SETFIELD,
 												// OFPTFPT_WRITE_SETFIELD_MISS,
@@ -1263,22 +1261,22 @@ type OfpTableFeaturePropOxm struct{
 
 
 type OfpTableFeaturePropExperimenter struct{
-	OfptfpType				uint16	// OFPTFPT_EXPERIMENTER,
+	Type							uint16	// OFPTFPT_EXPERIMENTER,
 														// OFPTFPT_EXPERIMENTER_MISS
 	Length						uint16
 	Experimenter			uint32
-	ExpType					 uint32
+	ExpType						uint32
 	ExperimenterData	[]uint32
 }
 
 
 type OfpTableFeatures struct{
-	Length		uint16
-	TableId	 uint8
-	Pad			 []uint8
-	Name			[OFP_MAX_TABLE_NAME_LEN]byte
-	MetadataMatch	 uint64
-	MetadataWrite	 uint64
+	Length					uint16
+	TableId					uint8
+	Pad							[]uint8
+	Name						[OFP_MAX_TABLE_NAME_LEN]byte
+	MetadataMatch		uint64
+	MetadataWrite		uint64
 	Config					uint32
 	MaxEntries			uint32
 	Properties			[]OfpTableFeaturePropHeader
@@ -1286,36 +1284,36 @@ type OfpTableFeatures struct{
 
 
 type OfpTableStats struct{
-	TableId			 uint8
-	Pad					 [3]uint8
-	ActiveCount	 uint32
-	LookupCount	 uint64
+	TableId				uint8
+	Pad						[3]uint8
+	ActiveCount		uint32
+	LookupCount		uint64
 	MatchedCount	uint64
 }
 
 
 type OfpPortStatsRequest struct{
 	PortNo			uint32
-	Pad				 [4]uint8
+	Pad					[4]uint8
 }
 
 
 type OfpPortStats struct{
-	PortNo		uint32
-	Pad			 [4]uint8
-	RxPackets		 uint64
-	TxPackets		 uint64
-	RxBytes			 uint64
-	TxBytes			 uint64
-	RxDropped		 uint64
-	TxDropped		 uint64
+	PortNo				uint32
+	Pad						[4]uint8
+	RxPackets			uint64
+	TxPackets			uint64
+	RxBytes				uint64
+	TxBytes				uint64
+	RxDropped			uint64
+	TxDropped			uint64
 	RxErrors			uint64
 	TxErrors			uint64
 	RxFrameErr		uint64
-	RxOverErr		 uint64
+	RxOverErr			uint64
 	RxCrcErr			uint64
 	Collisions		uint64
-	DurationSec	 uint32
+	DurationSec		uint32
 	DurationNsec	uint32
 }
 
@@ -1334,32 +1332,32 @@ type OfpBucketCounter struct{
 
 type OfpGroupStats struct{
 	Length				uint16
-	Pad					 [2]uint8
-	GroupId			 uint32
+	Pad						[2]uint8
+	GroupId				uint32
 	RefCount			uint32
 	Pad2					[4]uint8
-	PacketCount	 uint64
-	ByteCount		 uint64
-	DurationSec	 uint32
+	PacketCount		uint64
+	ByteCount			uint64
+	DurationSec		uint32
 	DurationNSec	uint32
-	BucketStats	 []OfpBucketCounter
+	BucketStats		[]OfpBucketCounter
 }
 
 
 type OfpGroupDesc struct{
 	Length			uint16
-	OfpgType		uint8
-	Pad				 uint8
-	GroupId		 uint32
-	Buckets		 []OfpBucket
+	Type				uint8
+	Pad					uint8
+	GroupId			uint32
+	Buckets			[]OfpBucket
 }
 
 
 type OfpGroupFeatures struct{
-	OfpgType			uint32
+	Type					uint32
 	Capabilities	uint32
-	MaxGroups		 [4]uint32
-	Actions			 [4]uint32
+	MaxGroups			[4]uint32
+	Actions				[4]uint32
 }
 
 
@@ -1376,77 +1374,77 @@ type OfpMeterBandStats struct{
 
 
 type MeterStats struct{
-	MeterId				 uint32
+	MeterId					uint32
 	Length					uint16
-	Pad						 [6]uint8
-	FlowCount			 uint32
-	PacketInCount	 uint64
-	ByteInCount		 uint64
-	DurationSec		 uint32
+	Pad							[6]uint8
+	FlowCount				uint32
+	PacketInCount		uint64
+	ByteInCount			uint64
+	DurationSec			uint32
 	DurationNSec		uint32
-	BandStats			 []OfpMeterBandStats
+	BandStats				[]OfpMeterBandStats
 }
 
 
 type OfpMeterConfig struct{
 	Length		uint16
-	Flags		 uint16
-	MeterId	 uint32
-	Bands		 []OfpMeterBandHeader
+	Flags			uint16
+	MeterId		uint32
+	Bands			[]OfpMeterBandHeader
 }
 
 
 type OfpMeterFeatures struct{
 	MaxMeter			uint32
-	BandTypes		 uint32
+	BandTypes			uint32
 	Capabilities	uint32
 	MaxBands			uint8
 	MaxColor			uint8
-	Pad					 [2]uint8
+	Pad						[2]uint8
 }
 
 
 type OfpExperimenterMultipartHeader struct{
 	Header				OfpHeader
 	Experimenter	uint32
-	ExpType			 uint32
+	ExpType				uint32
 }
 
 
 type OfpQueuePropHeader struct{
 	Property		uint16
 	Length			uint16
-	Pad				 [4]uint8
+	Pad					[4]uint8
 }
 
 
 type OfpQueuePropMinRate struct{
 	PropHeader		OfpQueuePropHeader
 	Rate					uint16
-	Pad					 [6]uint8
+	Pad						[6]uint8
 }
 
 
 type OfpQueuePropMaxRate struct{
 	PropHeader		OfpQueuePropHeader
 	Rate					uint16
-	Pad					 [6]uint8
+	Pad						[6]uint8
 }
 
 
 type OfpQueuePropExperimenter struct{
 	PropHeader		OfpQueuePropHeader
 	Experimenter	uint32
-	Pad					 [4]uint8
+	Pad						[4]uint8
 	Data					[]uint8
 }
 
 
 type OfpPacketQueue struct{
-	QueueId		 uint32
+	QueueId			uint32
 	Port				uint32
 	Length			uint16
-	Pad				 [6]uint8
+	Pad					[6]uint8
 	Properties	[]OfpQueuePropHeader
 }
 
@@ -1454,13 +1452,13 @@ type OfpPacketQueue struct{
 type OfpQueueGetConfigRequest struct{
 	Header	OfpHeader
 	Port		uint32
-	Pad		 [4]uint8
-	Queue	 []OfpPacketQueue
+	Pad			[4]uint8
+	Queue		[]OfpPacketQueue
 }
 
 
 type OfpActionSetQueue struct{
-	OfpaType	uint16
+	Type			uint16
 	Length		uint16
 	QueueId	  uint32
 }
@@ -1468,7 +1466,7 @@ type OfpActionSetQueue struct{
 
 type OfpQueueStatsRequest struct{
 	PortNo		uint32
-	QueueId	 uint32
+	QueueId		uint32
 }
 
 
@@ -1486,7 +1484,7 @@ type OfpQueueStats struct{
 type OfpRoleRequest struct{
 	Header				OfpHeader
 	Role					uint32
-	Pad					 [4]uint8
+	Pad						[4]uint8
 	GenerationId	uint64
 }
 
