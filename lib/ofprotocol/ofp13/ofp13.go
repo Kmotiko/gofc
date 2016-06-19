@@ -863,18 +863,32 @@ type OfpPortStatus struct{
 
 
 type OfpPortMod struct{
-	Header	OfpHeader
-	PortNo	uint32
-	Pad			[4]uint8
-	HwAddr	[OFP_ETH_ALEN]byte //6
+	Header			OfpHeader
+	PortNo			uint32
+	Pad					[4]uint8
+	HwAddr			[OFP_ETH_ALEN]byte //6
+	Pad2				[2]uint8
+	Config			uint32
+	Mask				uint32
+	Advertise		uint32
+	pad3				[4]uint8
 }
 
 
 type OfpMatch struct{
 	Type				uint16
 	Length			uint16
-	OxmFields		[]byte
+	OxmFields		[]OxmField
 	Pad					[4]uint8
+}
+
+type OxmField struct{
+	Class				uint16
+	Type				uint8
+	HasMask			bool
+	Length			uint8
+	Value       []uint8
+	Pad					[]uint8
 }
 
 type OfpOxmExperimenterHeader struct{
@@ -1059,6 +1073,8 @@ type OfpPacketIn struct{
 	TableId		uint8
 	Cookie		uint64
 	Match			OfpMatch
+	Pad				[2]uint8
+	Data			[]uint8
 }
 
 

@@ -11,8 +11,7 @@ import (
 type Datapath struct{
 	buffer chan *bytes.Buffer
 	conn *net.TCPConn
-	datapathId string
-	// recvBuffer chan *ofp13.OFMessage
+	datapathId uint64
 	sendBuffer chan *ofp13.OFMessage
 	ofpversion string;
 	ports int;
@@ -42,10 +41,12 @@ func (dp *Datapath)sendLoop() {
 				byteData := (*msg).Serialize()
 				_, err := dp.conn.Write(byteData)
 				if err != nil {
-					fmt.Println("err to write conn")
+					fmt.Println("failed to write conn")
 					fmt.Println(err)
+					return
 				}
 			default:
+				continue
 		}
 	}
 }
@@ -54,12 +55,63 @@ func (dp *Datapath)recvLoop(){
 	buf := make([]byte, 2048)
 	for{
 		// read
-		dp.conn.Read(buf)
+		_,err := dp.conn.Read(buf)
+		if err != nil {
+			fmt.Println("failed to read conn")
+			fmt.Println(err)
+			return
+		}
 
 		// parse data
-		// msg := ofp13.Parse(buf)
+		msg := ofp13.Parse(buf)
+		apps := GetAppManager().GetApplications()
 
-		// TODO:dispatch handler
+		// dispatch handler
+		for _,app := range apps {
+			switch msgi := msg.(type) {
+				// handle hello
+			case *ofp13.OfpHello:
+				if obj, ok := app.(interface{HandleHello(*ofp13.OfpHello, *Datapath)}); ok{
+					obj.HandleHello(msgi, dp)
+				}
+
+				// if message is OfpHeader
+			case *ofp13.OfpHeader:
+				switch msgi.Type {
+					// handle echo request
+				case ofp13.OFPT_ECHO_REQUEST:
+					if obj, ok := app.(interface{HandleEchoRequest(*ofp13.OfpHeader, *Datapath)}); ok{
+						obj.HandleEchoRequest(msgi, dp)
+					}
+
+					// handle echo reply
+				case ofp13.OFPT_ECHO_REPLY:
+					if obj, ok := app.(interface{HandleEchoReply(*ofp13.OfpHeader, *Datapath)}); ok{
+						obj.HandleEchoReply(msgi, dp)
+					}
+				default:
+				}
+
+			// case SwitchFeatures
+			case *ofp13.OfpSwitchFeatures:
+				if obj, ok := app.(interface{HandleSwitchFeatures(*ofp13.OfpSwitchFeatures, *Datapath)}); ok{
+					obj.HandleSwitchFeatures(msgi, dp)
+				}
+
+			// case PacketIn
+			case *ofp13.OfpPacketIn:
+				if obj, ok := app.(interface{HandlePacketIn(*ofp13.OfpPacketIn, *Datapath)}); ok{
+					obj.HandlePacketIn(msgi, dp)
+				}
+
+			// Recv Error
+			case *ofp13.OfpErrorMsg:
+				fmt.Println("ErrMsg")
+
+			default:
+				fmt.Println("UnSupport Message")
+			}
+		}
 	}
 }
 
@@ -67,9 +119,8 @@ func (dp *Datapath)recvLoop(){
 /**
  *
  */
-func (dp *Datapath)send(message ofp13.OFMessage) bool{
+func (dp *Datapath)Send(message ofp13.OFMessage) bool{
 	// push data
 	(dp.sendBuffer) <- &message
 	return true;
 }
-
