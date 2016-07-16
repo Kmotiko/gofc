@@ -71,7 +71,7 @@ func (dp *Datapath)recvLoop(){
 			switch msgi := msg.(type) {
 				// handle hello
 			case *ofp13.OfpHello:
-				if obj, ok := app.(interface{HandleHello(*ofp13.OfpHello, *Datapath)}); ok{
+				if obj, ok := app.(ofp13.HelloHandler); ok{
 					obj.HandleHello(msgi, dp)
 				}
 
@@ -80,13 +80,13 @@ func (dp *Datapath)recvLoop(){
 				switch msgi.Type {
 					// handle echo request
 				case ofp13.OFPT_ECHO_REQUEST:
-					if obj, ok := app.(interface{HandleEchoRequest(*ofp13.OfpHeader, *Datapath)}); ok{
+					if obj, ok := app.(ofp13.EchoRequestHandler); ok{
 						obj.HandleEchoRequest(msgi, dp)
 					}
 
 					// handle echo reply
 				case ofp13.OFPT_ECHO_REPLY:
-					if obj, ok := app.(interface{HandleEchoReply(*ofp13.OfpHeader, *Datapath)}); ok{
+					if obj, ok := app.(ofp13.EchoReplyHandler); ok{
 						obj.HandleEchoReply(msgi, dp)
 					}
 				default:
@@ -94,13 +94,13 @@ func (dp *Datapath)recvLoop(){
 
 			// case SwitchFeatures
 			case *ofp13.OfpSwitchFeatures:
-				if obj, ok := app.(interface{HandleSwitchFeatures(*ofp13.OfpSwitchFeatures, *Datapath)}); ok{
+				if obj, ok := app.(ofp13.SwitchFeaturesHandler); ok{
 					obj.HandleSwitchFeatures(msgi, dp)
 				}
 
 			// case PacketIn
 			case *ofp13.OfpPacketIn:
-				if obj, ok := app.(interface{HandlePacketIn(*ofp13.OfpPacketIn, *Datapath)}); ok{
+				if obj, ok := app.(ofp13.PacketInHandler); ok{
 					obj.HandlePacketIn(msgi, dp)
 				}
 
