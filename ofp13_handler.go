@@ -1,44 +1,37 @@
-package ofp13
+package gofc
 
-/*****************************************************/
-/* OfpHeader                                         */
-/*****************************************************/
-type HelloHandler interface{
-	HandleHello(*ofp13.OfpHello, *Datapath)
-}
-
+import (
+	"./ofprotocol/ofp13"
+)
 
 /*****************************************************/
 /* OfpSwitchFeatures                                 */
 /*****************************************************/
-type SwitchFeaturesHandler interface{
+type Of13SwitchFeaturesHandler interface {
 	HandleSwitchFeatures(*ofp13.OfpSwitchFeatures, *Datapath)
 }
-
 
 /*****************************************************/
 /* OfpPacketIn                                       */
 /*****************************************************/
-type PacketInHandler interface{
+type Of13PacketInHandler interface {
 	HandlePacketIn(*ofp13.OfpPacketIn, *Datapath)
 }
-
 
 /*****************************************************/
 /* OfpErrorMsg                                       */
 /*****************************************************/
-type ErroMsgHandler interface{
+type Of13ErroMsgHandler interface {
 	HandleErroMsg(*ofp13.OfpErrorMsg, *Datapath)
 }
-
 
 /*****************************************************/
 /* Echo Message                                      */
 /*****************************************************/
-type EchoRequestHandler interface{
+type Of13EchoRequestHandler interface {
 	HandleEchoRequest(*ofp13.OfpHeader, *Datapath)
 }
 
-type EchoReplyHandler interface{
+type Of13EchoReplyHandler interface {
 	HandleEchoReply(*ofp13.OfpHeader, *Datapath)
 }

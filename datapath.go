@@ -1,27 +1,26 @@
 package gofc
 
 import (
+	"./ofprotocol/ofp13"
+	"bytes"
 	"fmt"
 	"net"
-	"bytes"
-	"../ofprotocol/ofp13"
 )
 
 // datapath
-type Datapath struct{
-	buffer chan *bytes.Buffer
-	conn *net.TCPConn
+type Datapath struct {
+	buffer     chan *bytes.Buffer
+	conn       *net.TCPConn
 	datapathId uint64
 	sendBuffer chan *ofp13.OFMessage
-	ofpversion string;
-	ports int;
+	ofpversion string
+	ports      int
 }
-
 
 /**
  * ctor
  */
-func NewDatapath(conn *net.TCPConn) *Datapath{
+func NewDatapath(conn *net.TCPConn) *Datapath {
 	dp := new(Datapath)
 	dp.sendBuffer = make(chan *ofp13.OFMessage, 10)
 	dp.conn = conn
@@ -30,32 +29,30 @@ func NewDatapath(conn *net.TCPConn) *Datapath{
 	return dp
 }
 
-
-
-func (dp *Datapath)sendLoop() {
-	for{
-		select{
-			// wait channel
-			case msg := <- (dp.sendBuffer):
-				// serialize data
-				byteData := (*msg).Serialize()
-				_, err := dp.conn.Write(byteData)
-				if err != nil {
-					fmt.Println("failed to write conn")
-					fmt.Println(err)
-					return
-				}
-			default:
-				continue
+func (dp *Datapath) sendLoop() {
+	for {
+		select {
+		// wait channel
+		case msg := <-(dp.sendBuffer):
+			// serialize data
+			byteData := (*msg).Serialize()
+			_, err := dp.conn.Write(byteData)
+			if err != nil {
+				fmt.Println("failed to write conn")
+				fmt.Println(err)
+				return
+			}
+		default:
+			continue
 		}
 	}
 }
 
-func (dp *Datapath)recvLoop(){
+func (dp *Datapath) recvLoop() {
 	buf := make([]byte, 2048)
-	for{
+	for {
 		// read
-		_,err := dp.conn.Read(buf)
+		_, err := dp.conn.Read(buf)
 		if err != nil {
 			fmt.Println("failed to read conn")
 			fmt.Println(err)
@@ -67,26 +64,25 @@ func (dp *Datapath)recvLoop(){
 		apps := GetAppManager().GetApplications()
 
 		// dispatch handler
-		for _,app := range apps {
+		for _, app := range apps {
 			switch msgi := msg.(type) {
-				// handle hello
+			// handle hello
 			case *ofp13.OfpHello:
-				if obj, ok := app.(ofp13.HelloHandler); ok{
-					obj.HandleHello(msgi, dp)
-				}
+				featureReq := ofp13.NewOfpFeaturesRequest()
+				dp.Send(featureReq)
 
-				// if message is OfpHeader
+			// if message is OfpHeader
 			case *ofp13.OfpHeader:
 				switch msgi.Type {
-					// handle echo request
+				// handle echo request
 				case ofp13.OFPT_ECHO_REQUEST:
-					if obj, ok := app.(ofp13.EchoRequestHandler); ok{
+					if obj, ok := app.(Of13EchoRequestHandler); ok {
 						obj.HandleEchoRequest(msgi, dp)
 					}
 
-					// handle echo reply
+				// handle echo reply
 				case ofp13.OFPT_ECHO_REPLY:
-					if obj, ok := app.(ofp13.EchoReplyHandler); ok{
+					if obj, ok := app.(Of13EchoReplyHandler); ok {
 						obj.HandleEchoReply(msgi, dp)
 					}
 				default:
@@ -94,13 +90,13 @@ func (dp *Datapath)recvLoop(){
 
 			// case SwitchFeatures
 			case *ofp13.OfpSwitchFeatures:
-				if obj, ok := app.(ofp13.SwitchFeaturesHandler); ok{
+				if obj, ok := app.(Of13SwitchFeaturesHandler); ok {
 					obj.HandleSwitchFeatures(msgi, dp)
 				}
 
 			// case PacketIn
 			case *ofp13.OfpPacketIn:
-				if obj, ok := app.(ofp13.PacketInHandler); ok{
+				if obj, ok := app.(Of13PacketInHandler); ok {
 					obj.HandlePacketIn(msgi, dp)
 				}
 
@@ -115,12 +111,11 @@ func (dp *Datapath)recvLoop(){
 	}
 }
 
-
 /**
  *
  */
-func (dp *Datapath)Send(message ofp13.OFMessage) bool{
+func (dp *Datapath) Send(message ofp13.OFMessage) bool {
 	// push data
 	(dp.sendBuffer) <- &message
-	return true;
+	return true
 }
