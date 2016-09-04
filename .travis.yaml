@@ -1,0 +1,3 @@
+language: go
+script:
+  - cd ofprotocol/ofp13 && go test -v
