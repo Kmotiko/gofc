@@ -1,9 +1,9 @@
 package main
 
 import (
-	"../"
-	"../ofprotocol/ofp13"
 	"fmt"
+	"github.com/Kmotiko/gofc"
+	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
 )
 
 type SampleController struct {

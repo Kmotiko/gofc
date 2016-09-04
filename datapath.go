@@ -1,9 +1,9 @@
 package gofc
 
 import (
-	"./ofprotocol/ofp13"
 	"bytes"
 	"fmt"
+	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
 	"net"
 )
 

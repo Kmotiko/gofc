@@ -1,7 +1,7 @@
 package gofc
 
 import (
-	"./ofprotocol/ofp13"
+	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
 )
 
 /*****************************************************/
