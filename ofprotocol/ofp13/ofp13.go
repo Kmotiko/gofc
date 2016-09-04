@@ -1318,7 +1318,7 @@ type OfpFlowStatsRequest struct {
 	Match      *OfpMatch
 }
 
-type OfpFlowStats struct {
+type OfpFlowStatsReply struct {
 	Length       uint16
 	TableId      uint8
 	Pad          uint8

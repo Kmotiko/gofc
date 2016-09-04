@@ -7,7 +7,7 @@ import (
 )
 
 type SampleController struct {
-	echoInterval int32 // echo interval
+	// add any paramter used in controller.
 }
 
 func NewSampleController() *SampleController {
