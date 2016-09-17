@@ -17,7 +17,18 @@ func NewSampleController() *SampleController {
 
 func (c *SampleController) HandleSwitchFeatures(msg *ofp13.OfpSwitchFeatures, dp *gofc.Datapath) {
 	// create flow mod
-	fm := ofp13.NewOfpFlowMod()
+	fm := ofp13.NewOfpFlowMod(
+		0,
+		0,
+		0,
+		ofp13.OFPFC_ADD,
+		0,
+		0,
+		0,
+		ofp13.OFP_NO_BUFFER,
+		ofp13.OFPP_ANY,
+		ofp13.OFPG_ANY,
+		ofp13.OFPFF_SEND_FLOW_REM)
 
 	// create match
 	ethdst, _ := ofp13.NewOxmEthDst("00:00:00:00:00:00")
@@ -31,12 +42,31 @@ func (c *SampleController) HandleSwitchFeatures(msg *ofp13.OfpSwitchFeatures, dp
 	instruction := ofp13.NewOfpInstructionActions(ofp13.OFPIT_APPLY_ACTIONS)
 
 	// create actions
-	instruction.Append(ofp13.NewOfpActionOutput(0, 0))
+	seteth, _ := ofp13.NewOxmEthDst("11:22:33:44:55:66")
+	instruction.Append(ofp13.NewOfpActionSetField(seteth))
 
 	// append Instruction
 	fm.AppendInstruction(instruction)
 
+	// send FlowMod
 	dp.Send(fm)
+
+	// Create and send AggregateStatsRequest
+	mf := ofp13.NewOfpMatch()
+	mf.Append(ethdst)
+	mp := ofp13.NewOfpAggregateStatsRequest(0, 0, ofp13.OFPP_ANY, ofp13.OFPG_ANY, 0, 0, mf)
+	dp.Send(mp)
+}
+
+func (c *SampleController) HandleAggregateStatsReply(msg *ofp13.OfpMultipartReply, dp *gofc.Datapath) {
+	fmt.Println("Handle AggregateStats")
+	for _, mp := range msg.Body {
+		if obj, ok := mp.(*ofp13.OfpAggregateStats); ok {
+			fmt.Println(obj.PacketCount)
+			fmt.Println(obj.ByteCount)
+			fmt.Println(obj.FlowCount)
+		}
+	}
 }
 
 func main() {

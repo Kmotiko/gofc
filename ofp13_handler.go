@@ -19,6 +19,27 @@ type Of13PacketInHandler interface {
 }
 
 /*****************************************************/
+/* OfpDescStatsReply                                 */
+/*****************************************************/
+type Of13DescStatsReplyHandler interface {
+	HandleDescStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
+/* OfpFlowStatsReply                                 */
+/*****************************************************/
+type Of13FlowStatsReplyHandler interface {
+	HandleFlowStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
+/* OfpAggregateStatsReply                            */
+/*****************************************************/
+type Of13AggregateStatsReplyHandler interface {
+	HandleAggregateStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
 /* OfpErrorMsg                                       */
 /*****************************************************/
 type Of13ErroMsgHandler interface {

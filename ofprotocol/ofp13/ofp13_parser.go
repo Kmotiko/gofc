@@ -23,9 +23,20 @@ func Parse(packet []byte) (msg OFMessage) {
 	case OFPT_PACKET_IN:
 		msg = NewOfpPacketIn()
 		msg.Parse(packet)
+	case OFPT_MULTIPART_REPLY:
+		msg = NewOfpMultipartReply()
+		msg.Parse(packet)
 	default:
 	}
 	return msg
+}
+
+var xid uint32 = 0
+
+func nextXid() uint32 {
+	tmp := xid
+	xid += 1
+	return tmp
 }
 
 /*****************************************************/
@@ -33,9 +44,9 @@ func Parse(packet []byte) (msg OFMessage) {
 /*****************************************************/
 
 /// create OfpHeader instance.
-func NewOfpHeader() OfpHeader {
+func NewOfpHeader(t uint8) OfpHeader {
 	// 4 means ofp version 1.3
-	h := OfpHeader{4, 0, 8, 0}
+	h := OfpHeader{4, t, 8, nextXid()}
 	return h
 }
 
@@ -66,14 +77,12 @@ func (h *OfpHeader) Size() int {
 /* Echo Message                                      */
 /*****************************************************/
 func NewOfpEchoRequest() *OfpHeader {
-	echo := NewOfpHeader()
-	echo.Type = OFPT_ECHO_REQUEST
+	echo := NewOfpHeader(OFPT_ECHO_REQUEST)
 	return &echo
 }
 
 func NewOfpEchoReply() *OfpHeader {
-	echo := NewOfpHeader()
-	echo.Type = OFPT_ECHO_REPLY
+	echo := NewOfpHeader(OFPT_ECHO_REPLY)
 	return &echo
 }
 
@@ -108,7 +117,7 @@ func (h *OfpHelloElemHeader) Size() int {
 /*****************************************************/
 func NewOfpHello() *OfpHello {
 	hello := new(OfpHello)
-	hello.Header = NewOfpHeader()
+	hello.Header = NewOfpHeader(OFPT_HELLO)
 	hello.Elements = make([]OfpHelloElemHeader, 0)
 	return hello
 }
@@ -156,11 +165,26 @@ func (m *OfpHello) Size() int {
 }
 
 /*****************************************************/
+/* OfpSwitchConfig                                   */
+/*****************************************************/
+
+/*****************************************************/
+/* OfpTableMod                                       */
+/*****************************************************/
+
+/*****************************************************/
+/* OfpPortStatus                                     */
+/*****************************************************/
+
+/*****************************************************/
+/* OfpPortMod                                        */
+/*****************************************************/
+
+/*****************************************************/
 /* OfpFeaturesRequest                                */
 /*****************************************************/
 func NewOfpFeaturesRequest() *OfpHeader {
-	m := NewOfpHeader()
-	m.Type = OFPT_FEATURES_REQUEST
+	m := NewOfpHeader(OFPT_FEATURES_REQUEST)
 	return &m
 }
 
@@ -169,7 +193,7 @@ func NewOfpFeaturesRequest() *OfpHeader {
 /*****************************************************/
 func NewOfpFeaturesReply() *OfpSwitchFeatures {
 	m := new(OfpSwitchFeatures)
-	m.Header = NewOfpHeader()
+	m.Header = NewOfpHeader(OFPT_FEATURES_REPLY)
 	return m
 }
 
@@ -225,13 +249,32 @@ func (m *OfpSwitchFeatures) Size() int {
 /*****************************************************/
 /* OfpFlowMod                                        */
 /*****************************************************/
-func NewOfpFlowMod() *OfpFlowMod {
+func NewOfpFlowMod(
+	cookie uint64,
+	cookieMask uint64,
+	tableId uint8,
+	command uint8,
+	idleTimeout uint16,
+	hardTimeout uint16,
+	priority uint16,
+	bufferId uint32,
+	outPort uint32,
+	outGroup uint32,
+	flags uint16,
+) *OfpFlowMod {
 	m := new(OfpFlowMod)
-	m.Header = NewOfpHeader()
-	m.Header.Type = OFPT_FLOW_MOD
-	m.BufferId = OFP_NO_BUFFER
-	m.OutPort = OFPP_ANY
-	m.OutGroup = OFPG_ANY
+	m.Header = NewOfpHeader(OFPT_FLOW_MOD)
+	m.Cookie = cookie
+	m.CookieMask = cookieMask
+	m.TableId = tableId
+	m.Command = command
+	m.IdleTimeout = idleTimeout
+	m.HardTimeout = hardTimeout
+	m.Priority = priority
+	m.BufferId = bufferId
+	m.OutPort = outPort
+	m.OutGroup = outGroup
+	m.Flags = flags
 	m.Match = NewOfpMatch()
 	return m
 }
@@ -323,33 +366,199 @@ func (m *OfpFlowMod) AppendInstruction(i OfpInstruction) {
 /* OfpMeterBandHeader                                */
 /*****************************************************/
 // TODO: implement
+func NewOfpMeterBandHeader(t uint16, rate uint32, burstSize uint32) OfpMeterBandHeader {
+	m := OfpMeterBandHeader{}
+	m.Type = t
+	m.Length = 16
+	m.Rate = rate
+	m.BurstSize = burstSize
+	return m
+}
+
+func (m *OfpMeterBandHeader) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	index := 0
+	binary.BigEndian.PutUint16(packet[index:], m.Type)
+	index += 2
+
+	binary.BigEndian.PutUint16(packet[index:], m.Length)
+	index += 2
+
+	binary.BigEndian.PutUint32(packet[index:], m.Rate)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], m.BurstSize)
+	index += 4
+
+	return packet
+}
+
+func (m *OfpMeterBandHeader) Parse(packet []byte) {
+}
+
+func (m *OfpMeterBandHeader) Size() int {
+	return 12
+}
 
 /*****************************************************/
 /* OfpMeterBandDrop                                  */
 /*****************************************************/
 // TODO: implement
+func NewOfpMeterBandDrop(rate uint32, burstSize uint32) *OfpMeterBandDrop {
+	m := new(OfpMeterBandDrop)
+	m.Header = NewOfpMeterBandHeader(OFPMBT_DROP, rate, burstSize)
+	return m
+}
+
+func (m *OfpMeterBandDrop) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	h_packet := m.Header.Serialize()
+	index := 0
+	copy(packet[index:], h_packet)
+
+	return packet
+}
+
+func (m *OfpMeterBandDrop) Parse(packet []byte) {
+}
+
+func (m *OfpMeterBandDrop) Size() int {
+	return m.Header.Size() + 4
+}
+
+func (m *OfpMeterBandDrop) MeterBandType() uint16 {
+	return m.Header.Type
+}
 
 /*****************************************************/
 /* OfpMeterBandDscpRemark                            */
 /*****************************************************/
 // TODO: implement
+func NewOfpMeterBandDscpRemark(rate uint32, burstSize uint32, precLevel uint8) *OfpMeterBandDscpRemark {
+	m := new(OfpMeterBandDscpRemark)
+	m.Header = NewOfpMeterBandHeader(OFPMBT_DSCP_REMARK, rate, burstSize)
+	m.PrecLevel = precLevel
+	return m
+}
+
+func (m *OfpMeterBandDscpRemark) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	h_packet := m.Header.Serialize()
+	index := 0
+	copy(packet[index:], h_packet)
+
+	packet[index] = m.PrecLevel
+
+	return packet
+}
+
+func (m *OfpMeterBandDscpRemark) Parse(packet []byte) {
+}
+
+func (m *OfpMeterBandDscpRemark) Size() int {
+	return m.Header.Size() + 4
+}
+
+func (m *OfpMeterBandDscpRemark) MeterBandType() uint16 {
+	return m.Header.Type
+}
 
 /*****************************************************/
 /* OfpMeterBandExperimenter                          */
 /*****************************************************/
 // TODO: implement
+func NewOfpMeterBandExperimenter(rate uint32, burstSize uint32, experimenter uint32) *OfpMeterBandExperimenter {
+	m := new(OfpMeterBandExperimenter)
+	m.Header = NewOfpMeterBandHeader(OFPMBT_EXPERIMENTER, rate, burstSize)
+	m.Experimenter = experimenter
+	return m
+}
+
+func (m *OfpMeterBandExperimenter) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	h_packet := m.Header.Serialize()
+	index := 0
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint32(packet[index:], m.Experimenter)
+
+	return packet
+}
+
+func (m *OfpMeterBandExperimenter) Parse(packet []byte) {
+}
+
+func (m *OfpMeterBandExperimenter) Size() int {
+	return m.Header.Size() + 4
+}
+
+func (m *OfpMeterBandExperimenter) MeterBandType() uint16 {
+	return m.Header.Type
+}
 
 /*****************************************************/
 /* OfpMeterMod                                       */
 /*****************************************************/
-// TODO: implement
+func NewOfpMeterMod(command uint16, flags uint16, id uint32) *OfpMeterMod {
+	m := new(OfpMeterMod)
+	m.Header = NewOfpHeader(OFPT_METER_MOD)
+	m.Header.Length = 16
+	m.Command = command
+	m.Flags = flags
+	m.MeterId = id
+	m.Bands = make([]OfpMeterBand, 0)
+	return m
+}
+
+func (m *OfpMeterMod) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	h_packet := m.Header.Serialize()
+
+	index := 0
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint16(packet[index:], m.Command)
+	index += 2
+
+	binary.BigEndian.PutUint16(packet[index:], m.Flags)
+	index += 2
+
+	binary.BigEndian.PutUint32(packet[index:], m.MeterId)
+	index += 4
+
+	for _, b := range m.Bands {
+		b_packet := b.Serialize()
+		copy(packet[index:], b_packet)
+		index += b.Size()
+	}
+
+	return packet
+}
+
+func (m *OfpMeterMod) Parse(packet []byte) {
+}
+
+func (m *OfpMeterMod) Size() int {
+	size := m.Header.Size() + 8
+	for _, b := range m.Bands {
+		size += b.Size()
+	}
+	return size
+}
+
+func (m *OfpMeterMod) AppendMeterBand(mb OfpMeterBand) {
+	m.Bands = append(m.Bands, mb)
+	m.Header.Length += (uint16)(mb.Size())
+}
 
 /*****************************************************/
 /* OfpPacketIn                                       */
 /*****************************************************/
 func NewOfpPacketIn() *OfpPacketIn {
 	m := new(OfpPacketIn)
-	m.Header = NewOfpHeader()
+	m.Header = NewOfpHeader(OFPT_PACKET_IN)
 	m.Header.Type = OFPT_PACKET_IN
 	m.Match = NewOfpMatch()
 	return m
@@ -492,9 +701,6 @@ func (m *OfpMatch) Parse(packet []byte) {
 
 	for index < (int(m.Length) - 4) {
 		mf := parseOxmField(packet[index:])
-		if mf == nil {
-			break
-		}
 		m.OxmFields = append(m.OxmFields, mf)
 		index += mf.Size()
 	}
@@ -2604,7 +2810,7 @@ func NewOfpInstructionHeader(t uint16) OfpInstructionHeader {
 	return header
 }
 
-func (h OfpInstructionHeader) Serialize() []byte {
+func (h *OfpInstructionHeader) Serialize() []byte {
 	packet := make([]byte, h.Size())
 	index := 0
 	binary.BigEndian.PutUint16(packet[index:], h.Type)
@@ -2613,7 +2819,7 @@ func (h OfpInstructionHeader) Serialize() []byte {
 	return packet
 }
 
-func (h OfpInstructionHeader) Parse(packet []byte) {
+func (h *OfpInstructionHeader) Parse(packet []byte) {
 	index := 0
 	h.Type = binary.BigEndian.Uint16(packet[index:])
 	index += 2
@@ -2699,6 +2905,10 @@ func (i *OfpInstructionWriteMetadata) Parse(packet []byte) {
 	i.MetadataMask = binary.BigEndian.Uint64(packet[index:])
 }
 
+func (i *OfpInstructionWriteMetadata) Size() int {
+	return 24
+}
+
 func (i *OfpInstructionWriteMetadata) InstructionType() uint16 {
 	return OFPIT_WRITE_METADATA
 }
@@ -2748,10 +2958,97 @@ func (i *OfpInstructionActions) Parse(packet []byte) {
 	// Pad
 	index += 4
 
-	for index < len(packet) {
+	// for index < len(packet) {
+	for index < (int)(i.Header.Length) {
 		a_type := binary.BigEndian.Uint16(packet[index:])
 		switch a_type {
 		//TODO:implement
+		case OFPAT_OUTPUT:
+			action := NewOfpActionOutput(0, 0)
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_COPY_TTL_OUT:
+			action := NewOfpActionCopyTtlOut()
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_COPY_TTL_IN:
+			action := NewOfpActionCopyTtlIn()
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_SET_MPLS_TTL:
+			action := NewOfpActionSetMplsTtl(0)
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_DEC_MPLS_TTL:
+			action := NewOfpActionDecMplsTtl()
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_PUSH_VLAN:
+			action := NewOfpActionPushVlan()
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_POP_VLAN:
+			action := NewOfpActionPopVlan(0)
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_PUSH_MPLS:
+			action := NewOfpActionPushMpls()
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_POP_MPLS:
+			action := NewOfpActionPopMpls(0)
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_SET_QUEUE:
+			action := NewOfpActionSetQueue(0)
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_GROUP:
+			action := NewOfpActionGroup(0)
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_SET_NW_TTL:
+			action := NewOfpActionSetNwTtl(0)
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_DEC_NW_TTL:
+			action := NewOfpActionDecNwTtl()
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_SET_FIELD:
+			action := newEmptyOfpActionSetField()
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_PUSH_PBB:
+			action := NewOfpActionPushPbb()
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_POP_PBB:
+			action := NewOfpActionPopPbb(0)
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		case OFPAT_EXPERIMENTER:
+			action := NewOfpActionExperimenter(0)
+			action.Parse(packet[index:])
+			i.Append(action)
+			index += action.Size()
+		default:
 		}
 	}
 }
@@ -2780,7 +3077,7 @@ func NewOfpActionHeader(t uint16, length uint16) OfpActionHeader {
 	return header
 }
 
-func (h OfpActionHeader) Serialize() []byte {
+func (h *OfpActionHeader) Serialize() []byte {
 	packet := make([]byte, h.Size())
 	binary.BigEndian.PutUint16(packet[0:], h.Type)
 	binary.BigEndian.PutUint16(packet[2:], h.Length)
@@ -2788,7 +3085,7 @@ func (h OfpActionHeader) Serialize() []byte {
 	return packet
 }
 
-func (h OfpActionHeader) Parse(packet []byte) {
+func (h *OfpActionHeader) Parse(packet []byte) {
 	h.Type = binary.BigEndian.Uint16(packet[0:])
 	h.Length = binary.BigEndian.Uint16(packet[2:])
 }
@@ -2842,7 +3139,76 @@ func (a *OfpActionOutput) Size() int {
 	return 16
 }
 
-func (a *OfpActionOutput) GetOfpActionType() uint16 {
+func (a *OfpActionOutput) OfpActionType() uint16 {
+	return a.ActionHeader.Type
+}
+
+/*
+ * OfpActionCopyTtlOut
+ */
+func NewOfpActionCopyTtlOut() *OfpActionCopyTtlOut {
+	action := new(OfpActionCopyTtlOut)
+	header := NewOfpActionHeader(OFPAT_COPY_TTL_OUT, 8)
+	action.ActionHeader = header
+	return action
+}
+
+func (a *OfpActionCopyTtlOut) Serialize() []byte {
+	index := 0
+	packet := make([]byte, a.Size())
+	h_packet := a.ActionHeader.Serialize()
+	copy(packet[index:], h_packet)
+	index += a.ActionHeader.Size()
+
+	return packet
+}
+
+func (a *OfpActionCopyTtlOut) Parse(packet []byte) {
+	index := 0
+	a.ActionHeader.Parse(packet)
+	index += a.ActionHeader.Size()
+}
+
+func (a *OfpActionCopyTtlOut) Size() int {
+	return 8
+}
+
+func (a *OfpActionCopyTtlOut) OfpActionType() uint16 {
+	return a.ActionHeader.Type
+}
+
+/*
+ * OfpActionCopyTtlIn
+ */
+// TODO: implement
+func NewOfpActionCopyTtlIn() *OfpActionCopyTtlIn {
+	action := new(OfpActionCopyTtlIn)
+	header := NewOfpActionHeader(OFPAT_COPY_TTL_IN, 8)
+	action.ActionHeader = header
+	return action
+}
+
+func (a *OfpActionCopyTtlIn) Serialize() []byte {
+	index := 0
+	packet := make([]byte, a.Size())
+	h_packet := a.ActionHeader.Serialize()
+	copy(packet[index:], h_packet)
+	index += a.ActionHeader.Size()
+
+	return packet
+}
+
+func (a *OfpActionCopyTtlIn) Parse(packet []byte) {
+	index := 0
+	a.ActionHeader.Parse(packet)
+	index += a.ActionHeader.Size()
+}
+
+func (a *OfpActionCopyTtlIn) Size() int {
+	return 8
+}
+
+func (a *OfpActionCopyTtlIn) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
@@ -2879,7 +3245,7 @@ func (a *OfpActionSetMplsTtl) Size() int {
 	return 8
 }
 
-func (a *OfpActionSetMplsTtl) GetOfpActionType() uint16 {
+func (a *OfpActionSetMplsTtl) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
@@ -2913,7 +3279,7 @@ func (a *OfpActionDecMplsTtl) Size() int {
 	return 8
 }
 
-func (a *OfpActionDecMplsTtl) GetOfpActionType() uint16 {
+func (a *OfpActionDecMplsTtl) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
@@ -2979,7 +3345,7 @@ func (a *OfpActionPush) Size() int {
 	return 8
 }
 
-func (a *OfpActionPush) GetOfpActionType() uint16 {
+func (a *OfpActionPush) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
@@ -3035,7 +3401,7 @@ func (a *OfpActionPop) Size() int {
 	return 8
 }
 
-func (a *OfpActionPop) GetOfpActionType() uint16 {
+func (a *OfpActionPop) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
@@ -3073,7 +3439,45 @@ func (a *OfpActionGroup) Size() int {
 	return 8
 }
 
-func (a *OfpActionGroup) GetOfpActionType() uint16 {
+func (a *OfpActionGroup) OfpActionType() uint16 {
+	return a.ActionHeader.Type
+}
+
+/*
+ * OfpActionSetQueue
+ */
+func NewOfpActionSetQueue(id uint32) *OfpActionSetQueue {
+	action := new(OfpActionSetQueue)
+	header := NewOfpActionHeader(OFPAT_SET_QUEUE, 8)
+	action.ActionHeader = header
+	action.QueueId = id
+
+	return action
+}
+
+func (a *OfpActionSetQueue) Serialize() []byte {
+	index := 0
+	packet := make([]byte, a.Size())
+	h_packet := a.ActionHeader.Serialize()
+	copy(packet[index:], h_packet)
+	index += a.ActionHeader.Size()
+	binary.BigEndian.PutUint32(packet[index:], a.QueueId)
+
+	return packet
+}
+
+func (a *OfpActionSetQueue) Parse(packet []byte) {
+	index := 0
+	a.ActionHeader.Parse(packet)
+	index += a.ActionHeader.Size()
+	a.QueueId = binary.BigEndian.Uint32(packet[index:])
+}
+
+func (a *OfpActionSetQueue) Size() int {
+	return 8
+}
+
+func (a *OfpActionSetQueue) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
@@ -3111,7 +3515,7 @@ func (a *OfpActionSetNwTtl) Size() int {
 	return 8
 }
 
-func (a *OfpActionSetNwTtl) GetOfpActionType() uint16 {
+func (a *OfpActionSetNwTtl) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
@@ -3142,28 +3546,266 @@ func (a *OfpActionDecNwTtl) Size() int {
 	return 8
 }
 
-func (a *OfpActionDecNwTtl) GetOfpActionType() uint16 {
+func (a *OfpActionDecNwTtl) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
 /*
  * OfpActionSetField
  */
-//func NewOfpActionSetField() *OfpActionSetField {
+// TODO: implements
 //
-//}
-//
-//func (a *OfpActionSetField) Serialize() []byte {
-//}
-//
-//func (a *OfpActionSetField) Parse(packet []byte) {
-//}
-//
-//func (a *OfpActionSetField) Size() uint16 {
-//}
-//
-//func (a *OfpActionSetField) GetOfpActionType() uint16 {
-//}
+func NewOfpActionSetField(oxm OxmField) *OfpActionSetField {
+	a := new(OfpActionSetField)
+	length := 4 + oxm.Size()
+	length += (8 - (length % 8))
+	header := NewOfpActionHeader(OFPAT_SET_FIELD, (uint16)(4+oxm.Size()+2))
+	a.ActionHeader = header
+	a.Oxm = oxm
+	return a
+}
+
+func newEmptyOfpActionSetField() *OfpActionSetField {
+	return new(OfpActionSetField)
+}
+
+func (a *OfpActionSetField) Serialize() []byte {
+	index := 0
+	packet := make([]byte, a.Size())
+	h_packet := a.ActionHeader.Serialize()
+	copy(packet[index:], h_packet)
+	index += a.ActionHeader.Size()
+
+	m_packet := a.Oxm.Serialize()
+	copy(packet[index:], m_packet)
+
+	return packet
+}
+
+func (a *OfpActionSetField) Parse(packet []byte) {
+	// TODO: implement OxmField Parser
+	index := 0
+	a.ActionHeader.Parse(packet)
+	index += a.ActionHeader.Size()
+
+	// parse tlv header
+	tlvheader := binary.BigEndian.Uint32(packet[index:])
+	switch oxmField(tlvheader) {
+	case OFPXMT_OFB_IN_PORT:
+		mf := NewOxmInPort(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IN_PHY_PORT:
+		mf := NewOxmInPhyPort(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_METADATA:
+		mf := NewOxmMetadata(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ETH_DST:
+		mf, err := NewOxmEthDst("00:00:00:00:00:00")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ETH_SRC:
+		mf, err := NewOxmEthSrc("00:00:00:00:00:00")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ETH_TYPE:
+		mf := NewOxmEthType(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_VLAN_VID:
+		mf := NewOxmVlanVid(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_VLAN_PCP:
+		mf := NewOxmVlanPcp(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IP_DSCP:
+		mf := NewOxmIpDscp(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IP_ECN:
+		mf := NewOxmIpEcn(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IP_PROTO:
+		mf := NewOxmIpProto(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IPV4_SRC:
+		mf, err := NewOxmIpv4Src("0.0.0.0")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IPV4_DST:
+		mf, err := NewOxmIpv4Dst("0.0.0.0")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_TCP_SRC:
+		mf := NewOxmTcpSrc(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_TCP_DST:
+		mf := NewOxmTcpDst(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_UDP_SRC:
+		mf := NewOxmUdpSrc(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_UDP_DST:
+		mf := NewOxmUdpDst(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_SCTP_SRC:
+		mf := NewOxmSctpSrc(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_SCTP_DST:
+		mf := NewOxmSctpDst(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ICMPV4_TYPE:
+		mf := NewOxmIcmpType(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ICMPV4_CODE:
+		mf := NewOxmIcmpCode(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ARP_OP:
+		mf := NewOxmArpOp(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ARP_SPA:
+		mf, err := NewOxmArpSpa("0.0.0.0")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ARP_TPA:
+		mf, err := NewOxmArpTpa("0.0.0.0")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ARP_SHA:
+		mf, err := NewOxmArpSha("00:00:00:00:00:00")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ARP_THA:
+		mf, err := NewOxmArpTha("00:00:00:00:00:00")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IPV6_SRC:
+		mf, err := NewOxmIpv6Src("::")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IPV6_DST:
+		mf, err := NewOxmIpv6Dst("::")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IPV6_FLABEL:
+		mf := NewOxmIpv6FLabel(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ICMPV6_TYPE:
+		mf := NewOxmIcmpv6Type(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_ICMPV6_CODE:
+		mf := NewOxmIcmpv6Code(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IPV6_ND_TARGET:
+		mf, err := NewOxmIpv6NdTarget("0.0.0.0")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IPV6_ND_SLL:
+		mf, err := NewOxmIpv6NdSll("00:00:00:00:00:00")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IPV6_ND_TLL:
+		mf, err := NewOxmIpv6NdTll("00:00:00:00:00:00")
+		if err != nil {
+			// TODO: error handling
+		}
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_MPLS_LABEL:
+		mf := NewOxmMplsLabel(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_MPLS_TC:
+		mf := NewOxmMplsTc(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_MPLS_BOS:
+		mf := NewOxmMplsBos(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_PBB_ISID:
+		mf := NewOxmPbbIsid([3]uint8{0, 0, 0})
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_TUNNEL_ID:
+		mf := NewOxmTunnelId(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	case OFPXMT_OFB_IPV6_EXTHDR:
+		mf := NewOxmIpv6ExtHeader(0)
+		mf.Parse(packet)
+		a.Oxm = mf
+	default:
+		//TODO: Error handling
+	}
+
+	return
+}
+
+func (a *OfpActionSetField) Size() int {
+	size := 4 + a.Oxm.Size()
+	size += (8 - (size % 8))
+	return size
+}
+
+func (a *OfpActionSetField) OfpActionType() uint16 {
+	return OFPAT_SET_FIELD
+}
 
 /*
  * OfpActionExperimenter
@@ -3195,11 +3837,11 @@ func (a *OfpActionExperimenter) Parse(packet []byte) {
 	a.Experimenter = binary.BigEndian.Uint32(packet[index:])
 }
 
-func (a *OfpActionExperimenter) Size() uint16 {
+func (a *OfpActionExperimenter) Size() int {
 	return 8
 }
 
-func (a *OfpActionExperimenter) GetOfpActionType() uint16 {
+func (a *OfpActionExperimenter) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
@@ -3207,7 +3849,7 @@ func (a *OfpActionExperimenter) GetOfpActionType() uint16 {
 /* OfpErrorMsg                                       */
 /*****************************************************/
 func NewOfpErrorMsg() *OfpErrorMsg {
-	header := NewOfpHeader()
+	header := NewOfpHeader(OFPT_ERROR)
 	header.Type = OFPT_ERROR
 	return nil
 }
@@ -3254,36 +3896,556 @@ func (m *OfpErrorMsg) Size() int {
 /* OfpMultipartRequest                               */
 /*****************************************************/
 // TODO: implement
+/**
+OFPMP_DESC
+OFPMP_FLOW
+OFPMP_AGGREGATE
+OFPMP_TABLE
+OFPMP_PORT_STATS
+OFPMP_QUEUE
+OFPMP_GROUP
+OFPMP_GROUP_DESC
+OFPMP_GROUP_FEATURES
+OFPMP_METER
+OFPMP_METER_CONFIG
+OFPMP_METER_FEATURES
+OFPMP_TABLE_FEATURES
+OFPMP_PORT_DESC
+OFPMP_EXPERIMENTER
+*/
+
+func NewOfpDescStatsRequest(flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_DESC, flags)
+	return m
+}
+
+func NewOfpFlowStatsRequest(
+	flags uint16,
+	tableId uint8,
+	outPort uint32,
+	outGroup uint32,
+	cookie uint64,
+	cookieMask uint64,
+	match *OfpMatch) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_FLOW, flags)
+	m.Body = newOfpFlowStatsRequestBody(
+		tableId,
+		outPort,
+		outGroup,
+		cookie,
+		cookieMask,
+		match)
+	m.Header.Length += (uint16)(m.Body.Size())
+	return m
+}
+
+func NewOfpAggregateStatsRequest(
+	flags uint16,
+	tableId uint8,
+	outPort uint32,
+	outGroup uint32,
+	cookie uint64,
+	cookieMask uint64,
+	match *OfpMatch) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_AGGREGATE, flags)
+	m.Body = newOfpAggregateStatsRequestBody(
+		tableId,
+		outPort,
+		outGroup,
+		cookie,
+		cookieMask,
+		match)
+	m.Header.Length += (uint16)(m.Body.Size())
+	return m
+}
+
+func NewOfpTableStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpPortStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpQueueStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpGroupStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpGroupDescStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpGroupFeaturesStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpMeterStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpMeterConfigStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpMeterFeaturesStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpTableFeaturesStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpPortDescStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpExperimenterStatsRequest() *OfpMultipartRequest {
+	return nil
+}
+
+func NewOfpMultipartRequest(t uint16, flags uint16) *OfpMultipartRequest {
+	m := new(OfpMultipartRequest)
+	m.Header = NewOfpHeader(OFPT_MULTIPART_REQUEST)
+	m.Header.Length = (uint16)(m.Header.Size()) + 8
+	m.Type = t
+	m.Flags = flags
+	return m
+}
+
+func (m *OfpMultipartRequest) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	h_packet := m.Header.Serialize()
+
+	index := 0
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint16(packet[index:], m.Type)
+	index += 2
+
+	binary.BigEndian.PutUint16(packet[index:], m.Flags)
+	index += 6
+
+	if m.Body != nil {
+		mp_packet := m.Body.Serialize()
+		copy(packet[index:], mp_packet)
+		index += m.Body.Size()
+	}
+
+	return packet
+}
+
+func (m *OfpMultipartRequest) Parse(packet []byte) {
+	return
+}
+
+func (m *OfpMultipartRequest) Size() int {
+	size := m.Header.Size() + 8
+	if m.Body != nil {
+		size += m.Body.Size()
+	}
+	return size
+}
 
 /*****************************************************/
 /* OfpMultipartReply                                 */
 /*****************************************************/
 // TODO: implement
+func NewOfpMultipartReply() *OfpMultipartReply {
+	m := new(OfpMultipartReply)
+	header := NewOfpHeader(OFPT_MULTIPART_REPLY)
+	m.Header = header
+	// m.Type = t
+	// m.Flags = flags
+	m.Body = make([]OfpMultipartBody, 0)
+	return m
+}
+
+func (m *OfpMultipartReply) Serialize() []byte {
+	return nil
+}
+
+func (m *OfpMultipartReply) Parse(packet []byte) {
+	index := 0
+	m.Header.Parse(packet[index:])
+	index += m.Header.Size()
+
+	m.Type = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	m.Flags = binary.BigEndian.Uint16(packet[index:])
+	index += 6
+
+	switch m.Type {
+	case OFPMP_DESC:
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpDescStats()
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
+	case OFPMP_FLOW:
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpFlowStats()
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
+	case OFPMP_AGGREGATE:
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpAggregateStats()
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
+	case OFPMP_TABLE:
+		// TODO: implements
+	case OFPMP_PORT_STATS:
+		// TODO: implements
+	case OFPMP_QUEUE:
+		// TODO: implements
+	case OFPMP_GROUP:
+		// TODO: implements
+	case OFPMP_GROUP_DESC:
+		// TODO: implements
+	case OFPMP_GROUP_FEATURES:
+		// TODO: implements
+	case OFPMP_METER:
+		// TODO: implements
+	case OFPMP_METER_CONFIG:
+		// TODO: implements
+	case OFPMP_METER_FEATURES:
+		// TODO: implements
+	case OFPMP_TABLE_FEATURES:
+		// TODO: implements
+	case OFPMP_PORT_DESC:
+		// TODO: implements
+	case OFPMP_EXPERIMENTER:
+		// TODO: implements
+	default:
+	}
+
+	return
+}
+
+func (m *OfpMultipartReply) Size() int {
+	size := m.Header.Size() + 8
+	for _, mp := range m.Body {
+		size += mp.Size()
+	}
+	return size
+}
+
+func (m *OfpMultipartReply) Append(mp OfpMultipartBody) {
+	m.Body = append(m.Body, mp)
+}
 
 /*****************************************************/
 /* OfpDesc                                           */
 /*****************************************************/
 // TODO: implement
+func newOfpDescStats() *OfpDescStats {
+	mp := new(OfpDescStats)
+	mp.MfrDesc = make([]byte, DESC_STR_LEN)
+	mp.HwDesc = make([]byte, DESC_STR_LEN)
+	mp.SwDesc = make([]byte, DESC_STR_LEN)
+	mp.SerialNum = make([]byte, SERIAL_NUM_LEN)
+	mp.DpDesc = make([]byte, DESC_STR_LEN)
+	return mp
+}
+
+func (mp *OfpDescStats) Serialize() []byte {
+	// not implement
+	return nil
+}
+
+func (mp *OfpDescStats) Parse(packet []byte) {
+	index := 0
+	copy(mp.MfrDesc, packet[index:(index+DESC_STR_LEN)])
+	index += DESC_STR_LEN
+	copy(mp.HwDesc, packet[index:(index+DESC_STR_LEN)])
+	index += DESC_STR_LEN
+	copy(mp.SwDesc, packet[index:(index+DESC_STR_LEN)])
+	index += DESC_STR_LEN
+	copy(mp.SerialNum, packet[index:(index+SERIAL_NUM_LEN)])
+	index += SERIAL_NUM_LEN
+	copy(mp.DpDesc, packet[index:(index+DESC_STR_LEN)])
+	index += DESC_STR_LEN
+
+	return
+}
+
+func (mp *OfpDescStats) Size() int {
+	//return len(mp.MfrDesc) + len(mp.HwDesc) +
+	//	len(mp.SwDesc) + len(mp.SerialNum) + len(mp.DpDesc)
+	return 1056
+}
+
+func (mp *OfpDescStats) MPType() uint16 {
+	return OFPMP_DESC
+}
 
 /*****************************************************/
 /* OfpFlowStatsRequest                               */
 /*****************************************************/
 // TODO: implement
+func newOfpFlowStatsRequestBody(
+	tableId uint8,
+	outPort uint32,
+	outGroup uint32,
+	cookie uint64,
+	cookieMask uint64,
+	match *OfpMatch) *OfpFlowStatsRequest {
+	req := new(OfpFlowStatsRequest)
+	req.TableId = tableId
+	req.OutPort = outPort
+	req.OutGroup = outGroup
+	req.Cookie = cookie
+	req.CookieMask = cookieMask
+	req.Match = match
+	return req
+}
+
+func (m *OfpFlowStatsRequest) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	index := 0
+
+	packet[index] = m.TableId
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], m.OutPort)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], m.OutGroup)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], m.Cookie)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], m.CookieMask)
+	index += 8
+
+	m_packet := m.Match.Serialize()
+	copy(packet[index:], m_packet)
+
+	return packet
+}
+
+func (m *OfpFlowStatsRequest) Parse(packet []byte) {
+	return
+}
+
+func (m *OfpFlowStatsRequest) Size() int {
+	size := 32 + m.Match.Size()
+	return size
+}
+
+func (m *OfpFlowStatsRequest) MPType() uint16 {
+	return OFPMP_FLOW
+}
 
 /*****************************************************/
-/* OfpFlowStatsReply                                 */
+/* OfpFlowStats                                      */
 /*****************************************************/
 // TODO: implement
+func newOfpFlowStats() *OfpFlowStats {
+	m := new(OfpFlowStats)
+	return m
+}
+
+func (mp *OfpFlowStats) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpFlowStats) Parse(packet []byte) {
+	index := 0
+	mp.Length = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	mp.TableId = packet[index]
+	index += 2 // include Padding
+
+	mp.DurationSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.DurationNSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.Priority = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	mp.IdleTimeout = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	mp.HardTimeout = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	mp.Flags = binary.BigEndian.Uint16(packet[index:])
+	index += 6 // include Padding
+
+	mp.Cookie = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.PacketCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.ByteCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.Match = NewOfpMatch()
+	mp.Match.Parse(packet[index:])
+	index += mp.Match.Size()
+
+	for index < (int)(mp.Length) {
+		t := binary.BigEndian.Uint16(packet[index:])
+
+		// don't forward index ,
+		// because type and length will be parsed in instruction's paraser
+
+		// TODO: implements parse process for other instruction type
+		switch t {
+		case OFPIT_GOTO_TABLE:
+			instruction := NewOfpInstructionGotoTable(0)
+			instruction.Parse(packet[index:])
+			mp.Instructions = append(mp.Instructions, instruction)
+			index += instruction.Size()
+		case OFPIT_WRITE_METADATA:
+			instruction := NewOfpInstructionWriteMetadata(0, 0)
+			instruction.Parse(packet[index:])
+			mp.Instructions = append(mp.Instructions, instruction)
+			index += instruction.Size()
+		case OFPIT_WRITE_ACTIONS:
+			instruction := NewOfpInstructionActions(OFPIT_WRITE_ACTIONS)
+			instruction.Parse(packet[index:])
+			mp.Instructions = append(mp.Instructions, instruction)
+			index += instruction.Size()
+		case OFPIT_APPLY_ACTIONS:
+			instruction := NewOfpInstructionActions(OFPIT_APPLY_ACTIONS)
+			instruction.Parse(packet[index:])
+			mp.Instructions = append(mp.Instructions, instruction)
+			index += instruction.Size()
+		case OFPIT_CLEAR_ACTIONS:
+			instruction := NewOfpInstructionActions(OFPIT_CLEAR_ACTIONS)
+			instruction.Parse(packet[index:])
+			mp.Instructions = append(mp.Instructions, instruction)
+			index += instruction.Size()
+		case OFPIT_METER:
+		case OFPIT_EXPERIMENTER:
+		default:
+
+		}
+	}
+
+	return
+}
+
+func (mp *OfpFlowStats) Size() int {
+	size := 48 + mp.Match.Size()
+	for _, i := range mp.Instructions {
+		size += i.Size()
+	}
+	return size
+}
+
+func (mp *OfpFlowStats) MPType() uint16 {
+	return OFPMP_FLOW
+}
 
 /*****************************************************/
 /* OfpAggregateStatsRequest                          */
 /*****************************************************/
 // TODO: implement
+func newOfpAggregateStatsRequestBody(
+	tableId uint8,
+	outPort uint32,
+	outGroup uint32,
+	cookie uint64,
+	cookieMask uint64,
+	match *OfpMatch) *OfpAggregateStatsRequest {
+	req := new(OfpAggregateStatsRequest)
+	req.TableId = tableId
+	req.OutPort = outPort
+	req.OutGroup = outGroup
+	req.Cookie = cookie
+	req.CookieMask = cookieMask
+	req.Match = match
+	return req
+}
+
+func (mp *OfpAggregateStatsRequest) Serialize() []byte {
+	packet := make([]byte, mp.Size())
+	index := 0
+
+	packet[index] = mp.TableId
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.OutPort)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.OutGroup)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.Cookie)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.CookieMask)
+	index += 8
+
+	m_packet := mp.Match.Serialize()
+	copy(packet[index:], m_packet)
+
+	return packet
+}
+
+func (mp *OfpAggregateStatsRequest) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpAggregateStatsRequest) Size() int {
+	size := 32 + mp.Match.Size()
+	return size
+}
+
+func (mp *OfpAggregateStatsRequest) MPType() uint16 {
+	return OFPMP_AGGREGATE
+}
 
 /*****************************************************/
-/* OfpAggregateStatsReply                          */
+/* OfpAggregateStats                               */
 /*****************************************************/
 // TODO: implement
+func newOfpAggregateStats() *OfpAggregateStats {
+	mp := new(OfpAggregateStats)
+	return mp
+}
+
+func (mp *OfpAggregateStats) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpAggregateStats) Parse(packet []byte) {
+	index := 0
+	mp.PacketCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.ByteCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.FlowCount = binary.BigEndian.Uint32(packet[index:])
+	return
+}
+
+func (mp *OfpAggregateStats) Size() int {
+	return 24
+}
+
+func (mp *OfpAggregateStats) MPType() uint16 {
+	return OFPMP_AGGREGATE
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropHeader                         */
@@ -3326,54 +4488,292 @@ func (m *OfpErrorMsg) Size() int {
 // TODO: implement
 
 /*****************************************************/
-/* OfpTableStatsReply                                */
+/* OfpTableStats                                     */
 /*****************************************************/
 // TODO: implement
+func newOfpTableStats() *OfpTableStats {
+	return nil
+}
+
+func (mp *OfpTableStats) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpTableStats) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpTableStats) Size() int {
+	return 0
+}
+
+func (mp *OfpTableStats) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
 /* OfpPortStatsRequest                               */
 /*****************************************************/
 // TODO: implement
+func newOfpPortStatsRequestBody() *OfpPortStatsRequest {
+	return nil
+}
+
+func (mp *OfpPortStatsRequest) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpPortStatsRequest) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpPortStatsRequest) Size() int {
+	return 0
+}
+
+func (mp *OfpPortStatsRequest) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
-/* OfpPortStatsReply                                 */
+/* OfpPortStats                                      */
 /*****************************************************/
 // TODO: implement
+func newOfpPortStats() *OfpPortStats {
+	return nil
+}
+
+func (mp *OfpPortStats) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpPortStats) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpPortStats) Size() int {
+	return 0
+}
+
+func (mp *OfpPortStats) MPType() uint16 {
+	return 0
+}
+
+/*****************************************************/
+/* OfpQueueStatsRequest                              */
+/*****************************************************/
+// TODO: implement
+func newOfpQueueStatsRequestBody() *OfpQueueStatsRequest {
+	return nil
+}
+
+func (mp *OfpQueueStatsRequest) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpQueueStatsRequest) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpQueueStatsRequest) Size() int {
+	return 0
+}
+
+func (mp *OfpQueueStatsRequest) MPType() uint16 {
+	return 0
+}
+
+/*****************************************************/
+/* OfpQueueStats                                     */
+/*****************************************************/
+// TODO: implement
+func newOfpQueueStats() *OfpQueueStats {
+	return nil
+}
+
+func (mp *OfpQueueStats) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpQueueStats) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpQueueStats) Size() int {
+	return 0
+}
+
+func (mp *OfpQueueStats) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
 /* OfpGroupStatsRequest                              */
 /*****************************************************/
 // TODO: implement
+func newOfpGroupStatsRequestBody() *OfpGroupStatsRequest {
+	return nil
+}
+
+func (mp *OfpGroupStatsRequest) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpGroupStatsRequest) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpGroupStatsRequest) Size() int {
+	return 0
+}
+
+func (mp *OfpGroupStatsRequest) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
-/* OfpGroupStatsReply                                */
+/* OfpGroupStats                                     */
 /*****************************************************/
 // TODO: implement
+func newOfpGroupStats() *OfpGroupStats {
+	return nil
+}
+
+func (mp *OfpGroupStats) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpGroupStats) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpGroupStats) Size() int {
+	return 0
+}
+
+func (mp *OfpGroupStats) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
 /* OfpGroupFeatures                                  */
 /*****************************************************/
 // TODO: implement
+func newOfpGroupFeaturesStats() *OfpGroupFeaturesStats {
+	return nil
+}
+
+func (mp *OfpGroupFeaturesStats) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpGroupFeaturesStats) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpGroupFeaturesStats) Size() int {
+	return 0
+}
+
+func (mp *OfpGroupFeaturesStats) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
 /* OfpMeterMultipartRequest                          */
 /*****************************************************/
 // TODO: implement
+func newOfpMeterMultipartRequestBody() *OfpMeterMultipartRequest {
+	return nil
+}
+
+func (mp *OfpMeterMultipartRequest) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpMeterMultipartRequest) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpMeterMultipartRequest) Size() int {
+	return 0
+}
+
+func (mp *OfpMeterMultipartRequest) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
 /* OfpMeterStats                                      */
 /*****************************************************/
 // TODO: implement
+func newOfpMeterStats() *OfpMeterStats {
+	return nil
+}
+
+func (mp *OfpMeterStats) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpMeterStats) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpMeterStats) Size() int {
+	return 0
+}
+
+func (mp *OfpMeterStats) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
 /* OfpMeterConfig                                    */
 /*****************************************************/
 // TODO: implement
+func newOfpMeterConfig() *OfpMeterConfig {
+	return nil
+}
+
+func (mp *OfpMeterConfig) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpMeterConfig) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpMeterConfig) Size() int {
+	return 0
+}
+
+func (mp *OfpMeterConfig) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
 /* OfpMeterFeatures                                  */
 /*****************************************************/
 // TODO: implement
+func newOfpMeterFeatures() *OfpMeterFeatures {
+	return nil
+}
+
+func (mp *OfpMeterFeatures) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpMeterFeatures) Parse(packet []byte) {
+	return
+}
+
+func (mp *OfpMeterFeatures) Size() int {
+	return 0
+}
+
+func (mp *OfpMeterFeatures) MPType() uint16 {
+	return 0
+}
 
 /*****************************************************/
 /* OfpExperimenterMultipartHeader                    */

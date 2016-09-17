@@ -425,7 +425,7 @@ const (
 const (
 	OFPMBT_DROP         = 1
 	OFPMBT_DSCP_REMARK  = 2
-	OFPBMT_EXPERIMENTER = 0xFFFF
+	OFPMBT_EXPERIMENTER = 0xFFFF
 )
 
 /* Meter Commands */
@@ -637,12 +637,12 @@ const (
 	OFPMP_FLOW
 	OFPMP_AGGREGATE
 	OFPMP_TABLE
-	OFPMP_PORT_STATUS
+	OFPMP_PORT_STATS
 	OFPMP_QUEUE
 	OFPMP_GROUP
 	OFPMP_GROUP_DESC
 	OFPMP_GROUP_FEATURES
-	GFPMP_METER
+	OFPMP_METER
 	OFPMP_METER_CONFIG
 	OFPMP_METER_FEATURES
 	OFPMP_TABLE_FEATURES
@@ -1048,7 +1048,7 @@ type OfpAction interface {
 	Serialize() []byte
 	Parse(packet []byte)
 	Size() int
-	GetOfpActionType() uint16
+	OfpActionType() uint16
 }
 
 type OfpActionHeader struct {
@@ -1061,6 +1061,16 @@ type OfpActionOutput struct {
 	Port         uint32
 	MaxLen       uint16
 	Pad          [6]uint8
+}
+
+type OfpActionCopyTtlOut struct {
+	ActionHeader OfpActionHeader
+	Pad          [4]uint8
+}
+
+type OfpActionCopyTtlIn struct {
+	ActionHeader OfpActionHeader
+	Pad          [4]uint8
 }
 
 type OfpActionSetMplsTtl struct {
@@ -1091,6 +1101,10 @@ type OfpActionGroup struct {
 	GroupId      uint32
 }
 
+type OfpActionSetQueue struct {
+	ActionHeader OfpActionHeader
+	QueueId      uint32
+}
 type OfpActionSetNwTtl struct {
 	ActionHeader OfpActionHeader
 	NwTtl        uint8
@@ -1104,7 +1118,8 @@ type OfpActionDecNwTtl struct {
 
 type OfpActionSetField struct {
 	ActionHeader OfpActionHeader
-	Field        [4]uint8
+	Oxm          OxmField
+	//Field        [4]uint8
 }
 
 type OfpActionExperimenter struct {
@@ -1181,7 +1196,7 @@ type OfpBucket struct {
 	WatchPort  uint32
 	WatchGroup uint32
 	Pad        [4]uint8
-	Actions    OfpActionHeader
+	Actions    []OfpAction
 }
 
 type OfpGroupMod struct {
@@ -1229,6 +1244,13 @@ type OfpFlowRemoved struct {
 	Match        *OfpMatch
 }
 
+type OfpMeterBand interface {
+	Serialize() []byte
+	Parse(packet []byte)
+	Size() int
+	MeterBandType() uint16
+}
+
 type OfpMeterBandHeader struct {
 	Type      uint16
 	Length    uint16
@@ -1237,35 +1259,39 @@ type OfpMeterBandHeader struct {
 }
 
 type OfpMeterBandDrop struct {
-	Type      uint16 // OFPBMT_DROP
-	Length    uint16
-	Rate      uint32
-	BurstSize uint32
-	Pad       [4]uint8
+	// Type      uint16 // OFPBMT_DROP
+	// Length    uint16
+	// Rate      uint32
+	// BurstSize uint32
+	Header OfpMeterBandHeader
+	// Pad    [4]uint8
 }
 
 type OfpMeterBandDscpRemark struct {
-	Type      uint16 // OFPBMT_DSCP_REMARK
-	Length    uint16
-	Rate      uint32
-	BurstSize uint32
+	// Type      uint16 // OFPBMT_DSCP_REMARK
+	// Length    uint16
+	// Rate      uint32
+	// BurstSize uint32
+	Header    OfpMeterBandHeader
 	PrecLevel uint8
-	Pad       [3]uint8
+	// Pad       [3]uint8
 }
 
 type OfpMeterBandExperimenter struct {
-	Type         uint16 // One of OFPBMT_*
-	Length       uint16
-	Rate         uint32
-	BurstSize    uint32
+	// Type         uint16 // One of OFPBMT_*
+	// Length       uint16
+	// Rate         uint32
+	// BurstSize    uint32
+	Header       OfpMeterBandHeader
 	Experimenter uint32
 }
 
 type OfpMeterMod struct {
 	Header  OfpHeader
+	Command uint16
 	Flags   uint16
 	MeterId uint32
-	Bands   []OfpMeterBandHeader
+	Bands   []OfpMeterBand
 }
 
 type OfpErrorMsg struct {
@@ -1283,42 +1309,49 @@ type OfpErrorExperimenterMsg struct {
 	Data         []uint8
 }
 
+type OfpMultipartBody interface {
+	Serialize() []byte
+	Parse(packet []byte)
+	Size() int
+	MPType() uint16
+}
+
 type OfpMultipartRequest struct {
 	Header OfpHeader
 	Type   uint16
 	Flags  uint16
-	Pad    [4]uint8
-	Body   []uint8
+	// Pad    [4]uint8
+	Body OfpMultipartBody
 }
 
 type OfpMultipartReply struct {
 	Header OfpHeader
 	Type   uint16
 	Flags  uint16
-	Pad    [4]uint8
-	Body   []uint8
+	// Pad    [4]uint8
+	Body []OfpMultipartBody
 }
 
-type OfpDesc struct {
-	MfrDesc   [DESC_STR_LEN]uint8
-	HwDesc    [DESC_STR_LEN]uint8
-	SeDesc    [DESC_STR_LEN]uint8
-	SerialNum [SERIAL_NUM_LEN]uint8
-	DpDesc    [DESC_STR_LEN]uint8
+type OfpDescStats struct {
+	MfrDesc   []uint8
+	HwDesc    []uint8
+	SwDesc    []uint8
+	SerialNum []uint8
+	DpDesc    []uint8
 }
 
 type OfpFlowStatsRequest struct {
-	TableId    uint8
-	Pad        [3]uint8
-	OutPort    uint32
-	OutGroup   uint32
-	Pad2       [4]uint8
+	TableId uint8
+	// Pad        [3]uint8
+	OutPort  uint32
+	OutGroup uint32
+	// Pad2       [4]uint8
 	Cookie     uint64
 	CookieMask uint64
 	Match      *OfpMatch
 }
 
-type OfpFlowStatsReply struct {
+type OfpFlowStats struct {
 	Length       uint16
 	TableId      uint8
 	Pad          uint8
@@ -1328,29 +1361,30 @@ type OfpFlowStatsReply struct {
 	IdleTimeout  uint16
 	HardTimeout  uint16
 	Flags        uint16
-	Pad2         [4]uint8
+	// Pad2         [4]uint8
 	Cookie       uint64
 	PacketCount  uint64
 	ByteCount    uint64
 	Match        *OfpMatch
+	Instructions []OfpInstruction
 }
 
 type OfpAggregateStatsRequest struct {
-	TableId    uint8
-	Pad        [3]uint8
-	OutPort    uint32
-	OutGroup   uint32
-	Pad2       [4]uint8
+	TableId uint8
+	// Pad        [3]uint8
+	OutPort  uint32
+	OutGroup uint32
+	// Pad2       [4]uint8
 	Cookie     uint64
 	CookieMask uint64
 	Match      *OfpMatch
 }
 
-type OfpAggregateStatsReply struct {
+type OfpAggregateStats struct {
 	PacketCount uint64
-	ByteCounte  uint64
-	FlowCount   uint64
-	Pad         [4]uint8
+	ByteCount   uint64
+	FlowCount   uint32
+	// Pad         [4]uint8
 }
 
 type OfpTableFeaturePropHeader struct {
@@ -1448,6 +1482,21 @@ type OfpPortStats struct {
 	DurationNsec uint32
 }
 
+type OfpQueueStatsRequest struct {
+	PortNo  uint32
+	QueueId uint32
+}
+
+type OfpQueueStats struct {
+	PortNo       uint32
+	QueueId      uint32
+	TxBytes      uint64
+	TxPackets    uint64
+	TxErrors     uint64
+	DurationSec  uint32
+	DurationNSec uint32
+}
+
 type OfpGroupStatsRequest struct {
 	GroupId uint32
 	Pad     [4]uint8
@@ -1479,7 +1528,7 @@ type OfpGroupDesc struct {
 	Buckets []OfpBucket
 }
 
-type OfpGroupFeatures struct {
+type OfpGroupFeaturesStats struct {
 	Type         uint32
 	Capabilities uint32
 	MaxGroups    [4]uint32
@@ -1496,7 +1545,7 @@ type OfpMeterBandStats struct {
 	ByteBandCount   uint64
 }
 
-type MeterStats struct {
+type OfpMeterStats struct {
 	MeterId       uint32
 	Length        uint16
 	Pad           [6]uint8
@@ -1570,26 +1619,11 @@ type OfpQueueGetConfigRequest struct {
 	Queue  []OfpPacketQueue
 }
 
-type OfpActionSetQueue struct {
-	Type    uint16
-	Length  uint16
-	QueueId uint32
-}
-
-type OfpQueueStatsRequest struct {
-	PortNo  uint32
-	QueueId uint32
-}
-
-type OfpQueueStats struct {
-	PortNo       uint32
-	QueueId      uint32
-	TxBytes      uint64
-	TxPackets    uint64
-	TxErrors     uint64
-	DurationSec  uint32
-	DurationNSec uint32
-}
+// type OfpActionSetQueue struct {
+// 	Type    uint16
+// 	Length  uint16
+// 	QueueId uint32
+// }
 
 type OfpRoleRequest struct {
 	Header       OfpHeader
