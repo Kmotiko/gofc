@@ -1,6 +1,8 @@
 gofc
 ==================
 
+[![Build Status](https://travis-ci.org/Kmotiko/gofc.svg?branch=master)](https://travis-ci.org/Kmotiko/gofc)
+
 
 ## What is this?
 
@@ -31,7 +33,18 @@ type SampleController struct {
 
 func (c *SampleController) HandlePacketIn(msg *ofp13.OfpPacketIn, dp *gofc.Datapath) {
 	// create flow mod
-	fm := ofp13.NewOfpFlowMod()
+	fm := ofp13.NewOfpFlowMod(
+		0,
+		0,
+		0,
+		ofp13.OFPFC_ADD,
+		0,
+		0,
+		0,
+		ofp13.OFP_NO_BUFFER,
+		ofp13.OFPP_ANY,
+		ofp13.OFPG_ANY,
+		ofp13.OFPFF_SEND_FLOW_REM)
 
 	// TODO: set match field and instructions.
 
@@ -64,6 +77,7 @@ func main() {
 ### Messages
 
  - [x] Hello
+ - [ ] SwitchConfig
  - [x] EchoRequest
  - [x] EchoReply
  - [x] SwitchFeatures
@@ -72,13 +86,13 @@ func main() {
  - [ ] PortMod
  - [x] FlowMod(Partial Support)
  - [ ] GroupMod
- - [ ] MeterMod
+ - [x] MeterMod
  - [ ] PacketOut
  - [ ] FlowRemoved
- - [x] OfpErroMsg
+ - [ ] OfpErroMsg
  - [ ] OfpExperimenterMsg
- - [ ] OfpMultipartRequest
- - [ ] OfpMultipartReply
+ - [x] OfpMultipartRequest
+ - [x] OfpMultipartReply
 
 
 ### Match Field
@@ -150,6 +164,29 @@ func main() {
  - [ ] Set Field
  - [ ] Experimenter Header
 
+### MeterBand
+
+ - [x] MeterBandDrop
+ - [ ] MeterBandDscpRemark
+ - [ ] MeterBandExperimenter
+
+### Multipart Message
+
+ - [x] DescStats
+ - [x] FlowStats
+ - [x] AggregateStats
+ - [ ] TableStats
+ - [ ] PortStats
+ - [ ] QueueStats
+ - [ ] GroupStats
+ - [ ] GroupDescStats
+ - [ ] GroupFeaturesStats
+ - [ ] MeterStats
+ - [ ] MeterConfigStats
+ - [ ] MeterFeaturesStats
+ - [ ] TableFeaturesStats
+ - [ ] PortDescStats
+ - [ ] ExperimenterStats
 
 ## License
 
