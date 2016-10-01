@@ -97,46 +97,46 @@ func main() {
 
 ### Match Field
 
- - [ ] In Port
- - [ ] In Phy Port
- - [ ] Metadata
+ - [x] In Port
+ - [x] In Phy Port
+ - [x] Metadata
  - [x] Eth Dst
- - [ ] Eth Src
- - [ ] Eth Type
- - [ ] Vlan ID
- - [ ] Vlan PCP
- - [ ] IP Dscp
- - [ ] IP ECN
- - [ ] IP Proto
- - [ ] IPv4 Src
- - [ ] IPv4 Dst
- - [ ] TCP Src
- - [ ] TCP Dst
- - [ ] UDP Src
- - [ ] UDP Dst
- - [ ] SCTP Src
- - [ ] SCTP Dst
- - [ ] ICMPv4 Type
- - [ ] ICMPv4 Code
- - [ ] Arp Op
- - [ ] Arp SPA
- - [ ] Arp TPA
- - [ ] Arp SHA
- - [ ] Arp THA
- - [ ] IPv6 Src
- - [ ] IPv6 Dst
- - [ ] IPv6 FLabel
- - [ ] IPv6 Type
- - [ ] IPv6 Code
- - [ ] IPv6 ND Target
- - [ ] IPv6 ND SLL
- - [ ] IPv6 ND TLL
- - [ ] MPLS Label
- - [ ] MPLS TC
- - [ ] MPLS BOS
- - [ ] PBB ISID
- - [ ] TUNNEL ID
- - [ ] IPv6 ExtraHeader
+ - [x] Eth Src
+ - [x] Eth Type
+ - [x] Vlan ID
+ - [x] Vlan PCP
+ - [x] IP Dscp
+ - [x] IP ECN
+ - [x] IP Proto
+ - [x] IPv4 Src
+ - [x] IPv4 Dst
+ - [x] TCP Src
+ - [x] TCP Dst
+ - [x] UDP Src
+ - [x] UDP Dst
+ - [x] SCTP Src
+ - [x] SCTP Dst
+ - [x] ICMPv4 Type
+ - [x] ICMPv4 Code
+ - [x] Arp Op
+ - [x] Arp SPA
+ - [x] Arp TPA
+ - [x] Arp SHA
+ - [x] Arp THA
+ - [x] IPv6 Src
+ - [x] IPv6 Dst
+ - [x] IPv6 FLabel
+ - [x] IPv6 Type
+ - [x] IPv6 Code
+ - [x] IPv6 ND Target
+ - [x] IPv6 ND SLL
+ - [x] IPv6 ND TLL
+ - [x] MPLS Label
+ - [x] MPLS TC
+ - [x] MPLS BOS
+ - [x] PBB ISID
+ - [x] TUNNEL ID
+ - [x] IPv6 ExtraHeader
 
 ### Instructions
 
