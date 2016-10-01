@@ -949,11 +949,11 @@ func (m *OxmInPort) Serialize() []byte {
 	packet := make([]byte, m.Size())
 
 	// serialize header
-	binary.BigEndian.PutUint32(packet[index:4], m.TlvHeader)
+	binary.BigEndian.PutUint32(packet[index:], m.TlvHeader)
 	index += 4
 
 	// serialize value
-	binary.BigEndian.PutUint32(packet[index:4], m.Value)
+	binary.BigEndian.PutUint32(packet[index:], m.Value)
 
 	return packet
 }
@@ -962,11 +962,11 @@ func (m *OxmInPort) Serialize() []byte {
 func (m *OxmInPort) Parse(packet []byte) {
 	index := 0
 	// parse header
-	m.TlvHeader = binary.BigEndian.Uint32(packet)
+	m.TlvHeader = binary.BigEndian.Uint32(packet[index:])
 	index += 4
 
 	// parse value
-	m.Value = binary.BigEndian.Uint32(packet)
+	m.Value = binary.BigEndian.Uint32(packet[index:])
 }
 
 // OxmClass
@@ -977,6 +977,11 @@ func (m *OxmInPort) OxmClass() uint32 {
 // OxmField
 func (m *OxmInPort) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+// OxmHasMask
+func (m *OxmInPort) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 // Length
@@ -1024,6 +1029,10 @@ func (m *OxmInPhyPort) OxmClass() uint32 {
 
 func (m *OxmInPhyPort) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmInPhyPort) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmInPhyPort) Length() uint32 {
@@ -1088,6 +1097,10 @@ func (m *OxmMetadata) OxmClass() uint32 {
 
 func (m *OxmMetadata) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmMetadata) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmMetadata) Length() uint32 {
@@ -1171,7 +1184,7 @@ func (m *OxmEth) Parse(packet []byte) {
 	addr := []byte{packet[index], packet[index+1], packet[index+2],
 		packet[index+3], packet[index+4], packet[index+5]}
 	m.Value = addr
-	index += 8
+	index += 6
 	if oxmHasMask(m.TlvHeader) == 1 {
 		mask := []byte{packet[index], packet[index+1], packet[index+2],
 			packet[index+3], packet[index+4], packet[index+5]}
@@ -1185,6 +1198,10 @@ func (m *OxmEth) OxmClass() uint32 {
 
 func (m *OxmEth) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmEth) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmEth) Length() uint32 {
@@ -1229,6 +1246,10 @@ func (m *OxmEthType) OxmClass() uint32 {
 
 func (m *OxmEthType) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmEthType) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmEthType) Length() uint32 {
@@ -1295,6 +1316,10 @@ func (m *OxmVlanVid) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmVlanVid) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmVlanVid) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -1338,6 +1363,10 @@ func (m *OxmVlanPcp) OxmClass() uint32 {
 
 func (m *OxmVlanPcp) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmVlanPcp) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmVlanPcp) Length() uint32 {
@@ -1385,6 +1414,10 @@ func (m *OxmIpDscp) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmIpDscp) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmIpDscp) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -1430,6 +1463,10 @@ func (m *OxmIpEcn) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmIpEcn) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmIpEcn) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -1473,6 +1510,10 @@ func (m *OxmIpProto) OxmClass() uint32 {
 
 func (m *OxmIpProto) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmIpProto) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmIpProto) Length() uint32 {
@@ -1531,7 +1572,7 @@ func (m *OxmIpv4) Serialize() []byte {
 	index += 4
 
 	for i := 0; i < 4; i++ {
-		packet[index] = m.Value[i]
+		packet[index] = m.Value[12+i]
 		index++
 	}
 
@@ -1574,6 +1615,10 @@ func (m *OxmIpv4) OxmClass() uint32 {
 
 func (m *OxmIpv4) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmIpv4) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmIpv4) Length() uint32 {
@@ -1623,6 +1668,10 @@ func (m *OxmTcp) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmTcp) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmTcp) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -1668,6 +1717,10 @@ func (m *OxmUdp) OxmClass() uint32 {
 
 func (m *OxmUdp) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmUdp) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmUdp) Length() uint32 {
@@ -1717,6 +1770,10 @@ func (m *OxmSctp) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmSctp) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmSctp) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -1759,6 +1816,10 @@ func (m *OxmIcmpType) OxmClass() uint32 {
 
 func (m *OxmIcmpType) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmIcmpType) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmIcmpType) Length() uint32 {
@@ -1805,6 +1866,10 @@ func (m *OxmIcmpCode) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmIcmpCode) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmIcmpCode) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -1849,6 +1914,10 @@ func (m *OxmArpOp) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmArpOp) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmArpOp) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -1861,13 +1930,13 @@ func NewOxmArpSpa(addr string) (*OxmArpPa, error) {
 	return NewOxmArpPa(OXM_OF_ARP_SPA, addr)
 }
 func NewOxmArpSpaW(addr string, mask int) (*OxmArpPa, error) {
-	return NewOxmArpPaW(OXM_OF_ARP_SPA, addr, mask)
+	return NewOxmArpPaW(OXM_OF_ARP_SPA_W, addr, mask)
 }
 func NewOxmArpTpa(addr string) (*OxmArpPa, error) {
 	return NewOxmArpPa(OXM_OF_ARP_TPA, addr)
 }
 func NewOxmArpTpaW(addr string, mask int) (*OxmArpPa, error) {
-	return NewOxmArpPaW(OXM_OF_ARP_TPA, addr, mask)
+	return NewOxmArpPaW(OXM_OF_ARP_TPA_W, addr, mask)
 }
 
 func NewOxmArpPa(header uint32, addr string) (*OxmArpPa, error) {
@@ -1903,7 +1972,7 @@ func (m *OxmArpPa) Serialize() []byte {
 	index += 4
 
 	for i := 0; i < 4; i++ {
-		packet[index] = m.Value[i]
+		packet[index] = m.Value[12+i]
 		index++
 	}
 
@@ -1945,6 +2014,10 @@ func (m *OxmArpPa) OxmClass() uint32 {
 
 func (m *OxmArpPa) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmArpPa) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmArpPa) Length() uint32 {
@@ -2009,6 +2082,10 @@ func (m *OxmArpHa) OxmClass() uint32 {
 
 func (m *OxmArpHa) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmArpHa) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmArpHa) Length() uint32 {
@@ -2080,7 +2157,7 @@ func (m *OxmIpv6) Serialize() []byte {
 
 	if oxmHasMask(m.TlvHeader) == 1 {
 		for i := 0; i < 16; i++ {
-			packet[index] = m.Value[i]
+			packet[index] = m.Mask[i]
 			index++
 		}
 	}
@@ -2119,6 +2196,10 @@ func (m *OxmIpv6) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmIpv6) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmIpv6) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -2154,6 +2235,7 @@ func (m *OxmIpv6FLabel) Serialize() []byte {
 	binary.BigEndian.PutUint32(packet[index:], m.TlvHeader)
 	index += 4
 	binary.BigEndian.PutUint32(packet[index:], m.Value)
+	index += 4
 
 	if oxmHasMask(m.TlvHeader) == 1 {
 		binary.BigEndian.PutUint32(packet[index:], m.Mask)
@@ -2180,6 +2262,10 @@ func (m *OxmIpv6FLabel) OxmClass() uint32 {
 
 func (m *OxmIpv6FLabel) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmIpv6FLabel) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmIpv6FLabel) Length() uint32 {
@@ -2228,6 +2314,10 @@ func (m *OxmIcmpv6Type) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmIcmpv6Type) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmIcmpv6Type) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -2272,6 +2362,10 @@ func (m *OxmIcmpv6Code) OxmClass() uint32 {
 
 func (m *OxmIcmpv6Code) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmIcmpv6Code) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmIcmpv6Code) Length() uint32 {
@@ -2333,6 +2427,10 @@ func (m *OxmIpv6NdTarget) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmIpv6NdTarget) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmIpv6NdTarget) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -2390,6 +2488,10 @@ func (m *OxmIpv6NdSll) OxmClass() uint32 {
 
 func (m *OxmIpv6NdSll) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmIpv6NdSll) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmIpv6NdSll) Length() uint32 {
@@ -2451,6 +2553,10 @@ func (m *OxmIpv6NdTll) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmIpv6NdTll) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmIpv6NdTll) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -2494,6 +2600,10 @@ func (m *OxmMplsLabel) OxmClass() uint32 {
 
 func (m *OxmMplsLabel) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmMplsLabel) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmMplsLabel) Length() uint32 {
@@ -2542,6 +2652,10 @@ func (m *OxmMplsTc) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmMplsTc) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmMplsTc) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -2588,6 +2702,10 @@ func (m *OxmMplsBos) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmMplsBos) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmMplsBos) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -2608,7 +2726,7 @@ func NewOxmPbbIsid(isid [3]uint8) *OxmPbbIsid {
 
 func NewOxmPbbIsidW(isid [3]uint8, mask [3]uint8) *OxmPbbIsid {
 	// create tlv header
-	header := OXM_OF_PBB_ISID
+	header := OXM_OF_PBB_ISID_W
 
 	// create field value
 	field := OxmPbbIsid{header, isid, mask}
@@ -2664,6 +2782,10 @@ func (m *OxmPbbIsid) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
 }
 
+func (m *OxmPbbIsid) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
+}
+
 func (m *OxmPbbIsid) Length() uint32 {
 	return oxmLength(m.TlvHeader)
 }
@@ -2703,7 +2825,7 @@ func (m *OxmTunnelId) Serialize() []byte {
 	index += 8
 
 	if oxmHasMask(m.TlvHeader) == 1 {
-		binary.BigEndian.PutUint64(packet[index:], m.Value)
+		binary.BigEndian.PutUint64(packet[index:], m.Mask)
 	}
 
 	return packet
@@ -2715,6 +2837,7 @@ func (m *OxmTunnelId) Parse(packet []byte) {
 	index += 4
 
 	m.Value = binary.BigEndian.Uint64(packet[index:])
+	index += 8
 
 	if oxmHasMask(m.TlvHeader) == 1 {
 		m.Mask = binary.BigEndian.Uint64(packet[index:])
@@ -2727,6 +2850,10 @@ func (m *OxmTunnelId) OxmClass() uint32 {
 
 func (m *OxmTunnelId) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmTunnelId) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmTunnelId) Length() uint32 {
@@ -2747,7 +2874,7 @@ func NewOxmIpv6ExtHeader(value uint16) *OxmIpv6ExtHeader {
 	return &field
 }
 
-func NewOxmIpv6ExtheaderW(value uint16, mask uint16) *OxmIpv6ExtHeader {
+func NewOxmIpv6ExtHeaderW(value uint16, mask uint16) *OxmIpv6ExtHeader {
 	// create tlv header
 	header := OXM_OF_IPV6_EXTHDR_W
 
@@ -2765,7 +2892,7 @@ func (m *OxmIpv6ExtHeader) Serialize() []byte {
 	index += 4
 
 	binary.BigEndian.PutUint16(packet[index:], m.Value)
-	index += 8
+	index += 2
 
 	if oxmHasMask(m.TlvHeader) == 1 {
 		binary.BigEndian.PutUint16(packet[index:], m.Value)
@@ -2792,6 +2919,10 @@ func (m *OxmIpv6ExtHeader) OxmClass() uint32 {
 
 func (m *OxmIpv6ExtHeader) OxmField() uint32 {
 	return oxmField(m.TlvHeader)
+}
+
+func (m *OxmIpv6ExtHeader) OxmHasMask() uint32 {
+	return oxmHasMask(m.TlvHeader)
 }
 
 func (m *OxmIpv6ExtHeader) Length() uint32 {

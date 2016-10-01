@@ -255,10 +255,10 @@ var OXM_OF_VLAN_PCP = oxmHeader(0x8000, OFPXMT_OFB_VLAN_PCP, 1)
 var OXM_OF_IP_DSCP = oxmHeader(0x8000, OFPXMT_OFB_IP_DSCP, 1)
 var OXM_OF_IP_ECN = oxmHeader(0x8000, OFPXMT_OFB_IP_ECN, 1)
 var OXM_OF_IP_PROTO = oxmHeader(0x8000, OFPXMT_OFB_IP_PROTO, 1)
-var OXM_OF_IPV4_SRC = oxmHeader(0x8000, OFPXMT_OFB_IPV4_SRC, 2)
-var OXM_OF_IPV4_SRC_W = oxmHeaderW(0x8000, OFPXMT_OFB_IPV4_SRC, 2)
-var OXM_OF_IPV4_DST = oxmHeader(0x8000, OFPXMT_OFB_IPV4_DST, 2)
-var OXM_OF_IPV4_DST_W = oxmHeaderW(0x8000, OFPXMT_OFB_IPV4_DST, 2)
+var OXM_OF_IPV4_SRC = oxmHeader(0x8000, OFPXMT_OFB_IPV4_SRC, 4)
+var OXM_OF_IPV4_SRC_W = oxmHeaderW(0x8000, OFPXMT_OFB_IPV4_SRC, 4)
+var OXM_OF_IPV4_DST = oxmHeader(0x8000, OFPXMT_OFB_IPV4_DST, 4)
+var OXM_OF_IPV4_DST_W = oxmHeaderW(0x8000, OFPXMT_OFB_IPV4_DST, 4)
 var OXM_OF_TCP_SRC = oxmHeader(0x8000, OFPXMT_OFB_TCP_SRC, 2)
 var OXM_OF_TCP_DST = oxmHeader(0x8000, OFPXMT_OFB_TCP_DST, 2)
 var OXM_OF_UDP_SRC = oxmHeader(0x8000, OFPXMT_OFB_UDP_SRC, 2)
@@ -818,6 +818,7 @@ type OxmField interface {
 	Parse([]byte)
 	OxmClass() uint32
 	OxmField() uint32
+	OxmHasMask() uint32
 	Length() uint32
 	Size() int
 }
@@ -1034,8 +1035,7 @@ type OxmIpv6ExtHeader struct {
 	Mask      uint16
 }
 
-type OfpOxmIpv6ExperimenterHeader struct {
-	TlvHeader    uint32
+type OfpOxmExperimenterHeader struct {
 	OxmHeader    uint32
 	Experimenter uint32
 }
