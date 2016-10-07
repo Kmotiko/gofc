@@ -2953,7 +2953,44 @@ func TestParseOxmMatchIpv6ExtHdrW(t *testing.T) {
 /*****************************************************/
 /* OfpGroupMod                                       */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeGroupMod(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x0f,       // Type
+		0x00, 0x30, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, // Command
+		0x01,                   // Type
+		0x00,                   // Padding
+		0x00, 0x00, 0x00, 0x01, // GroupId
+		0x00, 0x20, // Length
+		0x00, 0x00, // Weight
+		0x00, 0x00, 0x00, 0x01, // Watch Port
+		0xff, 0xff, 0xff, 0xff, // Watch Group
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, // Output
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x01, // Port
+		0xff, 0xe5, // Max Length
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	gm := NewOfpGroupMod(OFPGC_ADD, OFPGT_SELECT, 1)
+	bucket := NewOfpBucket(0, 1, OFPG_ANY)
+	bucket.Append(NewOfpActionOutput(1, OFPCML_MAX))
+	gm.Append(bucket)
+	actual := gm.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpGroupMod is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpPacketOut                                      */

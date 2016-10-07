@@ -350,12 +350,113 @@ func (m *OfpFlowMod) AppendInstruction(i OfpInstruction) {
 /*****************************************************/
 /* OfpBucket                                         */
 /*****************************************************/
-// TODO: implement
+func NewOfpBucket(weight uint16, watchPort uint32, watchGroup uint32) *OfpBucket {
+	bucket := new(OfpBucket)
+	bucket.Weight = weight
+	bucket.WatchPort = watchPort
+	bucket.WatchGroup = watchGroup
+	bucket.Actions = make([]OfpAction, 0)
+
+	return bucket
+}
+
+func (b *OfpBucket) Serialize() []byte {
+	packet := make([]byte, b.Size())
+	index := 0
+
+	b.Length = (uint16)(b.Size())
+	binary.BigEndian.PutUint16(packet[index:], b.Length)
+	index += 2
+
+	binary.BigEndian.PutUint16(packet[index:], b.Weight)
+	index += 2
+
+	binary.BigEndian.PutUint32(packet[index:], b.WatchPort)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], b.WatchGroup)
+	index += 8
+
+	for _, a := range b.Actions {
+		a_packet := a.Serialize()
+		copy(packet[index:], a_packet)
+		index += a.Size()
+	}
+
+	return packet
+}
+
+func (b *OfpBucket) Parse() {
+}
+
+func (b *OfpBucket) Size() int {
+	size := 16
+	for _, a := range b.Actions {
+		size += a.Size()
+	}
+
+	return size
+}
+
+func (b *OfpBucket) Append(action OfpAction) {
+	b.Actions = append(b.Actions, action)
+}
 
 /*****************************************************/
 /* OfpGroupMod                                       */
 /*****************************************************/
-// TODO: implement
+func NewOfpGroupMod(command uint16, t uint8, id uint32) *OfpGroupMod {
+	header := NewOfpHeader(OFPT_GROUP_MOD)
+	m := new(OfpGroupMod)
+	m.Header = header
+	m.Command = command
+	m.Type = t
+	m.GroupId = id
+	m.Buckets = make([]*OfpBucket, 0)
+	return m
+}
+
+func (m *OfpGroupMod) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	m.Header.Length = (uint16)(m.Size())
+	h_packet := m.Header.Serialize()
+
+	index := 0
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint16(packet[index:], m.Command)
+	index += 2
+
+	packet[index] = m.Type
+	index += 2
+
+	binary.BigEndian.PutUint32(packet[index:], m.GroupId)
+	index += 4
+
+	for _, b := range m.Buckets {
+		b_bucket := b.Serialize()
+		copy(packet[index:], b_bucket)
+		index += b.Size()
+	}
+
+	return packet
+}
+
+func (m *OfpGroupMod) Parse(packet []byte) {
+}
+
+func (m *OfpGroupMod) Size() int {
+	size := m.Header.Size() + 8
+	for _, b := range m.Buckets {
+		size += b.Size()
+	}
+	return size
+}
+
+func (m *OfpGroupMod) Append(bucket *OfpBucket) {
+	m.Buckets = append(m.Buckets, bucket)
+}
 
 /*****************************************************/
 /* OfpPacketOut                                      */
@@ -2967,6 +3068,7 @@ func (i OfpInstructionHeader) Size() int {
 func NewOfpInstructionGotoTable(id uint8) *OfpInstructionGotoTable {
 	header := NewOfpInstructionHeader(OFPIT_GOTO_TABLE)
 	i := new(OfpInstructionGotoTable)
+	i.Header = header
 	i.TableId = id
 	header.Length = uint16(i.Size())
 	return i

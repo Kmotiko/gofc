@@ -335,7 +335,7 @@ const OFP_NO_BUFFER = 0xffffffff
 
 // ofp_controller_max_len
 const (
-	OFPCML_MAX       = 0xff35
+	OFPCML_MAX       = 0xffe5
 	OFPCML_NO_BUFFER = 0xffff
 )
 
@@ -1205,7 +1205,7 @@ type OfpGroupMod struct {
 	Type    uint8
 	Pad     uint8
 	GroupId uint32
-	Buckets []OfpBucket
+	Buckets []*OfpBucket
 }
 
 type OfpPacketOut struct {
