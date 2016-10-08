@@ -2932,22 +2932,394 @@ func TestParseOxmMatchIpv6ExtHdrW(t *testing.T) {
 
 // Actions
 // OFPAT_OUTPUT
+func TestSerializeActionOutput(t *testing.T) {
+	expect := []byte{
+		0x00, 0x00, // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x01, // Port
+		0xff, 0xe5, // MaxLen
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionOutput(1, OFPCML_MAX)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionOutput is not equal to expected value.")
+	}
+}
+
 // OFPAT_COPY_TTL_OUT
+func TestSerializeActionTtlOut(t *testing.T) {
+	expect := []byte{
+		0x00, 0x0b, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionCopyTtlOut()
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionTtlOut is not equal to expected value.")
+	}
+}
+
 // OFPAT_COPY_TTL_IN
+func TestSerializeActionTtlIn(t *testing.T) {
+	expect := []byte{
+		0x00, 0x0c, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionCopyTtlIn()
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionTtlIn is not equal to expected value.")
+	}
+}
+
 // OFPAT_SET_MPLS_TTL
+func TestSerializeActionSetMplsTtl(t *testing.T) {
+	expect := []byte{
+		0x00, 0x0f, // Type
+		0x00, 0x08, // Length
+		0x40,             // MplsTtl
+		0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionSetMplsTtl(64)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionSetMplsTtl is not equal to expected value.")
+	}
+}
+
 // OFPAT_DEC_MPLS_TTL
+func TestSerializeActionDecMplsTtl(t *testing.T) {
+	expect := []byte{
+		0x00, 0x10, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionDecMplsTtl()
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionDecMplsTtl is not equal to expected value.")
+	}
+}
+
 // OFPAT_PUSH_VLAN
+func TestSerializeActionPushVlan(t *testing.T) {
+	expect := []byte{
+		0x00, 0x11, // Type
+		0x00, 0x08, // Length
+		0x81, 0x00, // EtherType
+		0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionPushVlan()
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionPushVlan is not equal to expected value.")
+	}
+}
+
 // OFPAT_POP_VLAN
+func TestSerializeActionPopVlan(t *testing.T) {
+	expect := []byte{
+		0x00, 0x12, // Type
+		0x00, 0x08, // Length
+		0x08, 0x00, // EtherType
+		0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionPopVlan(0x0800)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionPopVlan is not equal to expected value.")
+	}
+}
+
 // OFPAT_PUSH_MPLS
+func TestSerializeActionPushMpls(t *testing.T) {
+	expect := []byte{
+		0x00, 0x13, // Type
+		0x00, 0x08, // Length
+		0x88, 0x47, // EtherType
+		0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionPushMpls()
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionPushMpls is not equal to expected value.")
+	}
+}
+
 // OFPAT_POP_MPLS
+func TestSerializeActionPopMpls(t *testing.T) {
+	expect := []byte{
+		0x00, 0x14, // Type
+		0x00, 0x08, // Length
+		0x08, 0x00, // EtherType
+		0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionPopMpls(0x0800)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionPopMpls is not equal to expected value.")
+	}
+}
+
 // OFPAT_SET_QUEUE
+func TestSerializeActionSetQueue(t *testing.T) {
+	expect := []byte{
+		0x00, 0x15, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x01, // QueueId
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionSetQueue(1)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionSetQueue is not equal to expected value.")
+	}
+}
+
 // OFPAT_GROUP
+func TestSerializeActionGroup(t *testing.T) {
+	expect := []byte{
+		0x00, 0x16, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x01, // GroupId
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionGroup(1)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionGroup is not equal to expected value.")
+	}
+}
+
 // OFPAT_SET_NW_TTL
+func TestSerializeActionSetNwTtl(t *testing.T) {
+	expect := []byte{
+		0x00, 0x17, // Type
+		0x00, 0x08, // Length
+		0x40,             // TTL
+		0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionSetNwTtl(64)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionSetNwTtl is not equal to expected value.")
+	}
+}
+
 // OFPAT_DEC_NW_TTL
+func TestSerializeActionDecNwTtl(t *testing.T) {
+	expect := []byte{
+		0x00, 0x18, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionDecNwTtl()
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionDecNwTtl is not equal to expected value.")
+	}
+}
+
 // OFPAT_SET_FIELD
+func TestSerializeActionSetField(t *testing.T) {
+	expect := []byte{
+		0x00, 0x19, // Type
+		0x00, 0x10, // Length
+		0x80, 0x00, // OFPXMC_OPENFLOW_BASIC
+		0x06,                               // OFPXMT_OFB_ETH_DST, HasMask is false
+		0x06,                               // Length
+		0x11, 0x22, 0x33, 0x44, 0x55, 0x66, // Value
+		0x00, 0x00, // Padding
+
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	seteth, _ := NewOxmEthDst("11:22:33:44:55:66")
+	action := NewOfpActionSetField(seteth)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionSetField is not equal to expected value.")
+	}
+}
+
 // OFPAT_PUSH_PBB
+func TestSerializeActionPushPbb(t *testing.T) {
+	expect := []byte{
+		0x00, 0x1a, // Type
+		0x00, 0x08, // Length
+		0x88, 0xe7, // EtherType
+		0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionPushPbb()
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionPushPbb is not equal to expected value.")
+	}
+}
+
 // OFPAT_POP_PBB
+func TestSerializeActionPopPbb(t *testing.T) {
+	expect := []byte{
+		0x00, 0x1b, // Type
+		0x00, 0x08, // Length
+		0x08, 0x00, // EtherType
+		0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionPopPbb(0x0800)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionPopPbb is not equal to expected value.")
+	}
+}
+
 // OFPAT_EXPERIMENTER
+func TestSerializeActionExperimenter(t *testing.T) {
+	expect := []byte{
+		0xff, 0xff, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // ExperimenterId
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionExperimenter(0)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionExperimenter is not equal to expected value.")
+	}
+}
 
 // TODO : test all other ofp13 messages
 /*****************************************************/

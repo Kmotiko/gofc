@@ -3719,7 +3719,7 @@ func (a *OfpActionSetQueue) OfpActionType() uint16 {
  */
 func NewOfpActionSetNwTtl(ttl uint8) *OfpActionSetNwTtl {
 	action := new(OfpActionSetNwTtl)
-	header := NewOfpActionHeader(OFPAT_SET_NW_TTL, 6)
+	header := NewOfpActionHeader(OFPAT_SET_NW_TTL, 8)
 	action.ActionHeader = header
 	action.NwTtl = ttl
 
@@ -3757,7 +3757,7 @@ func (a *OfpActionSetNwTtl) OfpActionType() uint16 {
  */
 func NewOfpActionDecNwTtl() *OfpActionDecNwTtl {
 	action := new(OfpActionDecNwTtl)
-	header := NewOfpActionHeader(OFPAT_DEC_NW_TTL, 6)
+	header := NewOfpActionHeader(OFPAT_DEC_NW_TTL, 8)
 	action.ActionHeader = header
 	return action
 }

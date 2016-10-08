@@ -85,7 +85,7 @@ func main() {
  - [ ] TableMod
  - [ ] PortMod
  - [x] FlowMod(Partial Support)
- - [ ] GroupMod
+ - [x] GroupMod
  - [x] MeterMod
  - [ ] PacketOut
  - [ ] FlowRemoved
@@ -148,20 +148,20 @@ func main() {
 ### Actions
 
  - [x] Output
- - [ ] Copy TTL OUT
- - [ ] Copy TTL IN
- - [ ] Set MPLS TTL
- - [ ] Dec  MPLS TTL
- - [ ] PUSH VLAN
- - [ ] PUSH MPLS
- - [ ] PUSH PBB
- - [ ] POP VLAN
- - [ ] POP MPLS
- - [ ] POP PBB
- - [ ] Group
- - [ ] Set NW TTL
- - [ ] Dec NW TTL
- - [ ] Set Field
+ - [x] Copy TTL OUT
+ - [x] Copy TTL IN
+ - [x] Set MPLS TTL
+ - [x] Dec  MPLS TTL
+ - [x] PUSH VLAN
+ - [x] PUSH MPLS
+ - [x] PUSH PBB
+ - [x] POP VLAN
+ - [x] POP MPLS
+ - [x] POP PBB
+ - [x] Group
+ - [x] Set NW TTL
+ - [x] Dec NW TTL
+ - [x] Set Field
  - [ ] Experimenter Header
 
 ### MeterBand
