@@ -2923,12 +2923,242 @@ func TestParseOxmMatchIpv6ExtHdrW(t *testing.T) {
 
 // Instructions
 // OFPIT_GOTO_TABLE
+func TestSerializeInstructionGotoTable(t *testing.T) {
+	expect := []byte{
+		0x00, 0x01, // Type
+		0x00, 0x08, // Length
+		0x01,             // TableId
+		0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	inst := NewOfpInstructionGotoTable(1)
+	actual := inst.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpInstructionGotoTable is not equal to expected value.")
+	}
+}
+
+func TestParseInstructionGotoTable(t *testing.T) {
+	packet := []byte{
+		0x00, 0x01, // Type
+		0x00, 0x08, // Length
+		0x01,             // TableId
+		0x00, 0x00, 0x00, // Padding
+	}
+
+	inst := NewOfpInstructionGotoTable(0)
+	inst.Parse(packet)
+	if inst.InstructionType() != OFPIT_GOTO_TABLE ||
+		inst.Header.Length != 8 ||
+		inst.TableId != 1 {
+		t.Log("Type           : ", inst.InstructionType())
+		t.Log("Length         : ", inst.Header.Length)
+		t.Log("TableId        : ", inst.TableId)
+		t.Error("Parsed value of OfpInstructionGotoTable is invalid.")
+	}
+}
+
 // OFPIT_WRITE_METADATA
+func TestSerializeInstructionWriteMetadata(t *testing.T) {
+	expect := []byte{
+		0x00, 0x02, // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // Metadata
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // MetadataMask
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	inst := NewOfpInstructionWriteMetadata(1, 0xffffffffffffffff)
+	actual := inst.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpInstructionWriteMetadata is not equal to expected value.")
+	}
+}
+
+func TestParseInstructionWriteMetadata(t *testing.T) {
+	packet := []byte{
+		0x00, 0x02, // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // Metadata
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // MetadataMask
+	}
+
+	inst := NewOfpInstructionWriteMetadata(0, 0)
+	inst.Parse(packet)
+	if inst.InstructionType() != OFPIT_WRITE_METADATA ||
+		inst.Header.Length != 24 ||
+		inst.Metadata != 1 ||
+		inst.MetadataMask != 0xffffffffffffffff {
+		t.Log("Type           : ", inst.InstructionType())
+		t.Log("Length         : ", inst.Header.Length)
+		t.Log("Metadata       : ", inst.Metadata)
+		t.Log("MetadataMask   : ", inst.MetadataMask)
+		t.Error("Parsed value of OfpInstructionWriteMetadata is invalid.")
+	}
+}
+
 // OFPIT_WRITE_ACTIONS
 // OFPIT_APPLY_ACTIONS
 // OFPIT_CLEAR_ACTIONS
+func TestSerializeInstructionActions(t *testing.T) {
+	expect := []byte{
+		0x00, 0x04, // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x01, // Port
+		0xff, 0xe5, // MaxLen
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	action := NewOfpActionOutput(1, 0xffe5)
+	inst := NewOfpInstructionActions(OFPIT_APPLY_ACTIONS)
+	inst.Append(action)
+	actual := inst.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpInstructionActions is not equal to expected value.")
+	}
+}
+
+func TestParseInstructionActions(t *testing.T) {
+	packet := []byte{
+		0x00, 0x04, // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x01, // Port
+		0xff, 0xe5, // MaxLen
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
+	inst := NewOfpInstructionActions(OFPIT_WRITE_ACTIONS)
+	inst.Parse(packet)
+	if inst.InstructionType() != OFPIT_APPLY_ACTIONS ||
+		inst.Header.Length != 24 {
+		t.Log("Type           : ", inst.InstructionType())
+		t.Log("Length         : ", inst.Header.Length)
+		t.Error("Parsed value of OfpInstructionActions is invalid.")
+	}
+
+	if action, ok := inst.Actions[0].(*OfpActionOutput); ok == true {
+		if action.ActionHeader.Type != OFPAT_OUTPUT ||
+			action.ActionHeader.Length != 16 ||
+			action.Port != 1 ||
+			action.MaxLen != 0xffe5 {
+			t.Error("Parsed value of OfpInstructionActions is invalid.")
+		}
+	} else {
+		t.Log("Type           : ", action.ActionHeader.Type)
+		t.Log("Length         : ", action.ActionHeader.Length)
+		t.Error("Parsed value of OfpInstructionActions is invalid.")
+	}
+}
+
 // OFPIT_METER
+func TestSerializeInstructionMeter(t *testing.T) {
+	expect := []byte{
+		0x00, 0x06, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x01, // MeterId
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	inst := NewOfpInstructionMeter(1)
+	actual := inst.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpInstructionMeter is not equal to expected value.")
+	}
+}
+
+func TestParseInstructionMeter(t *testing.T) {
+	packet := []byte{
+		0x00, 0x06, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x01, // MeterId
+	}
+
+	inst := NewOfpInstructionMeter(0)
+	inst.Parse(packet)
+	if inst.InstructionType() != OFPIT_METER ||
+		inst.Header.Length != 8 ||
+		inst.MeterId != 1 {
+		t.Log("Type           : ", inst.InstructionType())
+		t.Log("Length         : ", inst.Header.Length)
+		t.Log("MeterId        : ", inst.MeterId)
+		t.Error("Parsed value of OfpInstructionMeter is invalid.")
+	}
+}
+
 // OFPIT_EXPERIMENTER
+func TestSerializeInstructionExperimenter(t *testing.T) {
+	expect := []byte{
+		0xff, 0xff, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // MeterId
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	inst := NewOfpInstructionExperimenter(0)
+	actual := inst.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpInstructionExperimenter is not equal to expected value.")
+	}
+}
+
+func TestParseInstructionExperimenter(t *testing.T) {
+	packet := []byte{
+		0xff, 0xff, // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Experimenter
+	}
+
+	inst := NewOfpInstructionExperimenter(0)
+	inst.Parse(packet)
+	if inst.InstructionType() != OFPIT_EXPERIMENTER ||
+		inst.Header.Length != 8 ||
+		inst.Experimenter != 0 {
+		t.Log("Type           : ", inst.InstructionType())
+		t.Log("Length         : ", inst.Header.Length)
+		t.Log("Experimenter   : ", inst.Experimenter)
+		t.Error("Parsed value of OfpInstructionExperimenter is invalid.")
+	}
+}
 
 // Actions
 // OFPAT_OUTPUT

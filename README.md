@@ -84,7 +84,7 @@ func main() {
  - [x] PacketIn
  - [ ] TableMod
  - [ ] PortMod
- - [x] FlowMod(Partial Support)
+ - [x] FlowMod
  - [x] GroupMod
  - [x] MeterMod
  - [ ] PacketOut
@@ -140,10 +140,10 @@ func main() {
 
 ### Instructions
 
- - [ ] Go to table
- - [ ] Write Metadata
+ - [x] Go to table
+ - [x] Write Metadata
  - [x] Action
- - [ ] Meter
+ - [x] Meter
 
 ### Actions
 

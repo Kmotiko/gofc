@@ -3067,10 +3067,10 @@ func (i OfpInstructionHeader) Size() int {
  */
 func NewOfpInstructionGotoTable(id uint8) *OfpInstructionGotoTable {
 	header := NewOfpInstructionHeader(OFPIT_GOTO_TABLE)
+	header.Length = uint16(8)
 	i := new(OfpInstructionGotoTable)
 	i.Header = header
 	i.TableId = id
-	header.Length = uint16(i.Size())
 	return i
 }
 
@@ -3107,6 +3107,7 @@ func (i *OfpInstructionGotoTable) InstructionType() uint16 {
 func NewOfpInstructionWriteMetadata(metadata uint64, mask uint64) *OfpInstructionWriteMetadata {
 	i := new(OfpInstructionWriteMetadata)
 	header := NewOfpInstructionHeader(OFPIT_WRITE_METADATA)
+	header.Length = 24
 	i.Header = header
 	i.Metadata = metadata
 	i.MetadataMask = mask
@@ -3115,7 +3116,7 @@ func NewOfpInstructionWriteMetadata(metadata uint64, mask uint64) *OfpInstructio
 }
 
 func (i *OfpInstructionWriteMetadata) Serialize() []byte {
-	packet := make([]byte, i.Header.Size())
+	packet := make([]byte, i.Size())
 	index := 0
 	h_packet := i.Header.Serialize()
 	copy(packet[index:], h_packet)
@@ -3134,7 +3135,7 @@ func (i *OfpInstructionWriteMetadata) Parse(packet []byte) {
 	index += i.Header.Size()
 	index += 4
 	i.Metadata = binary.BigEndian.Uint64(packet[index:])
-	index += 4
+	index += 8
 	i.MetadataMask = binary.BigEndian.Uint64(packet[index:])
 }
 
@@ -3300,6 +3301,90 @@ func (i *OfpInstructionActions) InstructionType() uint16 {
 
 func (i *OfpInstructionActions) Append(a OfpAction) {
 	i.Actions = append(i.Actions, a)
+}
+
+/*
+ * OfpInstructionMeter
+ */
+func NewOfpInstructionMeter(
+	meterId uint32) *OfpInstructionMeter {
+	i := new(OfpInstructionMeter)
+	header := NewOfpInstructionHeader(OFPIT_METER)
+	header.Length = 8
+	i.Header = header
+	i.MeterId = meterId
+	return i
+}
+
+func (i *OfpInstructionMeter) Serialize() []byte {
+	packet := make([]byte, i.Size())
+	index := 0
+	h_packet := i.Header.Serialize()
+
+	copy(packet[index:], h_packet)
+	index += i.Header.Size()
+
+	binary.BigEndian.PutUint32(packet[index:], i.MeterId)
+
+	return packet
+}
+
+func (i *OfpInstructionMeter) Parse(packet []byte) {
+	index := 0
+	i.Header.Parse(packet[index:])
+	index += i.Header.Size()
+
+	i.MeterId = binary.BigEndian.Uint32(packet[index:])
+}
+
+func (i *OfpInstructionMeter) Size() int {
+	return 8
+}
+
+func (i *OfpInstructionMeter) InstructionType() uint16 {
+	return i.Header.Type
+}
+
+/*
+ * OfpInstructionExperimenter
+ */
+func NewOfpInstructionExperimenter(
+	experimenter uint32) *OfpInstructionExperimenter {
+	i := new(OfpInstructionExperimenter)
+	header := NewOfpInstructionHeader(OFPIT_EXPERIMENTER)
+	header.Length = 8
+	i.Header = header
+	i.Experimenter = experimenter
+	return i
+}
+
+func (i *OfpInstructionExperimenter) Serialize() []byte {
+	packet := make([]byte, i.Size())
+	index := 0
+	h_packet := i.Header.Serialize()
+
+	copy(packet[index:], h_packet)
+	index += i.Header.Size()
+
+	binary.BigEndian.PutUint32(packet[index:], i.Experimenter)
+
+	return packet
+}
+
+func (i *OfpInstructionExperimenter) Parse(packet []byte) {
+	index := 0
+	i.Header.Parse(packet[index:])
+	index += i.Header.Size()
+
+	i.Experimenter = binary.BigEndian.Uint32(packet[index:])
+}
+
+func (i *OfpInstructionExperimenter) Size() int {
+	return 8
+}
+
+func (i *OfpInstructionExperimenter) InstructionType() uint16 {
+	return i.Header.Type
 }
 
 /*****************************************************/
