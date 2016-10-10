@@ -77,22 +77,35 @@ func main() {
 ### Messages
 
  - [x] Hello
- - [ ] SwitchConfig
- - [x] EchoRequest
- - [x] EchoReply
- - [x] SwitchFeatures
- - [x] PacketIn
- - [ ] TableMod
- - [ ] PortMod
- - [x] FlowMod
- - [x] GroupMod
- - [x] MeterMod
- - [ ] PacketOut
- - [ ] FlowRemoved
  - [ ] OfpErroMsg
  - [ ] OfpExperimenterMsg
- - [x] OfpMultipartRequest
- - [x] OfpMultipartReply
+ - [x] EchoRequest
+ - [x] EchoReply
+ - [x] FeaturesRequest
+ - [x] FeaturesReply
+ - [ ] GetConfigRequest
+ - [ ] GetConfigReply
+ - [ ] SetConfig
+ - [x] PacketIn
+ - [ ] FlowRemoved
+ - [ ] PortStatus
+ - [x] PacketOut
+ - [x] FlowMod
+ - [x] GroupMod
+ - [ ] PortMod
+ - [ ] TableMod
+ - [x] MultipartRequest
+ - [x] MultipartReply
+ - [ ] BarrierRequest
+ - [ ] BarrierReply
+ - [ ] QueueGetConfigRequest
+ - [ ] QueueGetConfigReply
+ - [ ] RoleRequest
+ - [ ] RoleReply
+ - [ ] GetAsyncRequest
+ - [ ] GetAsyncReply
+ - [ ] SetAsync
+ - [x] MeterMod
 
 
 ### Match Field

@@ -3597,7 +3597,39 @@ func TestSerializeGroupMod(t *testing.T) {
 /*****************************************************/
 /* OfpPacketOut                                      */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializePacketOut(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x0d,       // Type
+		0x00, 0x28, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0xff, 0xff, 0xff, 0xff, // BufferId
+		0x00, 0x00, 0x00, 0x01, // InPort
+		0x00, 0x01, // ActionLen
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, // OFPAT_OUTPUT
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x01, // Port
+		0xff, 0xe5, // Max Length
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	actions := make([]OfpAction, 0)
+	action := NewOfpActionOutput(1, OFPCML_MAX)
+	actions = append(actions, action)
+	m := NewOfpPacketOut(0xffffffff, 1, actions, nil)
+	actual := m.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpPacketOut is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpMeterMod                                       */

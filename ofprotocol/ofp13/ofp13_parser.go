@@ -461,7 +461,80 @@ func (m *OfpGroupMod) Append(bucket *OfpBucket) {
 /*****************************************************/
 /* OfpPacketOut                                      */
 /*****************************************************/
-// TODO: implement
+func NewOfpPacketOut(
+	bufferId uint32,
+	inPort uint32,
+	actions []OfpAction,
+	data []byte) *OfpPacketOut {
+	header := NewOfpHeader(OFPT_PACKET_OUT)
+	m := new(OfpPacketOut)
+	m.Header = header
+	m.BufferId = bufferId
+	m.InPort = inPort
+	if actions != nil {
+		m.ActionLen = (uint16)(len(actions))
+		m.Actions = actions
+	} else {
+		m.ActionLen = 0
+		m.Actions = make([]OfpAction, 0)
+	}
+	m.Data = data
+	return m
+}
+
+func (m *OfpPacketOut) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	index := 0
+
+	m.Header.Length = (uint16)(m.Size())
+	h_packet := m.Header.Serialize()
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint32(packet[index:], m.BufferId)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], m.InPort)
+	index += 4
+
+	actionLen := 0
+	aSize := 0
+	for _, a := range m.Actions {
+		actionLen += 1
+		a_packet := a.Serialize()
+		copy(packet[(index+8+aSize):], a_packet)
+		aSize += len(a_packet)
+	}
+
+	m.ActionLen = (uint16)(actionLen)
+	binary.BigEndian.PutUint16(packet[index:], m.ActionLen)
+	index += (8 + aSize)
+
+	if m.Data != nil {
+		copy(packet[index:], m.Data)
+	}
+	return packet
+}
+
+func (m *OfpPacketOut) Parse(packet []byte) {
+}
+
+func (m *OfpPacketOut) Size() int {
+	size := 24
+	for _, a := range m.Actions {
+		size += a.Size()
+	}
+	if m.Data != nil {
+		size += len(m.Data)
+	}
+
+	return size
+}
+
+func (m *OfpPacketOut) AppendAction(a OfpAction) {
+	m.Acctions = append(m.Acctions, a)
+	m.AcctionLen += 1
+}
 
 /*****************************************************/
 /* OfpMeterBandHeader                                */

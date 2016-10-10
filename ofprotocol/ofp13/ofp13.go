@@ -1214,7 +1214,8 @@ type OfpPacketOut struct {
 	InPort    uint32
 	ActionLen uint16
 	Pad       [6]uint8
-	Actions   []OfpActionHeader
+	Actions   []OfpAction
+	Data      []byte
 }
 
 type OfpPacketIn struct {
