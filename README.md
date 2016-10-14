@@ -77,15 +77,15 @@ func main() {
 ### Messages
 
  - [x] Hello
- - [ ] OfpErroMsg
+ - [x] OfpErroMsg
  - [ ] OfpExperimenterMsg
  - [x] EchoRequest
  - [x] EchoReply
  - [x] FeaturesRequest
  - [x] FeaturesReply
- - [ ] GetConfigRequest
- - [ ] GetConfigReply
- - [ ] SetConfig
+ - [x] GetConfigRequest
+ - [x] GetConfigReply
+ - [x] SetConfig
  - [x] PacketIn
  - [ ] FlowRemoved
  - [ ] PortStatus

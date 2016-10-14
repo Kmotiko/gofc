@@ -138,12 +138,81 @@ func TestParseEchoReply(t *testing.T) {
 	}
 }
 
-// TODO : test all other ofp13 messages
-
 /*****************************************************/
 /* OfpSwitchConfig                                   */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeGetConfig(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x07,       // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	req := NewOfpGetConfig()
+	actual := req.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpGetConfig is not equal to expected value.")
+	}
+}
+
+func TestSerializeSetConfig(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x09,       // Type
+		0x00, 0x0c, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x01, // Flags
+		0x00, 0x01, // MissSendLen
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	req := NewOfpSetConfig(1, 1)
+	actual := req.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpSetConfig is not equal to expected value.")
+	}
+}
+
+func TestParseSwitchConfig(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x09,       // Type
+		0x00, 0x0c, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x01, // Flags
+		0x00, 0x01, // MissSendLen
+	}
+
+	rep := newOfpSwitchConfig(OFPT_SET_CONFIG, 1, 1)
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 9 ||
+		rep.Header.Length != 12 || rep.Header.Xid != 0 ||
+		rep.Flags != 1 || rep.MissSendLen != 1 {
+		t.Log("Version        : ", rep.Header.Version)
+		t.Log("Type           : ", rep.Header.Type)
+		t.Log("Length         : ", rep.Header.Length)
+		t.Log("Transaction ID : ", rep.Header.Xid)
+		t.Log("Flags          : ", rep.Flags)
+		t.Log("MissSendLen    : ", rep.MissSendLen)
+		t.Error("Parsed value of OfpSwitchConfig is invalid.")
+	}
+}
+
+// TODO : test all other ofp13 messages
 
 /*****************************************************/
 /* OfpTableMod                                       */
@@ -3683,6 +3752,36 @@ func TestSerializeMeterModRequest(t *testing.T) {
 /* OfpErrorMsg                                       */
 /*****************************************************/
 // TODO: implements and test
+func TestParseErrorMsg(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x01,       // Type
+		0x00, 0x20, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x01, // Type
+		0x00, 0x01, // Code
+		0x04,       //
+		0x0f,       //
+		0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, // Data
+	}
+
+	err := NewOfpErrorMsg()
+	err.Parse(packet)
+	if err.Header.Version != 4 || err.Header.Type != OFPT_ERROR ||
+		err.Header.Length != 32 || err.Header.Xid != 0 ||
+		err.Type != OFPET_BAD_REQUEST || err.Code != OFPBRC_BAD_TYPE {
+		t.Log("Version        : ", err.Header.Version)
+		t.Log("Type           : ", err.Header.Type)
+		t.Log("Length         : ", err.Header.Length)
+		t.Log("Transaction ID : ", err.Header.Xid)
+		t.Error("Parsed value of OfpErrorMsg is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpErrorExperimenterMsg                           */

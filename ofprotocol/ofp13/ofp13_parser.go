@@ -11,14 +11,17 @@ func Parse(packet []byte) (msg OFMessage) {
 	case OFPT_HELLO:
 		msg = new(OfpHello)
 		msg.Parse(packet)
-	case OFPT_FEATURES_REPLY:
-		msg = NewOfpFeaturesReply()
+	case OFPT_ERROR:
+		msg = new(OfpErrorMsg)
 		msg.Parse(packet)
 	case OFPT_ECHO_REQUEST:
 		msg = NewOfpEchoRequest()
 		msg.Parse(packet)
 	case OFPT_ECHO_REPLY:
 		msg = NewOfpEchoReply()
+		msg.Parse(packet)
+	case OFPT_FEATURES_REPLY:
+		msg = NewOfpFeaturesReply()
 		msg.Parse(packet)
 	case OFPT_PACKET_IN:
 		msg = NewOfpPacketIn()
@@ -167,6 +170,55 @@ func (m *OfpHello) Size() int {
 /*****************************************************/
 /* OfpSwitchConfig                                   */
 /*****************************************************/
+func NewOfpGetConfig() *OfpHeader {
+	m := NewOfpHeader(OFPT_GET_CONFIG_REQUEST)
+	return &m
+}
+
+func NewOfpSetConfig(flags uint16, missSendLen uint16) *OfpSwitchConfig {
+	return newOfpSwitchConfig(OFPT_SET_CONFIG, flags, missSendLen)
+}
+
+func newOfpSwitchConfig(t uint8, flags uint16, missSendLen uint16) *OfpSwitchConfig {
+	h := NewOfpHeader(t)
+	m := new(OfpSwitchConfig)
+	h.Length += 4
+	m.Header = h
+	m.Flags = flags
+	m.MissSendLen = missSendLen
+	return m
+}
+
+func (m *OfpSwitchConfig) Serialize() []byte {
+	packet := make([]byte, m.Size())
+	index := 0
+
+	h_packet := m.Header.Serialize()
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint16(packet[index:], m.Flags)
+	index += 2
+
+	binary.BigEndian.PutUint16(packet[index:], m.MissSendLen)
+
+	return packet
+}
+
+func (m *OfpSwitchConfig) Parse(packet []byte) {
+	index := 0
+	m.Header.Parse(packet[index:])
+	index += m.Header.Size()
+
+	m.Flags = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	m.MissSendLen = binary.BigEndian.Uint16(packet[index:])
+}
+
+func (m *OfpSwitchConfig) Size() int {
+	return m.Header.Size() + 4
+}
 
 /*****************************************************/
 /* OfpTableMod                                       */
@@ -532,8 +584,8 @@ func (m *OfpPacketOut) Size() int {
 }
 
 func (m *OfpPacketOut) AppendAction(a OfpAction) {
-	m.Acctions = append(m.Acctions, a)
-	m.AcctionLen += 1
+	m.Actions = append(m.Actions, a)
+	m.ActionLen += 1
 }
 
 /*****************************************************/
@@ -4241,8 +4293,9 @@ func (a *OfpActionExperimenter) OfpActionType() uint16 {
 /*****************************************************/
 func NewOfpErrorMsg() *OfpErrorMsg {
 	header := NewOfpHeader(OFPT_ERROR)
-	header.Type = OFPT_ERROR
-	return nil
+	m := new(OfpErrorMsg)
+	m.Header = header
+	return m
 }
 
 func (m *OfpErrorMsg) Serialize() []byte {
