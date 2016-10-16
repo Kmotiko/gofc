@@ -87,7 +87,7 @@ func main() {
  - [x] GetConfigReply
  - [x] SetConfig
  - [x] PacketIn
- - [ ] FlowRemoved
+ - [x] FlowRemoved
  - [ ] PortStatus
  - [x] PacketOut
  - [x] FlowMod

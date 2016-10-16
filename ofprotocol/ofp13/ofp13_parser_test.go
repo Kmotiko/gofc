@@ -3746,12 +3746,64 @@ func TestSerializeMeterModRequest(t *testing.T) {
 /*****************************************************/
 /* OfpFlowRemoved                                    */
 /*****************************************************/
-// TODO: implements and test
+func TestParseFlowRemoved(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x0b,       // Type
+		0x00, 0x40, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Cookie
+		0x00, 0x01, // Priority
+		0x02,                   // Reason
+		0x01,                   // TableId
+		0x00, 0x00, 0x00, 0x00, // DurationSec
+		0x00, 0x00, 0x00, 0x00, // DurationNSec
+		0x00, 0x00, // IdleTimeout
+		0x00, 0x00, // HardTimeout
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // PacketCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // ByteCount
+		0x00, 0x01, // Type
+		0x00, 0x0e, // Length
+		0x80, 0x00, // OFPXMC_OPENFLOW_BASIC
+		0x06,                               // OFPXMT_OFB_ETH_DST, HasMask is false
+		0x06,                               // Length
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Value
+		0x00, 0x00, // Padding
+	}
+
+	m := NewOfpFlowRemoved()
+	m.Parse(packet)
+	if m.Header.Version != 4 || m.Header.Type != OFPT_FLOW_REMOVED ||
+		m.Header.Length != 64 || m.Header.Xid != 0 ||
+		m.Cookie != 0 || m.Priority != 1 ||
+		m.Reason != OFPRR_DELETE || m.TableId != 1 ||
+		m.DurationSec != 0 || m.DurationNSec != 0 ||
+		m.IdleTimeout != 0 || m.HardTimeout != 0 ||
+		m.PacketCount != 0 || m.ByteCount != 0 ||
+		m.Match.Type != OFPMT_OXM || m.Match.Length != 14 {
+		t.Log("Version        : ", m.Header.Version)
+		t.Log("Type           : ", m.Header.Type)
+		t.Log("Length         : ", m.Header.Length)
+		t.Log("Transaction ID : ", m.Header.Xid)
+		t.Log("Cookie         : ", m.Cookie)
+		t.Log("Priority       : ", m.Priority)
+		t.Log("Reason         : ", m.Reason)
+		t.Log("TableId        : ", m.TableId)
+		t.Log("DurationSec    : ", m.DurationSec)
+		t.Log("DurationNSec   : ", m.DurationNSec)
+		t.Log("IdleTimeout    : ", m.IdleTimeout)
+		t.Log("HardTimeout    : ", m.HardTimeout)
+		t.Log("PacketCount    : ", m.PacketCount)
+		t.Log("ByteCount      : ", m.ByteCount)
+		t.Log("MatchType      : ", m.Match.Type)
+		t.Log("MatchLength    : ", m.Match.Length)
+		t.Error("Parsed value of OfpFlowRemoved is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpErrorMsg                                       */
 /*****************************************************/
-// TODO: implements and test
 func TestParseErrorMsg(t *testing.T) {
 	packet := []byte{
 		0x04,       // Version

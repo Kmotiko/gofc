@@ -837,7 +837,62 @@ func (m *OfpPacketIn) Size() int {
 /*****************************************************/
 /* OfpFlowRemoved                                    */
 /*****************************************************/
-// TODO: implement
+func NewOfpFlowRemoved() *OfpFlowRemoved {
+	header := NewOfpHeader(OFPT_FLOW_REMOVED)
+	m := new(OfpFlowRemoved)
+	m.Header = header
+	return m
+}
+
+func (m *OfpFlowRemoved) Serialize() []byte {
+	return nil
+}
+
+func (m *OfpFlowRemoved) Parse(packet []byte) {
+	index := 0
+
+	m.Header.Parse(packet)
+	index += m.Header.Size()
+
+	m.Cookie = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	m.Priority = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	m.Reason = packet[index]
+	index += 1
+
+	m.TableId = packet[index]
+	index += 1
+
+	m.DurationSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	m.DurationNSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	m.IdleTimeout = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	m.HardTimeout = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	m.PacketCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	m.ByteCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	m.Match = NewOfpMatch()
+	m.Match.Parse(packet[index:])
+
+	return
+}
+
+func (m *OfpFlowRemoved) Size() int {
+	return m.Header.Size() + 40 + m.Match.Size()
+}
 
 /*****************************************************/
 /* OfpMatch                                          */
