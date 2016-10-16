@@ -5,6 +5,24 @@ import (
 )
 
 /*****************************************************/
+/* OfpErrorMsg                                       */
+/*****************************************************/
+type Of13ErrorMsgHandler interface {
+	HandleErrorMsg(*ofp13.OfpErrorMsg, *Datapath)
+}
+
+/*****************************************************/
+/* Echo Message                                      */
+/*****************************************************/
+type Of13EchoRequestHandler interface {
+	HandleEchoRequest(*ofp13.OfpHeader, *Datapath)
+}
+
+type Of13EchoReplyHandler interface {
+	HandleEchoReply(*ofp13.OfpHeader, *Datapath)
+}
+
+/*****************************************************/
 /* OfpSwitchFeatures                                 */
 /*****************************************************/
 type Of13SwitchFeaturesHandler interface {
@@ -12,10 +30,24 @@ type Of13SwitchFeaturesHandler interface {
 }
 
 /*****************************************************/
+/* OfpSwitchConfig                                   */
+/*****************************************************/
+type Of13SwitchConfigHandler interface {
+	HandleSwitchConfig(*ofp13.OfpSwitchConfig, *Datapath)
+}
+
+/*****************************************************/
 /* OfpPacketIn                                       */
 /*****************************************************/
 type Of13PacketInHandler interface {
 	HandlePacketIn(*ofp13.OfpPacketIn, *Datapath)
+}
+
+/*****************************************************/
+/* OfpFlowRemoved                                    */
+/*****************************************************/
+type Of13FlowRemovedHandler interface {
+	HandleFlowRemoved(*ofp13.OfpFlowRemoved, *Datapath)
 }
 
 /*****************************************************/
@@ -37,22 +69,4 @@ type Of13FlowStatsReplyHandler interface {
 /*****************************************************/
 type Of13AggregateStatsReplyHandler interface {
 	HandleAggregateStatsReply(*ofp13.OfpMultipartReply, *Datapath)
-}
-
-/*****************************************************/
-/* OfpErrorMsg                                       */
-/*****************************************************/
-type Of13ErroMsgHandler interface {
-	HandleErroMsg(*ofp13.OfpErrorMsg, *Datapath)
-}
-
-/*****************************************************/
-/* Echo Message                                      */
-/*****************************************************/
-type Of13EchoRequestHandler interface {
-	HandleEchoRequest(*ofp13.OfpHeader, *Datapath)
-}
-
-type Of13EchoReplyHandler interface {
-	HandleEchoReply(*ofp13.OfpHeader, *Datapath)
 }

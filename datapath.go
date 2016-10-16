@@ -100,16 +100,33 @@ func (dp *Datapath) handlePacket(buf []byte) {
 			default:
 			}
 
+		// Recv Error
+		case *ofp13.OfpErrorMsg:
+			if obj, ok := app.(Of13ErrorMsgHandler); ok {
+				obj.HandleErrorMsg(msgi, dp)
+			}
+
 		// case SwitchFeatures
 		case *ofp13.OfpSwitchFeatures:
 			if obj, ok := app.(Of13SwitchFeaturesHandler); ok {
 				obj.HandleSwitchFeatures(msgi, dp)
 			}
 
+		// case GetConfigReply
+		case *ofp13.OfpSwitchConfig:
+			if obj, ok := app.(Of13SwitchConfigHandler); ok {
+				obj.HandleSwitchConfig(msgi, dp)
+			}
 		// case PacketIn
 		case *ofp13.OfpPacketIn:
 			if obj, ok := app.(Of13PacketInHandler); ok {
 				obj.HandlePacketIn(msgi, dp)
+			}
+
+		// case FlowRemoved
+		case *ofp13.OfpFlowRemoved:
+			if obj, ok := app.(Of13FlowRemovedHandler); ok {
+				obj.HandleFlowRemoved(msgi, dp)
 			}
 
 		// case MultipartReply
@@ -153,10 +170,6 @@ func (dp *Datapath) handlePacket(buf []byte) {
 				// TODO: implement
 			default:
 			}
-
-		// Recv Error
-		case *ofp13.OfpErrorMsg:
-			fmt.Println("ErrMsg")
 
 		default:
 			fmt.Println("UnSupport Message")
