@@ -315,6 +315,61 @@ func (m *OfpPortStatus) Size() int {
 /*****************************************************/
 /* OfpPortMod                                        */
 /*****************************************************/
+func NewOfpPortMod(
+	portNo uint32,
+	hwAddr string,
+	config uint32,
+	mask uint32,
+	advertise uint32) (*OfpPortMod, error) {
+	header := NewOfpHeader(OFPT_PORT_MOD)
+	header.Length = 40
+	m := new(OfpPortMod)
+	m.Header = header
+	m.PortNo = portNo
+	addr, err := net.ParseMAC(hwAddr)
+	if err != nil {
+		return nil, err
+	}
+	m.HwAddr = addr
+	m.Config = config
+	m.Mask = mask
+	m.Advertise = advertise
+	return m, nil
+}
+
+func (m *OfpPortMod) Serialize() []byte {
+	index := 0
+	packet := make([]byte, m.Size())
+
+	h_packet := m.Header.Serialize()
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint32(packet[index:], m.PortNo)
+	index += 8
+
+	copy(packet[index:], m.HwAddr)
+	index += 8
+
+	binary.BigEndian.PutUint32(packet[index:], m.Config)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], m.Mask)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], m.Advertise)
+	index += 4
+
+	return packet
+}
+
+func (m *OfpPortMod) Parse(packet []byte) {
+	return
+}
+
+func (m *OfpPortMod) Size() int {
+	return 40
+}
 
 /*****************************************************/
 /* OfpFeaturesRequest                                */

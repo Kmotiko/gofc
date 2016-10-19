@@ -92,7 +92,7 @@ func main() {
  - [x] PacketOut
  - [x] FlowMod
  - [x] GroupMod
- - [ ] PortMod
+ - [x] PortMod
  - [ ] TableMod
  - [x] MultipartRequest
  - [x] MultipartReply

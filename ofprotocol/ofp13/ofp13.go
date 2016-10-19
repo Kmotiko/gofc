@@ -797,15 +797,16 @@ type OfpPortStatus struct {
 }
 
 type OfpPortMod struct {
-	Header    OfpHeader
-	PortNo    uint32
-	Pad       [4]uint8
-	HwAddr    [OFP_ETH_ALEN]byte //6
-	Pad2      [2]uint8
+	Header OfpHeader
+	PortNo uint32
+	// Pad       [4]uint8
+	// HwAddr [OFP_ETH_ALEN]byte //6
+	HwAddr net.HardwareAddr //6
+	// Pad2      [2]uint8
 	Config    uint32
 	Mask      uint32
 	Advertise uint32
-	pad3      [4]uint8
+	// pad3      [4]uint8
 }
 
 type OfpMatch struct {

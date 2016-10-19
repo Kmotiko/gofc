@@ -285,7 +285,40 @@ func TestParsePortStatus(t *testing.T) {
 /*****************************************************/
 /* OfpPortMod                                        */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializePortMod(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x10,       // Type
+		0x00, 0x28, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x01, // PortNo
+		0x00, 0x00, 0x00, 0x00, //Padding
+		0x11, 0x22, 0x33, 0x44, 0x55, 0x66, // HwAddr
+		0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, // Config
+		0x00, 0x00, 0x00, 0x60, // Mask
+		0x00, 0x00, 0x00, 0x03, // Advertise
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	req, _ := NewOfpPortMod(
+		1,
+		"11:22:33:44:55:66",
+		0,
+		(OFPPC_NO_FWD | OFPPC_NO_PACKET_IN),
+		(OFPPF_10MB_HD | OFPPF_10MB_FD))
+	actual := req.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpPortMod is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpFeaturesRequest                                */
