@@ -227,6 +227,90 @@ func (m *OfpSwitchConfig) Size() int {
 /*****************************************************/
 /* OfpPortStatus                                     */
 /*****************************************************/
+func newOfpPort() *OfpPort {
+	return new(OfpPort)
+}
+
+func (p *OfpPort) Serialize() []byte {
+	return nil
+}
+
+func (p *OfpPort) Parse(packet []byte) {
+	index := 0
+	p.PortNo = binary.BigEndian.Uint32(packet[index:])
+	index += 8
+
+	addr := []byte{packet[index], packet[index+1], packet[index+2],
+		packet[index+3], packet[index+4], packet[index+5]}
+	p.HwAddr = addr
+	index += 8
+
+	name := make([]byte, 16)
+	copy(name, packet[index:])
+	p.Name = name
+	index += 16
+
+	p.Config = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	p.State = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	p.Curr = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	p.Advertised = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	p.Supported = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	p.Peer = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	p.CurrSpeed = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	p.MaxSpeed = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	return
+}
+
+func (p *OfpPort) Size() int {
+	return 0
+}
+
+func NewOfpPortStatus() *OfpPortStatus {
+	header := NewOfpHeader(OFPT_PORT_STATUS)
+	header.Length += 72
+	m := new(OfpPortStatus)
+	m.Header = header
+
+	return m
+}
+
+func (m *OfpPortStatus) Serialize() []byte {
+	return nil
+}
+
+func (m *OfpPortStatus) Parse(packet []byte) {
+	index := 0
+	m.Header.Parse(packet[index:])
+	index += m.Header.Size()
+
+	m.Reason = packet[index]
+	index += 8
+
+	m.Desc = newOfpPort()
+	m.Desc.Parse(packet[index:])
+
+	return
+}
+
+func (m *OfpPortStatus) Size() int {
+	return 80
+}
 
 /*****************************************************/
 /* OfpPortMod                                        */

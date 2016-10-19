@@ -222,7 +222,65 @@ func TestParseSwitchConfig(t *testing.T) {
 /*****************************************************/
 /* OfpPortStatus                                     */
 /*****************************************************/
-// TODO: implements and test
+func TestParsePortStatus(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x0c,       // Type
+		0x00, 0x50, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00,                                     // Reason
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x000, 0x01, // PortNo
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x11, 0x22, 0x33, 0x44, 0x55, 0x66, // HwAddr
+		0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, // Name
+		0x00, 0x00, 0x00, 0x20, // Config
+		0x00, 0x00, 0x00, 0x04, // State
+		0x00, 0x00, 0x00, 0x01, // Curr
+		0x00, 0x00, 0x00, 0x01, // Advertised
+		0x00, 0x00, 0x00, 0x01, // Supported
+		0x00, 0x00, 0x00, 0x01, // Peer
+		0x00, 0x00, 0x01, 0x00, // CurrSpeed
+		0x00, 0x00, 0x01, 0x00, // MaxSpeed
+	}
+
+	ps := NewOfpPortStatus()
+	ps.Parse(packet)
+	if ps.Header.Version != 4 || ps.Header.Type != OFPT_PORT_STATUS ||
+		ps.Header.Length != 80 || ps.Header.Xid != 0 ||
+		ps.Reason != OFPPR_ADD ||
+		ps.Desc.PortNo != 1 ||
+		ps.Desc.HwAddr.String() != "11:22:33:44:55:66" ||
+		ps.Desc.Config != OFPPC_NO_FWD ||
+		ps.Desc.State != OFPPS_LIVE ||
+		ps.Desc.Curr != OFPPF_10MB_HD ||
+		ps.Desc.Advertised != OFPPF_10MB_HD ||
+		ps.Desc.Supported != OFPPF_10MB_HD ||
+		ps.Desc.Peer != OFPPF_10MB_HD ||
+		ps.Desc.CurrSpeed != 256 ||
+		ps.Desc.MaxSpeed != 256 {
+		t.Log("Version        : ", ps.Header.Version)
+		t.Log("Type           : ", ps.Header.Type)
+		t.Log("Length         : ", ps.Header.Length)
+		t.Log("Transaction ID : ", ps.Header.Xid)
+		t.Log("Reason         : ", ps.Reason)
+		t.Log("PortNo         : ", ps.Desc.PortNo)
+		t.Log("HwAddr         : ", ps.Desc.HwAddr.String())
+		t.Log("Config         : ", ps.Desc.Config)
+		t.Log("State          : ", ps.Desc.State)
+		t.Log("Curr           : ", ps.Desc.Curr)
+		t.Log("Advertised     : ", ps.Desc.Advertised)
+		t.Log("Supported      : ", ps.Desc.Supported)
+		t.Log("Peer           : ", ps.Desc.Peer)
+		t.Log("CurrSpeed      : ", ps.Desc.CurrSpeed)
+		t.Log("MaxSpeed       : ", ps.Desc.MaxSpeed)
+		t.Error("Parsed value of OfpPortStatus is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpPortMod                                        */

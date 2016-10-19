@@ -129,7 +129,7 @@ const (
 
 // ofp_port_reason
 const (
-	OFPPAR_ADD = iota
+	OFPPR_ADD = iota
 	OFPPR_DELETE
 	OFPPR_MODIFY
 )
@@ -759,19 +759,21 @@ type OfpTableMod struct {
 }
 
 type OfpPort struct {
-	PortNo    uint32
-	Pad       [4]uint8
-	HwAddr    [OFP_ETH_ALEN]uint8 //6
-	Pad2      [2]uint8
-	Name      [OFP_MAX_PORT_NAME_LEN]byte //16
-	Config    uint32
-	State     uint32
-	Curr      uint32
-	Advertied uint32
-	Supported uint32
-	Peer      uint32
-	CurrSpeed uint32
-	MaxSpped  uint32
+	PortNo uint32
+	// Pad    [4]uint8
+	// HwAddr    [OFP_ETH_ALEN]uint8 //6
+	HwAddr net.HardwareAddr
+	// Pad2   [2]uint8
+	// Name      [OFP_MAX_PORT_NAME_LEN]byte //16
+	Name       []byte //16
+	Config     uint32
+	State      uint32
+	Curr       uint32
+	Advertised uint32
+	Supported  uint32
+	Peer       uint32
+	CurrSpeed  uint32
+	MaxSpeed   uint32
 }
 
 ///
@@ -790,8 +792,8 @@ type OfpSwitchFeatures struct {
 type OfpPortStatus struct {
 	Header OfpHeader
 	Reason uint8
-	Pad    [7]uint8
-	Desc   OfpPort
+	// Pad    [7]uint8
+	Desc *OfpPort
 }
 
 type OfpPortMod struct {
