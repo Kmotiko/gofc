@@ -112,6 +112,12 @@ func (dp *Datapath) handlePacket(buf []byte) {
 				obj.HandleErrorMsg(msgi, dp)
 			}
 
+		// Recv RoleReply
+		case *ofp13.OfpRole:
+			if obj, ok := app.(Of13RoleReplyHandler); ok {
+				obj.HandleRoleReply(msgi, dp)
+			}
+
 		// Recv GetAsyncReply
 		case *ofp13.OfpAsyncConfig:
 			if obj, ok := app.(Of13AsyncConfigHandler); ok {

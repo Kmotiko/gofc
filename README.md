@@ -100,8 +100,8 @@ func main() {
  - [x] BarrierReply
  - [ ] QueueGetConfigRequest
  - [ ] QueueGetConfigReply
- - [ ] RoleRequest
- - [ ] RoleReply
+ - [x] RoleRequest
+ - [x] RoleReply
  - [x] GetAsyncRequest
  - [x] GetAsyncReply
  - [x] SetAsync

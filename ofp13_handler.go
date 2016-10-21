@@ -79,6 +79,13 @@ type Of13AggregateStatsReplyHandler interface {
 }
 
 /*****************************************************/
+/* RoleReply Message                                 */
+/*****************************************************/
+type Of13RoleReplyHandler interface {
+	HandleRoleReply(*ofp13.OfpRole, *Datapath)
+}
+
+/*****************************************************/
 /* GetAsyncReply Message                             */
 /*****************************************************/
 type Of13AsyncConfigHandler interface {

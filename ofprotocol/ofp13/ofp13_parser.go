@@ -5513,7 +5513,59 @@ func (mp *OfpMeterFeatures) MPType() uint16 {
 /*****************************************************/
 /* OfpRoleRequest                                    */
 /*****************************************************/
-// TODO: implement
+func NewOfpRoleRequest(role uint32, generationId uint64) *OfpRole {
+	m := newOfpRole(OFPT_ROLE_REQUEST, role, generationId)
+	return m
+}
+
+func NewOfpRoleReply() *OfpRole {
+	m := newOfpRole(OFPT_ROLE_REPLY, 0, 0)
+	return m
+}
+
+func newOfpRole(t uint8, role uint32, generationId uint64) *OfpRole {
+	header := NewOfpHeader(t)
+	header.Length = 24
+	m := new(OfpRole)
+	m.Header = header
+	m.Role = role
+	m.GenerationId = generationId
+
+	return m
+}
+
+func (m *OfpRole) Serialize() []byte {
+	index := 0
+	packet := make([]byte, m.Size())
+
+	h_packet := m.Header.Serialize()
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint32(packet[index:], m.Role)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], m.GenerationId)
+
+	return packet
+}
+
+func (m *OfpRole) Parse(packet []byte) {
+	index := 0
+	m.Header.Parse(packet[index:])
+	index += m.Header.Size()
+
+	m.Role = binary.BigEndian.Uint32(packet[index:])
+	index += 8
+
+	m.GenerationId = binary.BigEndian.Uint64(packet[index:])
+
+	return
+}
+
+func (m *OfpRole) Size() int {
+	return 24
+}
 
 /*****************************************************/
 /* OfpAsyncConfig                                    */

@@ -1609,18 +1609,24 @@ type OfpQueuePropExperimenter struct {
 }
 
 type OfpPacketQueue struct {
-	QueueId    uint32
-	Port       uint32
-	Length     uint16
-	Pad        [6]uint8
+	QueueId uint32
+	Port    uint32
+	Length  uint16
+	// Pad        [6]uint8
 	Properties []OfpQueuePropHeader
 }
 
 type OfpQueueGetConfigRequest struct {
 	Header OfpHeader
 	Port   uint32
-	Pad    [4]uint8
-	Queue  []OfpPacketQueue
+	// Pad    [4]uint8
+}
+
+type OfpQueueGetConfigReply struct {
+	Header OfpHeader
+	Port   uint32
+	// Pad    [4]uint8
+	Queue []OfpPacketQueue
 }
 
 // type OfpActionSetQueue struct {
@@ -1629,10 +1635,10 @@ type OfpQueueGetConfigRequest struct {
 // 	QueueId uint32
 // }
 
-type OfpRoleRequest struct {
-	Header       OfpHeader
-	Role         uint32
-	Pad          [4]uint8
+type OfpRole struct {
+	Header OfpHeader
+	Role   uint32
+	// Pad          [4]uint8
 	GenerationId uint64
 }
 

@@ -4740,12 +4740,61 @@ func TestParseAgregateStatsReply(t *testing.T) {
 /*****************************************************/
 /* OfpRoleRequest                                    */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeRoleRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x18,       // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x02, // Role
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // GenerationId
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	m := NewOfpRoleRequest(OFPCT_ROLE_MASTER, 0)
+	actual := m.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpRoleRequest is not equal to expected value.")
+	}
+}
+
+func TestParseRoleReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x19,       // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x02, // Role
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // GenerationId
+	}
+
+	m := NewOfpRoleReply()
+	m.Parse(packet)
+	if m.Header.Version != 4 || m.Header.Type != 25 ||
+		m.Header.Length != 24 || m.Header.Xid != 0 ||
+		m.Role != OFPCT_ROLE_MASTER ||
+		m.GenerationId != 0 {
+		t.Log("Version        : ", m.Header.Version)
+		t.Log("Type           : ", m.Header.Type)
+		t.Log("Length         : ", m.Header.Length)
+		t.Log("Transaction ID : ", m.Header.Xid)
+		t.Log("Role           : ", m.Role)
+		t.Log("GenerationId   : ", m.GenerationId)
+		t.Error("Parsed value of OfpRoleReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpAsyncConfig                                    */
 /*****************************************************/
-// TODO: implements and test
 func TestSerializeGetAsyncRequest(t *testing.T) {
 	expect := []byte{
 		0x04,       // Version
