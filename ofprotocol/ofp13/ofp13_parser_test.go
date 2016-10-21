@@ -139,6 +139,51 @@ func TestParseEchoReply(t *testing.T) {
 }
 
 /*****************************************************/
+/* Barrier Message                                   */
+/*****************************************************/
+func TestSerializeBarrierRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x14,       // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	m := NewOfpBarrierRequest()
+	actual := m.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpBarrierRequest is not equal to expected value.")
+	}
+}
+
+func TestParseBarrierReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x15,       // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+	}
+
+	m := NewOfpBarrierReply()
+	m.Parse(packet)
+	if m.Version != 4 || m.Type != 21 ||
+		m.Length != 8 || m.Xid != 0 {
+		t.Log("Version        : ", m.Version)
+		t.Log("Type           : ", m.Type)
+		t.Log("Length         : ", m.Length)
+		t.Log("Transaction ID : ", m.Xid)
+		t.Error("Parsed value of OfpBarrierReply is invalid.")
+	}
+}
+
+/*****************************************************/
 /* OfpSwitchConfig                                   */
 /*****************************************************/
 func TestSerializeGetConfig(t *testing.T) {
@@ -217,7 +262,30 @@ func TestParseSwitchConfig(t *testing.T) {
 /*****************************************************/
 /* OfpTableMod                                       */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableMod(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x11,       // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x01,             // PortNo
+		0x00, 0x00, 0x00, //Padding
+		0x00, 0x00, 0x00, 0x03, // Config
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	req := NewOfpTableMod(1, OFPTC_DEPRECATED_MASK)
+	actual := req.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableMod is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpPortStatus                                     */
@@ -4678,3 +4746,93 @@ func TestParseAgregateStatsReply(t *testing.T) {
 /* OfpAsyncConfig                                    */
 /*****************************************************/
 // TODO: implements and test
+func TestSerializeGetAsyncRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x1a,       // Type
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	m := NewOfpGetAsyncRequest()
+	actual := m.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpGetAsyncRequest is not equal to expected value.")
+	}
+}
+
+func TestParseGetAsyncReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x1b,       // Type
+		0x00, 0x20, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x04, // PacketInMask
+		0x00, 0x00, 0x00, 0x00, // PacketInMask
+		0x00, 0x00, 0x00, 0x01, // PortStatusMask
+		0x00, 0x00, 0x00, 0x00, // PortStatusMask
+		0x00, 0x00, 0x00, 0x01, // FlowRemovedMask
+		0x00, 0x00, 0x00, 0x00, // FlowRemovedMask
+	}
+
+	m := NewOfpGetAsyncReply()
+	m.Parse(packet)
+	if m.Header.Version != 4 || m.Header.Type != 27 ||
+		m.Header.Length != 32 || m.Header.Xid != 0 ||
+		m.PacketInMask[0] != 4 ||
+		m.PacketInMask[1] != 0 ||
+		m.PortStatusMask[0] != 1 ||
+		m.PortStatusMask[1] != 0 ||
+		m.FlowRemovedMask[0] != 1 ||
+		m.FlowRemovedMask[1] != 0 {
+		t.Log("Version        : ", m.Header.Version)
+		t.Log("Type           : ", m.Header.Type)
+		t.Log("Length         : ", m.Header.Length)
+		t.Log("Transaction ID : ", m.Header.Xid)
+		t.Log("PacketInMask   : ", m.PacketInMask[0])
+		t.Log("PacketInMask   : ", m.PacketInMask[1])
+		t.Log("PortStatusMask : ", m.PortStatusMask[0])
+		t.Log("PortStatusMask : ", m.PortStatusMask[1])
+		t.Log("FlowRemovedMask: ", m.FlowRemovedMask[0])
+		t.Log("FlowRemovedMask: ", m.FlowRemovedMask[1])
+		t.Error("Parsed value of OfpGetAsyncReply is invalid.")
+	}
+}
+
+func TestSerializeSetAsync(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x1c,       // Type
+		0x00, 0x20, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x04, // PacketInMask
+		0x00, 0x00, 0x00, 0x00, // PacketInMask
+		0x00, 0x00, 0x00, 0x01, // PortStatusMask
+		0x00, 0x00, 0x00, 0x00, // PortStatusMask
+		0x00, 0x00, 0x00, 0x01, // FlowRemovedMask
+		0x00, 0x00, 0x00, 0x00, // FlowRemovedMask
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	m := NewOfpSetAsync(
+		[2]uint32{4, 0},
+		[2]uint32{1, 0},
+		[2]uint32{1, 0})
+	actual := m.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpSetAsync is not equal to expected value.")
+	}
+}

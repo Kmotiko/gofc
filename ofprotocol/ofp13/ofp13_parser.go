@@ -90,6 +90,19 @@ func NewOfpEchoReply() *OfpHeader {
 }
 
 /*****************************************************/
+/* BarrierRequest Message                            */
+/*****************************************************/
+func NewOfpBarrierRequest() *OfpHeader {
+	barrier := NewOfpHeader(OFPT_BARRIER_REQUEST)
+	return &barrier
+}
+
+func NewOfpBarrierReply() *OfpHeader {
+	barrier := NewOfpHeader(OFPT_BARRIER_REPLY)
+	return &barrier
+}
+
+/*****************************************************/
 /* OfpHelloElemHeader                                */
 /*****************************************************/
 func NewOfpHelloElemHeader() *OfpHelloElemHeader {
@@ -223,6 +236,40 @@ func (m *OfpSwitchConfig) Size() int {
 /*****************************************************/
 /* OfpTableMod                                       */
 /*****************************************************/
+func NewOfpTableMod(tableId uint8, config uint32) *OfpTableMod {
+	header := NewOfpHeader(OFPT_TABLE_MOD)
+	header.Length = 16
+	m := new(OfpTableMod)
+	m.Header = header
+	m.TableId = tableId
+	m.Config = config
+
+	return m
+}
+
+func (m *OfpTableMod) Serialize() []byte {
+	index := 0
+	packet := make([]byte, m.Size())
+
+	h_packet := m.Header.Serialize()
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	packet[index] = m.TableId
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], m.Config)
+
+	return packet
+}
+
+func (m *OfpTableMod) Parse() {
+	return
+}
+
+func (m *OfpTableMod) Size() int {
+	return 16
+}
 
 /*****************************************************/
 /* OfpPortStatus                                     */
@@ -5471,4 +5518,85 @@ func (mp *OfpMeterFeatures) MPType() uint16 {
 /*****************************************************/
 /* OfpAsyncConfig                                    */
 /*****************************************************/
-// TODO: implement
+func NewOfpGetAsyncRequest() *OfpHeader {
+	req := NewOfpHeader(OFPT_GET_ASYNC_REQUEST)
+	return &req
+}
+
+func NewOfpGetAsyncReply() *OfpAsyncConfig {
+	rep := newOfpAsyncConfig(OFPT_GET_ASYNC_REPLY)
+	return rep
+}
+
+func NewOfpSetAsync(
+	packetInMask [2]uint32,
+	portStatusMask [2]uint32,
+	flowRemovedMask [2]uint32) *OfpAsyncConfig {
+	m := newOfpAsyncConfig(OFPT_SET_ASYNC)
+	m.PacketInMask = packetInMask
+	m.PortStatusMask = portStatusMask
+	m.FlowRemovedMask = flowRemovedMask
+	return m
+}
+
+func newOfpAsyncConfig(t uint8) *OfpAsyncConfig {
+	header := NewOfpHeader(t)
+	header.Length = 32
+	m := new(OfpAsyncConfig)
+	m.Header = header
+
+	return m
+}
+
+func (m *OfpAsyncConfig) Serialize() []byte {
+	index := 0
+	packet := make([]byte, m.Size())
+
+	h_packet := m.Header.Serialize()
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint32(packet[index:], m.PacketInMask[0])
+	index += 4
+	binary.BigEndian.PutUint32(packet[index:], m.PacketInMask[1])
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], m.PortStatusMask[0])
+	index += 4
+	binary.BigEndian.PutUint32(packet[index:], m.PortStatusMask[1])
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], m.FlowRemovedMask[0])
+	index += 4
+	binary.BigEndian.PutUint32(packet[index:], m.FlowRemovedMask[1])
+	index += 4
+
+	return packet
+}
+
+func (m *OfpAsyncConfig) Parse(packet []byte) {
+	index := 0
+	m.Header.Parse(packet[index:])
+	index += m.Header.Size()
+
+	m.PacketInMask[0] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+	m.PacketInMask[1] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	m.PortStatusMask[0] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+	m.PortStatusMask[1] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	m.FlowRemovedMask[0] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+	m.FlowRemovedMask[1] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	return
+}
+
+func (m *OfpAsyncConfig) Size() int {
+	return 32
+}

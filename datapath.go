@@ -97,6 +97,12 @@ func (dp *Datapath) handlePacket(buf []byte) {
 				if obj, ok := app.(Of13EchoReplyHandler); ok {
 					obj.HandleEchoReply(msgi, dp)
 				}
+
+			// handle Barrier reply
+			case ofp13.OFPT_BARRIER_REPLY:
+				if obj, ok := app.(Of13BarrierReplyHandler); ok {
+					obj.HandleBarrierReply(msgi, dp)
+
 			default:
 			}
 
@@ -104,6 +110,12 @@ func (dp *Datapath) handlePacket(buf []byte) {
 		case *ofp13.OfpErrorMsg:
 			if obj, ok := app.(Of13ErrorMsgHandler); ok {
 				obj.HandleErrorMsg(msgi, dp)
+			}
+
+		// Recv GetAsyncReply
+		case *ofp13.OfpAsyncConfig:
+			if obj, ok := app.(Of13AsyncConfigHandler); ok {
+				obj.HandleAsyncConfig(msgi, dp)
 			}
 
 		// case SwitchFeatures

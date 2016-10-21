@@ -93,18 +93,18 @@ func main() {
  - [x] FlowMod
  - [x] GroupMod
  - [x] PortMod
- - [ ] TableMod
+ - [x] TableMod
  - [x] MultipartRequest
  - [x] MultipartReply
- - [ ] BarrierRequest
- - [ ] BarrierReply
+ - [x] BarrierRequest
+ - [x] BarrierReply
  - [ ] QueueGetConfigRequest
  - [ ] QueueGetConfigReply
  - [ ] RoleRequest
  - [ ] RoleReply
- - [ ] GetAsyncRequest
- - [ ] GetAsyncReply
- - [ ] SetAsync
+ - [x] GetAsyncRequest
+ - [x] GetAsyncReply
+ - [x] SetAsync
  - [x] MeterMod
 
 

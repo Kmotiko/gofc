@@ -52,7 +52,7 @@ const (
 	OFPT_TABLE_MOD
 	OFPT_MULTIPART_REQUEST
 	OFPT_MULTIPART_REPLY
-	OFPT_BQRRIER_REQUEST
+	OFPT_BARRIER_REQUEST
 	OFPT_BARRIER_REPLY
 	OFPT_QUEUE_GET_CONFIG_REQUEST
 	OFPT_QUEUE_GET_CONFIG_REPLY
@@ -1640,5 +1640,5 @@ type OfpAsyncConfig struct {
 	Header          OfpHeader
 	PacketInMask    [2]uint32
 	PortStatusMask  [2]uint32
-	FloqRemovedMask [2]uint32
+	FlowRemovedMask [2]uint32
 }

@@ -23,6 +23,13 @@ type Of13EchoReplyHandler interface {
 }
 
 /*****************************************************/
+/* BarrierReply Message                              */
+/*****************************************************/
+type Of13BarrierReplyHandler interface {
+	HandleBarrierReply(*ofp13.OfpHeader, *Datapath)
+}
+
+/*****************************************************/
 /* OfpSwitchFeatures                                 */
 /*****************************************************/
 type Of13SwitchFeaturesHandler interface {
@@ -69,4 +76,11 @@ type Of13FlowStatsReplyHandler interface {
 /*****************************************************/
 type Of13AggregateStatsReplyHandler interface {
 	HandleAggregateStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
+/* GetAsyncReply Message                             */
+/*****************************************************/
+type Of13AsyncConfigHandler interface {
+	HandleAsyncConfig(*ofp13.OfpAsyncConfig, *Datapath)
 }
