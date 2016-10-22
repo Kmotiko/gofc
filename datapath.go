@@ -102,7 +102,7 @@ func (dp *Datapath) handlePacket(buf []byte) {
 			case ofp13.OFPT_BARRIER_REPLY:
 				if obj, ok := app.(Of13BarrierReplyHandler); ok {
 					obj.HandleBarrierReply(msgi, dp)
-
+				}
 			default:
 			}
 
@@ -163,7 +163,9 @@ func (dp *Datapath) handlePacket(buf []byte) {
 					obj.HandleAggregateStatsReply(msgi, dp)
 				}
 			case ofp13.OFPMP_TABLE:
-				// TODO: implement
+				if obj, ok := app.(Of13TableStatsReplyHandler); ok {
+					obj.HandleTableStatsReply(msgi, dp)
+				}
 			case ofp13.OFPMP_PORT_STATS:
 				// TODO: implement
 			case ofp13.OFPMP_QUEUE:

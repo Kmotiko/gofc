@@ -4644,8 +4644,9 @@ func NewOfpAggregateStatsRequest(
 	return m
 }
 
-func NewOfpTableStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpTableStatsRequest(flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_TABLE, flags)
+	return m
 }
 
 func NewOfpPortStatsRequest() *OfpMultipartRequest {
@@ -4788,7 +4789,12 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 			index += mp.Size()
 		}
 	case OFPMP_TABLE:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpTableStats()
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_PORT_STATS:
 		// TODO: implements
 	case OFPMP_QUEUE:
@@ -5168,16 +5174,12 @@ func (mp *OfpAggregateStats) MPType() uint16 {
 // TODO: implement
 
 /*****************************************************/
-/* OfpTableStatsRequest                              */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
 /* OfpTableStats                                     */
 /*****************************************************/
 // TODO: implement
 func newOfpTableStats() *OfpTableStats {
-	return nil
+	mp := new(OfpTableStats)
+	return mp
 }
 
 func (mp *OfpTableStats) Serialize() []byte {
@@ -5185,15 +5187,27 @@ func (mp *OfpTableStats) Serialize() []byte {
 }
 
 func (mp *OfpTableStats) Parse(packet []byte) {
+	index := 0
+	mp.TableId = packet[index]
+	index += 4
+
+	mp.ActiveCount = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.LookupCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.MatchedCount = binary.BigEndian.Uint64(packet[index:])
+
 	return
 }
 
 func (mp *OfpTableStats) Size() int {
-	return 0
+	return 24
 }
 
 func (mp *OfpTableStats) MPType() uint16 {
-	return 0
+	return OFPMP_TABLE
 }
 
 /*****************************************************/
@@ -5491,11 +5505,6 @@ func (mp *OfpMeterFeatures) MPType() uint16 {
 // TODO: implement
 
 /*****************************************************/
-/* OfpQueueGetConfigRequest                          */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
 /* OfpActionSetQueue                                 */
 /*****************************************************/
 // TODO: implement
@@ -5509,6 +5518,242 @@ func (mp *OfpMeterFeatures) MPType() uint16 {
 /* OfpQueueStats                                     */
 /*****************************************************/
 // TODO: implement
+
+/*****************************************************/
+/* OfpQueueGetConfigRequest                          */
+/*****************************************************/
+func NewOfpQueueGetConfigRequest(port uint32) *OfpQueueGetConfigRequest {
+	header := NewOfpHeader(OFPT_QUEUE_GET_CONFIG_REQUEST)
+	header.Length = 16
+	m := new(OfpQueueGetConfigRequest)
+	m.Header = header
+	m.Port = port
+
+	return m
+}
+
+func (m *OfpQueueGetConfigRequest) Serialize() []byte {
+	index := 0
+	packet := make([]byte, m.Size())
+
+	h_packet := m.Header.Serialize()
+	copy(packet[index:], h_packet)
+	index += m.Header.Size()
+
+	binary.BigEndian.PutUint32(packet[index:], m.Port)
+
+	return packet
+}
+
+func (m *OfpQueueGetConfigRequest) Parse(packet []byte) {
+	return
+}
+
+func (m *OfpQueueGetConfigRequest) Size() int {
+	return 16
+}
+
+/*****************************************************/
+/* OfpQueueGetConfigReply                            */
+/*****************************************************/
+// OfpQueuePropHeader
+func newOfpQueuePropHeader(prop uint16, length uint16) OfpQueuePropHeader {
+	h := OfpQueuePropHeader{prop, length}
+
+	return h
+}
+
+func (h OfpQueuePropHeader) Parse(packet []byte) {
+	index := 0
+	h.Property = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	h.Length = binary.BigEndian.Uint16(packet[index:])
+
+	return
+}
+
+func (h OfpQueuePropHeader) Size() int {
+	return 8
+}
+
+// OfpQueuePropMinRate
+func newOfpQueuePropMinRate() *OfpQueuePropMinRate {
+	header := newOfpQueuePropHeader(OFPQT_MIN_RATE, 16)
+	p := new(OfpQueuePropMinRate)
+	p.PropHeader = header
+
+	return p
+}
+
+func (p *OfpQueuePropMinRate) Parse(packet []byte) {
+	index := 0
+	p.PropHeader.Parse(packet[index:])
+	index += p.PropHeader.Size()
+
+	p.Rate = binary.BigEndian.Uint16(packet[index:])
+
+	return
+}
+
+func (p *OfpQueuePropMinRate) Size() int {
+	return 16
+}
+
+func (p *OfpQueuePropMinRate) Property() uint16 {
+	return OFPQT_MIN_RATE
+}
+
+// OfpQueuePropMaxRate
+func newOfpQueuePropMaxRate() *OfpQueuePropMaxRate {
+	header := newOfpQueuePropHeader(OFPQT_MAX_RATE, 16)
+	p := new(OfpQueuePropMaxRate)
+	p.PropHeader = header
+
+	return p
+}
+
+func (p *OfpQueuePropMaxRate) Parse(packet []byte) {
+	index := 0
+	p.PropHeader.Parse(packet[index:])
+	index += p.PropHeader.Size()
+
+	p.Rate = binary.BigEndian.Uint16(packet[index:])
+
+	return
+}
+
+func (p *OfpQueuePropMaxRate) Size() int {
+	return 16
+}
+
+func (p *OfpQueuePropMaxRate) Property() uint16 {
+	return OFPQT_MAX_RATE
+}
+
+// OfpQueuePropExperimenter
+func newOfpQueuePropExperimenter() *OfpQueuePropExperimenter {
+	header := newOfpQueuePropHeader(OFPQT_EXPERIMENTER, 16)
+	p := new(OfpQueuePropExperimenter)
+	p.PropHeader = header
+
+	return p
+}
+
+func (p *OfpQueuePropExperimenter) Parse(packet []byte) {
+	index := 0
+	p.PropHeader.Parse(packet[index:])
+	index += p.PropHeader.Size()
+
+	p.Experimenter = binary.BigEndian.Uint32(packet[index:])
+	index += 8
+
+	dataLen := p.PropHeader.Length - 16
+	p.Data = make([]byte, dataLen)
+	copy(p.Data, packet[index:(index+(int)(dataLen))])
+
+	return
+}
+
+func (p *OfpQueuePropExperimenter) Size() int {
+	size := 16
+	size += len(p.Data)
+	return size
+}
+
+func (p *OfpQueuePropExperimenter) Property() uint16 {
+	return OFPQT_EXPERIMENTER
+}
+
+// OfpPacketQueue
+func newOfpPacketQueue() *OfpPacketQueue {
+	q := new(OfpPacketQueue)
+	return q
+}
+
+func (q *OfpPacketQueue) Parse(packet []byte) {
+	index := 0
+	q.QueueId = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	q.Port = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	q.Length = binary.BigEndian.Uint16(packet[index:])
+	index += 8
+
+	for index < (int)(q.Length) {
+		ptype := binary.BigEndian.Uint16(packet[index:])
+		switch ptype {
+		case OFPQT_MIN_RATE:
+			prop := newOfpQueuePropMinRate()
+			prop.Parse(packet[index:])
+			q.Properties = append(q.Properties, prop)
+			index += q.Size()
+		case OFPQT_MAX_RATE:
+			prop := newOfpQueuePropMaxRate()
+			prop.Parse(packet[index:])
+			q.Properties = append(q.Properties, prop)
+			index += q.Size()
+		case OFPQT_EXPERIMENTER:
+			prop := newOfpQueuePropExperimenter()
+			prop.Parse(packet[index:])
+			q.Properties = append(q.Properties, prop)
+			index += q.Size()
+		default:
+			// TODO: Error Handling
+			index = (int)(q.Length)
+		}
+	}
+
+	return
+}
+
+func (q *OfpPacketQueue) Size() int {
+	size := 16
+	for _, p := range q.Properties {
+		size += p.Size()
+	}
+	return size
+}
+
+// OfpQueueGetConfigReply
+func NewOfpQueueGetConfigReply() *OfpQueueGetConfigReply {
+	header := NewOfpHeader(OFPT_QUEUE_GET_CONFIG_REPLY)
+	m := new(OfpQueueGetConfigReply)
+	m.Header = header
+
+	return m
+}
+
+func (m *OfpQueueGetConfigReply) Serialize() []byte {
+	return nil
+}
+
+func (m *OfpQueueGetConfigReply) Parse(packet []byte) {
+	index := 0
+	m.Header.Parse(packet)
+	index += m.Header.Size()
+
+	m.Port = binary.BigEndian.Uint32(packet[index:])
+	index += 8
+
+	for index < len(packet) {
+		q := newOfpPacketQueue()
+		q.Parse(packet[index:])
+		m.Queue = append(m.Queue, q)
+		index += q.Size()
+	}
+	return
+}
+
+func (m *OfpQueueGetConfigReply) Size() int {
+	size := 16
+	for _, q := range m.Queue {
+		size += q.Size()
+	}
+	return size
+}
 
 /*****************************************************/
 /* OfpRoleRequest                                    */

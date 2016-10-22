@@ -4139,7 +4139,30 @@ func TestSerializeAggregateStatsRequest(t *testing.T) {
 /*****************************************************/
 /* OfpTableStatsRequest                              */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x03, // Type(OFPMP_TABLE)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpTableStatsRequest(0)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableStatsRequest is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpPortStatsRequest                               */
@@ -4615,7 +4638,41 @@ func TestParseAgregateStatsReply(t *testing.T) {
 /*****************************************************/
 /* OfpTableStatsReply                                */
 /*****************************************************/
-// TODO: implements and test
+func TestParseTableStatsReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x13,       // Type
+		0x00, 0x28, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x03, // OFPMP_TABLE
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x01,             // TableId
+		0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // ActiveCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // LookupCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // MatchedCount
+	}
+
+	rep := NewOfpMultipartReply()
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 19 ||
+		rep.Header.Length != 40 || rep.Header.Xid != 0 ||
+		rep.Body[0].(*OfpTableStats).TableId != 1 ||
+		rep.Body[0].(*OfpTableStats).ActiveCount != 1 ||
+		rep.Body[0].(*OfpTableStats).LookupCount != 1 ||
+		rep.Body[0].(*OfpTableStats).MatchedCount != 1 {
+		t.Log("Version        : ", rep.Header.Version)
+		t.Log("Type           : ", rep.Header.Type)
+		t.Log("Length         : ", rep.Header.Length)
+		t.Log("Transaction ID : ", rep.Header.Xid)
+		t.Log("TableId        : ", rep.Body[0].(*OfpTableStats).TableId)
+		t.Log("ActiveCount    : ", rep.Body[0].(*OfpTableStats).ActiveCount)
+		t.Log("LookupCount    : ", rep.Body[0].(*OfpTableStats).LookupCount)
+		t.Log("MatchedCount   : ", rep.Body[0].(*OfpTableStats).MatchedCount)
+		t.Error("Parsed value of OfpTableStatsReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpPortStatsReply                                 */
@@ -4736,6 +4793,73 @@ func TestParseAgregateStatsReply(t *testing.T) {
 /* OfpQueueStatsRequest                              */
 /*****************************************************/
 // TODO: implements and test
+
+/*****************************************************/
+/* OfpQueueGetConfigRequest                          */
+/*****************************************************/
+func TestSerializeQueueGetConfigRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x16,       // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x01, // Port
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	m := NewOfpQueueGetConfigRequest(1)
+	actual := m.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpQueueGetConfigRequest is not equal to expected value.")
+	}
+}
+
+/*****************************************************/
+/* OfpQueueGetConfigReply                            */
+/*****************************************************/
+func TestParseQueueGetConfigReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x17,       // Type
+		0x00, 0x30, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x01, // Port
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // QueueId
+		0x00, 0x00, 0x00, 0x01, // Port
+		0x00, 0x20, // Length
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x01, // Property
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x01, // Rate
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
+	m := NewOfpQueueGetConfigReply()
+	m.Parse(packet)
+	if m.Header.Version != 4 || m.Header.Type != 23 ||
+		m.Header.Length != 48 || m.Header.Xid != 0 ||
+		m.Port != 1 ||
+		m.Queue[0].QueueId != 1 ||
+		m.Queue[0].Port != 1 ||
+		m.Queue[0].Length != 32 ||
+		m.Queue[0].Properties[0].(*OfpQueuePropMinRate).Property() != OFPQT_MIN_RATE ||
+		m.Queue[0].Properties[0].(*OfpQueuePropMinRate).Rate != 1 {
+		t.Log("Version        : ", m.Header.Version)
+		t.Log("Type           : ", m.Header.Type)
+		t.Log("Length         : ", m.Header.Length)
+		t.Log("Transaction ID : ", m.Header.Xid)
+		t.Error("Parsed value of OfpQueueGetConfigReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpRoleRequest                                    */

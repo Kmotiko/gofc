@@ -98,8 +98,8 @@ func main() {
  - [x] MultipartReply
  - [x] BarrierRequest
  - [x] BarrierReply
- - [ ] QueueGetConfigRequest
- - [ ] QueueGetConfigReply
+ - [x] QueueGetConfigRequest
+ - [x] QueueGetConfigReply
  - [x] RoleRequest
  - [x] RoleReply
  - [x] GetAsyncRequest
@@ -188,7 +188,7 @@ func main() {
  - [x] DescStats
  - [x] FlowStats
  - [x] AggregateStats
- - [ ] TableStats
+ - [x] TableStats
  - [ ] PortStats
  - [ ] QueueStats
  - [ ] GroupStats

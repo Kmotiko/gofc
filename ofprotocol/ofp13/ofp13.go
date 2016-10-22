@@ -1583,29 +1583,35 @@ type OfpExperimenterMultipartHeader struct {
 	ExpType      uint32
 }
 
+type OfpQueueProp interface {
+	Parse(packet []byte)
+	Size() int
+	Property() uint16
+}
+
 type OfpQueuePropHeader struct {
 	Property uint16
 	Length   uint16
-	Pad      [4]uint8
+	// Pad      [4]uint8
 }
 
 type OfpQueuePropMinRate struct {
 	PropHeader OfpQueuePropHeader
 	Rate       uint16
-	Pad        [6]uint8
+	// Pad        [6]uint8
 }
 
 type OfpQueuePropMaxRate struct {
 	PropHeader OfpQueuePropHeader
 	Rate       uint16
-	Pad        [6]uint8
+	// Pad        [6]uint8
 }
 
 type OfpQueuePropExperimenter struct {
 	PropHeader   OfpQueuePropHeader
 	Experimenter uint32
-	Pad          [4]uint8
-	Data         []uint8
+	// Pad          [4]uint8
+	Data []uint8
 }
 
 type OfpPacketQueue struct {
@@ -1613,7 +1619,7 @@ type OfpPacketQueue struct {
 	Port    uint32
 	Length  uint16
 	// Pad        [6]uint8
-	Properties []OfpQueuePropHeader
+	Properties []OfpQueueProp
 }
 
 type OfpQueueGetConfigRequest struct {
@@ -1626,7 +1632,7 @@ type OfpQueueGetConfigReply struct {
 	Header OfpHeader
 	Port   uint32
 	// Pad    [4]uint8
-	Queue []OfpPacketQueue
+	Queue []*OfpPacketQueue
 }
 
 // type OfpActionSetQueue struct {
