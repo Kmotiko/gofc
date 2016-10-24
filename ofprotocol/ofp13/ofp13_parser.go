@@ -3774,8 +3774,8 @@ func (h *OfpActionHeader) Parse(packet []byte) {
 	h.Length = binary.BigEndian.Uint16(packet[2:])
 }
 
-func (h OfpActionHeader) Size() int {
-	return 4
+func (h *OfpActionHeader) Size() int {
+	return 8
 }
 
 /*
@@ -3790,18 +3790,18 @@ func NewOfpActionOutput(port uint32, max_len uint16) *OfpActionOutput {
 	return action
 }
 
-// func NewOfpActionOutput(port uint32) {
-// 	h := NewOfpActionOutput(OFPAT_OUTPUT, 16)
-// 	h.Port = port
-// 	h.MaxLen = OFPCML_MAX
-// }
-
 func (a *OfpActionOutput) Serialize() []byte {
-	packet := make([]byte, a.Size())
-	h_packet := a.ActionHeader.Serialize()
 	index := 0
+	packet := make([]byte, a.Size())
+
+	// ActionHeader must be 64-bit aligned when it is used in it's own terms.
+	// But used as Header of any Action, in here ActionOutput,
+	// alignment is adjusted in terms of whole of Action structure.
+	// Because of that, the size of ActionHeader here is 4.
+	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
+
 	binary.BigEndian.PutUint32(packet[index:], a.Port)
 	index += 4
 	binary.BigEndian.PutUint16(packet[index:], a.MaxLen)
@@ -3812,7 +3812,7 @@ func (a *OfpActionOutput) Serialize() []byte {
 func (a *OfpActionOutput) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet[index:])
-	index += a.ActionHeader.Size()
+	index += 4
 
 	a.Port = binary.BigEndian.Uint32(packet[index:])
 	index += 4
@@ -3842,7 +3842,7 @@ func (a *OfpActionCopyTtlOut) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
 
 	return packet
 }
@@ -3850,7 +3850,7 @@ func (a *OfpActionCopyTtlOut) Serialize() []byte {
 func (a *OfpActionCopyTtlOut) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 }
 
 func (a *OfpActionCopyTtlOut) Size() int {
@@ -3877,15 +3877,12 @@ func (a *OfpActionCopyTtlIn) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
 
 	return packet
 }
 
 func (a *OfpActionCopyTtlIn) Parse(packet []byte) {
-	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
 }
 
 func (a *OfpActionCopyTtlIn) Size() int {
@@ -3912,7 +3909,7 @@ func (a *OfpActionSetMplsTtl) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	packet[index] = a.MplsTtl
 
 	return packet
@@ -3921,7 +3918,7 @@ func (a *OfpActionSetMplsTtl) Serialize() []byte {
 func (a *OfpActionSetMplsTtl) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	a.MplsTtl = packet[index]
 }
 
@@ -3948,7 +3945,6 @@ func (a *OfpActionDecMplsTtl) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
 
 	return packet
 }
@@ -3956,7 +3952,7 @@ func (a *OfpActionDecMplsTtl) Serialize() []byte {
 func (a *OfpActionDecMplsTtl) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 }
 
 func (a *OfpActionDecMplsTtl) Size() int {
@@ -4012,7 +4008,7 @@ func (a *OfpActionPush) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	binary.BigEndian.PutUint16(packet[index:], a.EtherType)
 
 	return packet
@@ -4021,7 +4017,7 @@ func (a *OfpActionPush) Serialize() []byte {
 func (a *OfpActionPush) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	a.EtherType = binary.BigEndian.Uint16(packet[index:])
 }
 
@@ -4068,7 +4064,7 @@ func (a *OfpActionPop) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	binary.BigEndian.PutUint16(packet[index:], a.EtherType)
 
 	return packet
@@ -4077,7 +4073,7 @@ func (a *OfpActionPop) Serialize() []byte {
 func (a *OfpActionPop) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	a.EtherType = binary.BigEndian.Uint16(packet[index:])
 }
 
@@ -4106,7 +4102,7 @@ func (a *OfpActionGroup) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	binary.BigEndian.PutUint32(packet[index:], a.GroupId)
 
 	return packet
@@ -4115,7 +4111,7 @@ func (a *OfpActionGroup) Serialize() []byte {
 func (a *OfpActionGroup) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	a.GroupId = binary.BigEndian.Uint32(packet[index:])
 }
 
@@ -4144,7 +4140,7 @@ func (a *OfpActionSetQueue) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	binary.BigEndian.PutUint32(packet[index:], a.QueueId)
 
 	return packet
@@ -4153,7 +4149,7 @@ func (a *OfpActionSetQueue) Serialize() []byte {
 func (a *OfpActionSetQueue) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	a.QueueId = binary.BigEndian.Uint32(packet[index:])
 }
 
@@ -4182,7 +4178,7 @@ func (a *OfpActionSetNwTtl) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	packet[index] = a.NwTtl
 
 	return packet
@@ -4191,7 +4187,7 @@ func (a *OfpActionSetNwTtl) Serialize() []byte {
 func (a *OfpActionSetNwTtl) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	a.NwTtl = packet[index]
 }
 
@@ -4258,7 +4254,7 @@ func (a *OfpActionSetField) Serialize() []byte {
 	packet := make([]byte, a.Size())
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
 
 	m_packet := a.Oxm.Serialize()
 	copy(packet[index:], m_packet)
@@ -4270,7 +4266,7 @@ func (a *OfpActionSetField) Parse(packet []byte) {
 	// TODO: implement OxmField Parser
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 
 	// parse tlv header
 	tlvheader := binary.BigEndian.Uint32(packet[index:])
@@ -4508,7 +4504,7 @@ func (a *OfpActionExperimenter) Serialize() []byte {
 	packet := make([]byte, 8)
 	h_packet := a.ActionHeader.Serialize()
 	copy(packet[index:], h_packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	binary.BigEndian.PutUint32(packet[index:], a.Experimenter)
 
 	return packet
@@ -4517,7 +4513,7 @@ func (a *OfpActionExperimenter) Serialize() []byte {
 func (a *OfpActionExperimenter) Parse(packet []byte) {
 	index := 0
 	a.ActionHeader.Parse(packet)
-	index += a.ActionHeader.Size()
+	index += 4
 	a.Experimenter = binary.BigEndian.Uint32(packet[index:])
 }
 
@@ -5358,7 +5354,7 @@ func (p *OfpTableFeaturePropActions) Serialize() []byte {
 	for _, id := range p.ActionIds {
 		id_packet := id.Serialize()
 		copy(packet[index:], id_packet)
-		index += 8
+		index += id.Size()
 	}
 
 	return packet
@@ -5373,7 +5369,7 @@ func (p *OfpTableFeaturePropActions) Parse(packet []byte) {
 		id := NewOfpActionHeader(0, 0)
 		id.Parse(packet[index:])
 		p.ActionIds = append(p.ActionIds, id)
-		index += 8
+		index += id.Size()
 	}
 
 	return
