@@ -4681,8 +4681,12 @@ func NewOfpMeterFeaturesStatsRequest() *OfpMultipartRequest {
 	return nil
 }
 
-func NewOfpTableFeaturesStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpTableFeaturesStatsRequest(flags uint16, body *OfpTableFeatures) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_TABLE_FEATURES, flags)
+	if body != nil {
+		m.Body = body
+	}
+	return m
 }
 
 func NewOfpPortDescStatsRequest() *OfpMultipartRequest {
@@ -4740,7 +4744,6 @@ func (m *OfpMultipartRequest) Size() int {
 /*****************************************************/
 /* OfpMultipartReply                                 */
 /*****************************************************/
-// TODO: implement
 func NewOfpMultipartReply() *OfpMultipartReply {
 	m := new(OfpMultipartReply)
 	header := NewOfpHeader(OFPT_MULTIPART_REPLY)
@@ -4812,7 +4815,19 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 	case OFPMP_METER_FEATURES:
 		// TODO: implements
 	case OFPMP_TABLE_FEATURES:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := NewOfpTableFeatures(
+				0,
+				nil,
+				0,
+				0,
+				0,
+				0,
+				nil)
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_PORT_DESC:
 		// TODO: implements
 	case OFPMP_EXPERIMENTER:
@@ -4838,7 +4853,6 @@ func (m *OfpMultipartReply) Append(mp OfpMultipartBody) {
 /*****************************************************/
 /* OfpDesc                                           */
 /*****************************************************/
-// TODO: implement
 func newOfpDescStats() *OfpDescStats {
 	mp := new(OfpDescStats)
 	mp.MfrDesc = make([]byte, DESC_STR_LEN)
@@ -4883,7 +4897,6 @@ func (mp *OfpDescStats) MPType() uint16 {
 /*****************************************************/
 /* OfpFlowStatsRequest                               */
 /*****************************************************/
-// TODO: implement
 func newOfpFlowStatsRequestBody(
 	tableId uint8,
 	outPort uint32,
@@ -4942,7 +4955,6 @@ func (m *OfpFlowStatsRequest) MPType() uint16 {
 /*****************************************************/
 /* OfpFlowStats                                      */
 /*****************************************************/
-// TODO: implement
 func newOfpFlowStats() *OfpFlowStats {
 	m := new(OfpFlowStats)
 	return m
@@ -5049,7 +5061,6 @@ func (mp *OfpFlowStats) MPType() uint16 {
 /*****************************************************/
 /* OfpAggregateStatsRequest                          */
 /*****************************************************/
-// TODO: implement
 func newOfpAggregateStatsRequestBody(
 	tableId uint8,
 	outPort uint32,
@@ -5108,7 +5119,6 @@ func (mp *OfpAggregateStatsRequest) MPType() uint16 {
 /*****************************************************/
 /* OfpAggregateStats                               */
 /*****************************************************/
-// TODO: implement
 func newOfpAggregateStats() *OfpAggregateStats {
 	mp := new(OfpAggregateStats)
 	return mp
@@ -5141,37 +5151,534 @@ func (mp *OfpAggregateStats) MPType() uint16 {
 /*****************************************************/
 /* OfpTableFeaturePropHeader                         */
 /*****************************************************/
-// TODO: implement
+func NewOfpTableFeaturePropHeader(t uint16, length uint16) OfpTableFeaturePropHeader {
+	h := OfpTableFeaturePropHeader{t, length}
+	return h
+}
+
+func (p *OfpTableFeaturePropHeader) Serialize() []byte {
+	index := 0
+	packet := make([]byte, p.Size())
+
+	binary.BigEndian.PutUint16(packet[index:], p.Type)
+	index += 2
+
+	binary.BigEndian.PutUint16(packet[index:], p.Length)
+
+	return packet
+}
+
+func (p *OfpTableFeaturePropHeader) Parse(packet []byte) {
+	index := 0
+	p.Type = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	p.Length = binary.BigEndian.Uint16(packet[index:])
+
+	return
+}
+
+func (p *OfpTableFeaturePropHeader) Size() int {
+	return 4
+}
+
+/*****************************************************/
+/* OfpInstructionId                                  */
+/*****************************************************/
+func NewOfpInstructionId(t uint16, length uint16) *OfpInstructionId {
+	i := new(OfpInstructionId)
+	i.Type = t
+	i.Length = length
+	return i
+}
+
+func (i *OfpInstructionId) Serialize() []byte {
+	index := 0
+	packet := make([]byte, i.Size())
+
+	binary.BigEndian.PutUint16(packet[index:], i.Type)
+	index += 2
+
+	binary.BigEndian.PutUint16(packet[index:], i.Length)
+
+	return packet
+}
+
+func (i *OfpInstructionId) Parse(packet []byte) {
+	index := 0
+	i.Type = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	i.Length = binary.BigEndian.Uint16(packet[index:])
+
+	return
+}
+
+func (p *OfpInstructionId) Size() int {
+	return 4
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropInstructions                   */
 /*****************************************************/
-// TODO: implement
+func NewOfpTableFeaturePropInstructions(
+	t uint16,
+	ids []*OfpInstructionId) *OfpTableFeaturePropInstructions {
+	header := NewOfpTableFeaturePropHeader(t, 4)
+	p := new(OfpTableFeaturePropInstructions)
+	if ids != nil {
+		p.InstructionIds = ids
+		for _, id := range ids {
+			header.Length += (uint16)(id.Size())
+		}
+	}
+	p.PropHeader = header
+	return p
+}
+
+func (p *OfpTableFeaturePropInstructions) Serialize() []byte {
+	index := 0
+	packet := make([]byte, p.Size())
+
+	h_packet := p.PropHeader.Serialize()
+	copy(packet[index:], h_packet)
+	index += p.PropHeader.Size()
+
+	for _, id := range p.InstructionIds {
+		id_packet := id.Serialize()
+		copy(packet[index:], id_packet)
+		index += id.Size()
+	}
+
+	return packet
+}
+
+func (p *OfpTableFeaturePropInstructions) Parse(packet []byte) {
+	index := 0
+	p.PropHeader.Parse(packet[index:])
+	index += p.PropHeader.Size()
+
+	for index < (int)(p.PropHeader.Length) {
+		id := NewOfpInstructionId(0, 0)
+		id.Parse(packet[index:])
+		p.InstructionIds = append(p.InstructionIds, id)
+		index += id.Size()
+	}
+	return
+}
+
+func (p *OfpTableFeaturePropInstructions) Size() int {
+	size := 4
+	if p.InstructionIds != nil {
+		size += len(p.InstructionIds) * 4
+	}
+	size += (((size + 7) / 8 * 8) - size)
+	return size
+}
+
+func (p *OfpTableFeaturePropInstructions) Property() uint16 {
+	return p.PropHeader.Type
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropNextTables                     */
 /*****************************************************/
-// TODO: implement
+func NewOfpTableFeaturePropNextTables(t uint16, ids []uint8) *OfpTableFeaturePropNextTables {
+	header := NewOfpTableFeaturePropHeader(t, 4)
+	p := new(OfpTableFeaturePropNextTables)
+	p.PropHeader = header
+	if ids != nil {
+		p.PropHeader.Length += (uint16)(len(ids))
+		p.NextTableIds = ids
+	}
+	return p
+}
+
+func (p *OfpTableFeaturePropNextTables) Serialize() []byte {
+	index := 0
+	packet := make([]byte, p.Size())
+
+	h_packet := p.PropHeader.Serialize()
+	copy(packet[index:], h_packet)
+	index += p.PropHeader.Size()
+
+	copy(packet[index:], p.NextTableIds)
+
+	return packet
+}
+
+func (p *OfpTableFeaturePropNextTables) Parse(packet []byte) {
+	index := 0
+
+	p.PropHeader.Parse(packet[index:])
+	index += p.PropHeader.Size()
+
+	idLen := p.PropHeader.Length - 4
+	p.NextTableIds = make([]byte, idLen)
+	copy(p.NextTableIds, packet[index:(index+(int)(idLen))])
+
+	return
+}
+
+func (p *OfpTableFeaturePropNextTables) Size() int {
+	size := 4
+	if p.NextTableIds != nil {
+		size += len(p.NextTableIds)
+	}
+	size += (((size + 7) / 8 * 8) - size)
+	return size
+}
+
+func (p *OfpTableFeaturePropNextTables) Property() uint16 {
+	return p.PropHeader.Type
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropActions                        */
 /*****************************************************/
-// TODO: implement
+func NewOfpTableFeaturePropActions(t uint16, ids []OfpActionHeader) *OfpTableFeaturePropActions {
+	header := NewOfpTableFeaturePropHeader(t, 4)
+	p := new(OfpTableFeaturePropActions)
+	if ids != nil {
+		p.ActionIds = ids
+		header.Length += (uint16)(len(ids) * 8)
+	}
+	p.PropHeader = header
+	return p
+}
+
+func (p *OfpTableFeaturePropActions) Serialize() []byte {
+	index := 0
+	packet := make([]byte, p.Size())
+
+	h_packet := p.PropHeader.Serialize()
+	copy(packet[index:], h_packet)
+	index += p.PropHeader.Size()
+
+	for _, id := range p.ActionIds {
+		id_packet := id.Serialize()
+		copy(packet[index:], id_packet)
+		index += 8
+	}
+
+	return packet
+}
+
+func (p *OfpTableFeaturePropActions) Parse(packet []byte) {
+	index := 0
+	p.PropHeader.Parse(packet[index:])
+	index += p.PropHeader.Size()
+
+	for index < (int)(p.PropHeader.Length) {
+		id := NewOfpActionHeader(0, 0)
+		id.Parse(packet[index:])
+		p.ActionIds = append(p.ActionIds, id)
+		index += 8
+	}
+
+	return
+}
+
+func (p *OfpTableFeaturePropActions) Size() int {
+	size := 4
+	if p.ActionIds != nil {
+		size += len(p.ActionIds) * 8
+	}
+	size += (((size + 7) / 8 * 8) - size)
+	return size
+}
+
+func (p *OfpTableFeaturePropActions) Property() uint16 {
+	return p.PropHeader.Type
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropOxm                            */
 /*****************************************************/
-// TODO: implement
+func NewOfpTableFeaturePropOxm(t uint16, ids []uint32) *OfpTableFeaturePropOxm {
+	header := NewOfpTableFeaturePropHeader(t, 4)
+	p := new(OfpTableFeaturePropOxm)
+	if ids != nil {
+		p.OxmIds = ids
+		header.Length += (uint16)(len(ids) * 4)
+	}
+	p.PropHeader = header
+	return p
+}
+
+func (p *OfpTableFeaturePropOxm) Serialize() []byte {
+	index := 0
+	packet := make([]byte, p.Size())
+
+	h_packet := p.PropHeader.Serialize()
+	copy(packet[index:], h_packet)
+	index += p.PropHeader.Size()
+
+	for _, id := range p.OxmIds {
+		binary.BigEndian.PutUint32(packet[index:], id)
+		index += 4
+	}
+	return packet
+}
+
+func (p *OfpTableFeaturePropOxm) Parse(packet []byte) {
+	index := 0
+
+	p.PropHeader.Parse(packet[index:])
+	index += p.PropHeader.Size()
+
+	idLen := p.PropHeader.Length - 4
+	p.OxmIds = make([]uint32, idLen/4)
+	id_index := 0
+
+	for index < (int)(p.PropHeader.Length) {
+		id := binary.BigEndian.Uint32(packet[index:])
+		p.OxmIds[id_index] = id
+		id_index++
+		index += 4
+	}
+
+	return
+}
+
+func (p *OfpTableFeaturePropOxm) Size() int {
+	size := 4
+	if p.OxmIds != nil {
+		size += (int)(len(p.OxmIds) * 4)
+	}
+	size += (((size + 7) / 8 * 8) - size)
+	return size
+}
+
+func (p *OfpTableFeaturePropOxm) Property() uint16 {
+	return p.PropHeader.Type
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropExperimenter                   */
 /*****************************************************/
-// TODO: implement
+func NewOfpTableFeaturePropExperimenter(
+	t uint16,
+	experimenter uint32,
+	expType uint32,
+	data []uint32) *OfpTableFeaturePropExperimenter {
+	header := NewOfpTableFeaturePropHeader(t, 12)
+	p := new(OfpTableFeaturePropExperimenter)
+	p.Experimenter = experimenter
+	p.ExpType = expType
+	if data != nil {
+		p.ExperimenterData = data
+		header.Length += (uint16)(len(data) * 4)
+	}
+	p.PropHeader = header
+	return p
+}
+
+func (p *OfpTableFeaturePropExperimenter) Serialize() []byte {
+	index := 0
+	packet := make([]byte, p.Size())
+
+	h_packet := p.PropHeader.Serialize()
+	copy(packet[index:], h_packet)
+	index += p.PropHeader.Size()
+
+	binary.BigEndian.PutUint32(packet[index:], p.Experimenter)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], p.ExpType)
+	index += 4
+
+	for _, data := range p.ExperimenterData {
+		binary.BigEndian.PutUint32(packet[index:], data)
+		index += 4
+	}
+
+	return packet
+}
+
+func (p *OfpTableFeaturePropExperimenter) Parse(packet []byte) {
+	index := 0
+	p.PropHeader.Parse(packet[index:])
+	index += p.PropHeader.Size()
+
+	p.Experimenter = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	p.ExpType = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	p.ExperimenterData = make([]uint32, p.PropHeader.Length-12)
+	d_index := 0
+
+	for index < (int)(p.PropHeader.Length) {
+		p.ExperimenterData[d_index] =
+			binary.BigEndian.Uint32(packet[index:])
+		d_index++
+		index += 4
+	}
+
+	return
+}
+
+func (p *OfpTableFeaturePropExperimenter) Size() int {
+	size := 12
+	if p.ExperimenterData != nil {
+		size += len(p.ExperimenterData) * 4
+	}
+	size += (((size + 7) / 8 * 8) - size)
+
+	return size
+}
+
+func (p *OfpTableFeaturePropExperimenter) Property() uint16 {
+	return p.PropHeader.Type
+}
 
 /*****************************************************/
 /* OfpTableFeatures                                  */
 /*****************************************************/
-// TODO: implement
+func NewOfpTableFeatures(
+	tableId uint8,
+	name []byte,
+	metadataMatch uint64,
+	metadataWrite uint64,
+	config uint32,
+	maxEntries uint32,
+	properties []OfpTableFeatureProp) *OfpTableFeatures {
+	mp := new(OfpTableFeatures)
+	mp.TableId = tableId
+	if name != nil {
+		mp.Name = name
+	} else {
+		mp.Name = make([]byte, 32)
+	}
+	mp.MetadataMatch = metadataMatch
+	mp.MetadataWrite = metadataWrite
+	mp.Config = config
+	mp.MaxEntries = maxEntries
+	if properties != nil {
+		mp.Properties = properties
+	}
+
+	length := 64
+	for _, prop := range mp.Properties {
+		length += prop.Size()
+	}
+	mp.Length = (uint16)(length)
+
+	return mp
+}
+
+func (mp *OfpTableFeatures) Serialize() []byte {
+	index := 0
+	packet := make([]byte, mp.Size())
+
+	binary.BigEndian.PutUint16(packet[index:], mp.Length)
+	index += 2
+
+	packet[index] = mp.TableId
+	index += 6
+
+	copy(packet[index:], mp.Name)
+	index += 32
+
+	binary.BigEndian.PutUint64(packet[index:], mp.MetadataMatch)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.MetadataWrite)
+	index += 8
+
+	binary.BigEndian.PutUint32(packet[index:], mp.Config)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.MaxEntries)
+	index += 4
+
+	for _, prop := range mp.Properties {
+		p_packet := prop.Serialize()
+		copy(packet[index:], p_packet)
+		index += prop.Size()
+	}
+
+	return packet
+}
+
+func (mp *OfpTableFeatures) Parse(packet []byte) {
+	index := 0
+	mp.Length = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	mp.TableId = packet[index]
+	index += 6
+
+	mp.Name = make([]byte, 32)
+	copy(mp.Name, packet[index:(index+32)])
+	index += 32
+
+	mp.MetadataMatch = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.MetadataWrite = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.Config = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.MaxEntries = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	for index < (int)(mp.Length) {
+		pType := binary.BigEndian.Uint16(packet[index:])
+
+		switch pType {
+		case OFPTFPT_INSTRUCTIONS, OFPTFPT_INSTRUCTIONS_MISS:
+			prop := NewOfpTableFeaturePropInstructions(0, nil)
+			prop.Parse(packet[index:])
+			mp.Properties = append(mp.Properties, prop)
+			index += prop.Size()
+		case OFPTFPT_NEXT_TABLES, OFPTFPT_NEXT_TABLES_MISS:
+			prop := NewOfpTableFeaturePropNextTables(0, nil)
+			prop.Parse(packet[index:])
+			mp.Properties = append(mp.Properties, prop)
+			index += prop.Size()
+		case OFPTFPT_APPLY_ACTIONS, OFPTFPT_APPLY_ACTIONS_MISS,
+			OFPTFPT_WRITE_ACTIONS, OFPTFPT_WRITE_ACTIONS_MISS:
+			prop := NewOfpTableFeaturePropActions(0, nil)
+			prop.Parse(packet[index:])
+			mp.Properties = append(mp.Properties, prop)
+			index += prop.Size()
+		case OFPTFPT_MATCH, OFPTFPT_WILDCARDS,
+			OFPTFPT_WRITE_SETFIELD, OFPTFPT_WRITE_SETFIELD_MISS,
+			OFPTFPT_APPLY_SETFIELD, OFPTFPT_APPLY_SETFIELD_MISS:
+			prop := NewOfpTableFeaturePropOxm(0, nil)
+			prop.Parse(packet[index:])
+			mp.Properties = append(mp.Properties, prop)
+			index += prop.Size()
+		case OFPTFPT_EXPERIMENTER, OFPTFPT_EXPERIMENTER_MISS:
+			prop := NewOfpTableFeaturePropExperimenter(0, 0, 0, nil)
+			prop.Parse(packet[index:])
+			mp.Properties = append(mp.Properties, prop)
+			index += prop.Size()
+		default:
+			// TODO: Error Handling
+			index = (int)(mp.Length)
+		}
+	}
+
+	return
+}
+
+func (mp *OfpTableFeatures) Size() int {
+	size := 64
+	for _, prop := range mp.Properties {
+		size += prop.Size()
+	}
+	return size
+}
+
+func (mp *OfpTableFeatures) MPType() uint16 {
+	return OFPMP_TABLE_FEATURES
+}
 
 /*****************************************************/
 /* OfpTableStats                                     */

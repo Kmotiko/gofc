@@ -86,6 +86,13 @@ type Of13TableStatsReplyHandler interface {
 }
 
 /*****************************************************/
+/* OfpTableFeaturesStatsReply                                */
+/*****************************************************/
+type Of13TableFeaturesStatsReplyHandler interface {
+	HandleTableFeaturesStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
 /* RoleReply Message                                 */
 /*****************************************************/
 type Of13RoleReplyHandler interface {

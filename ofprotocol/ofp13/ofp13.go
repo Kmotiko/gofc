@@ -665,22 +665,22 @@ const SERIAL_NUM_LEN = 32
 
 // ofp_table_feature_prop_type
 const (
-	OFPTFPT_INSTRUCTIONS = iota
-	OFPTFPT_INSTRUCTIONS_MISS
-	OFPTFPT_NEXT_TABLES
-	OFPTFPT_NEXT_TABLES_MISS
-	OFPTFPT_WRITE_ACTIONS
-	OFPTFPT_WRITE_ACTIONS_MISS
-	OFPTFPT_APPLY_ACTIONS
-	OFPTFPT_APPLY_ACTIONS_MISS
-	OFPTFPT_MATCH
-	OFPTFPT_WILDCARDS
-	OFPTFPT_WRITE_SETFIELD
-	OFPTFPT_WRITE_SETFIELD_MISS
-	OFPTFPT_APPLY_SETFIELD
-	OFPTFPT_APPLY_SETFIELD_MISS
-	OFPTFPT_EXPERIMENTER
-	OFPTFPT_EXPERIMENTER_MISS
+	OFPTFPT_INSTRUCTIONS        = 0
+	OFPTFPT_INSTRUCTIONS_MISS   = 1
+	OFPTFPT_NEXT_TABLES         = 2
+	OFPTFPT_NEXT_TABLES_MISS    = 3
+	OFPTFPT_WRITE_ACTIONS       = 4
+	OFPTFPT_WRITE_ACTIONS_MISS  = 5
+	OFPTFPT_APPLY_ACTIONS       = 6
+	OFPTFPT_APPLY_ACTIONS_MISS  = 7
+	OFPTFPT_MATCH               = 8
+	OFPTFPT_WILDCARDS           = 10
+	OFPTFPT_WRITE_SETFIELD      = 12
+	OFPTFPT_WRITE_SETFIELD_MISS = 13
+	OFPTFPT_APPLY_SETFIELD      = 14
+	OFPTFPT_APPLY_SETFIELD_MISS = 15
+	OFPTFPT_EXPERIMENTER        = 0xfffe
+	OFPTFPT_EXPERIMENTER_MISS   = 0xffff
 )
 
 // ofp_group_capabilities
@@ -1391,22 +1391,36 @@ type OfpAggregateStats struct {
 	// Pad         [4]uint8
 }
 
+type OfpTableFeatureProp interface {
+	Serialize() []byte
+	Parse(packet []byte)
+	Size() int
+	Property() uint16
+}
+
 type OfpTableFeaturePropHeader struct {
 	Type   uint16
 	Length uint16
 }
 
+type OfpInstructionId struct {
+	Type   uint16
+	Length uint16
+}
+
 type OfpTableFeaturePropInstructions struct {
-	Type           uint16 // OFPTFPT_INSTRUCTIONS,
-	Length         uint16
-	InstructionIds []OfpInstruction
+	// Type           uint16 // OFPTFPT_INSTRUCTIONS,
+	// Length         uint16
+	PropHeader     OfpTableFeaturePropHeader
+	InstructionIds []*OfpInstructionId
 }
 
 type OfpTableFeaturePropNextTables struct {
 	// OFPTFPT_NEXT_TABLES,
 	// OFPTFPT_NEXT_TABLES_MISS
-	Type         uint16
-	Length       uint16
+	// Type         uint16
+	// Length       uint16
+	PropHeader   OfpTableFeaturePropHeader
 	NextTableIds []uint8
 }
 
@@ -1415,9 +1429,10 @@ type OfpTableFeaturePropActions struct {
 	// OFPTFPT_WRITE_ACTIONS_MISS,
 	// OFPTFPT_APPLY_ACTIONS,
 	// OFPTFPT_APPLY_ACTIONS_MISS
-	Type      uint16
-	Length    uint16
-	ActionIds []OfpActionHeader
+	// Type      uint16
+	// Length    uint16
+	PropHeader OfpTableFeaturePropHeader
+	ActionIds  []OfpActionHeader
 }
 
 type OfpTableFeaturePropOxm struct {
@@ -1427,31 +1442,34 @@ type OfpTableFeaturePropOxm struct {
 	// OFPTFPT_WRITE_SETFIELD_MISS,
 	// OFPTFPT_APPLY_SETFIELD,
 	// OFPTFPT_APPLY_SETFIELD_MISS
-	Type   uint16
-	Length uint16
-	OxmIds []uint32
+	// Type   uint16
+	// Length uint16
+	PropHeader OfpTableFeaturePropHeader
+	OxmIds     []uint32
 }
 
 type OfpTableFeaturePropExperimenter struct {
 	// OFPTFPT_EXPERIMENTER,
 	// OFPTFPT_EXPERIMENTER_MISS
-	Type             uint16
-	Length           uint16
+	// Type             uint16
+	// Length           uint16
+	PropHeader       OfpTableFeaturePropHeader
 	Experimenter     uint32
 	ExpType          uint32
 	ExperimenterData []uint32
 }
 
 type OfpTableFeatures struct {
-	Length        uint16
-	TableId       uint8
-	Pad           []uint8
-	Name          [OFP_MAX_TABLE_NAME_LEN]byte
+	Length  uint16
+	TableId uint8
+	// Pad           [5]uint8
+	// Name          [OFP_MAX_TABLE_NAME_LEN]byte
+	Name          []byte
 	MetadataMatch uint64
 	MetadataWrite uint64
 	Config        uint32
 	MaxEntries    uint32
-	Properties    []OfpTableFeaturePropHeader
+	Properties    []OfpTableFeatureProp
 }
 
 type OfpTableStats struct {

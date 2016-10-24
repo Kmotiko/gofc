@@ -4207,7 +4207,30 @@ func TestSerializeTableStatsRequest(t *testing.T) {
 /*****************************************************/
 /* OfpTableFeatruresStatsRequest                     */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableFeaturesStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x0c, // Type(OFPMP_TABLE_FEATURES)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpTableFeaturesStatsRequest(0, nil)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableFeaturesStatsRequest is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpPortDescStatsRequest                           */
@@ -4717,37 +4740,477 @@ func TestParseTableStatsReply(t *testing.T) {
 /*****************************************************/
 /* OfpTableFeaturePropHeader                         */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableFeaturePropHeader(t *testing.T) {
+	expect := []byte{
+		0x00, 0x00, // Type
+		0x00, 0x04, // Length
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	p := NewOfpTableFeaturePropHeader(OFPTFPT_INSTRUCTIONS, 4)
+	actual := p.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableFeaturePropHeader is not equal to expected value.")
+	}
+}
+
+func TestParseTableFeatureStatsPropHeader(t *testing.T) {
+	packet := []byte{
+		0x00, 0x00, // Type
+		0x00, 0x04, // Length
+	}
+
+	p := NewOfpTableFeaturePropHeader(OFPTFPT_INSTRUCTIONS, 0)
+	p.Parse(packet)
+	if p.Type != OFPTFPT_INSTRUCTIONS || p.Length != 4 {
+		t.Log("Type           : ", p.Type)
+		t.Log("Length         : ", p.Length)
+		t.Error("Parsed value of OfpTableFeaturePropHeader is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropInstructions                   */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableFeaturePropInstructions(t *testing.T) {
+	expect := []byte{
+		0x00, 0x00, // Type
+		0x00, 0x0c, // Length
+		0x00, 0x01, // Type(OFPIT_GOTO_TABLE)
+		0x00, 0x04, // Length
+		0x00, 0x02, // Type(OFPIT_WRITE_METADATA)
+		0x00, 0x04, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	ids := make([]*OfpInstructionId, 2)
+	ids[0] = NewOfpInstructionId(OFPIT_GOTO_TABLE, 4)
+	ids[1] = NewOfpInstructionId(OFPIT_WRITE_METADATA, 4)
+	p := NewOfpTableFeaturePropInstructions(
+		OFPTFPT_INSTRUCTIONS, ids)
+	actual := p.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableFeaturePropInstructions is not equal to expected value.")
+	}
+}
+
+func TestParseTableFeatureStatsPropInstructions(t *testing.T) {
+	packet := []byte{
+		0x00, 0x00, // Type
+		0x00, 0x0c, // Length
+		0x00, 0x01, // Type(OFPIT_GOTO_TABLE)
+		0x00, 0x04, // Length
+		0x00, 0x02, // Type(OFPIT_WRITE_METADATA)
+		0x00, 0x04, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
+	p := NewOfpTableFeaturePropInstructions(OFPTFPT_INSTRUCTIONS, nil)
+	p.Parse(packet)
+	if p.PropHeader.Type != OFPTFPT_INSTRUCTIONS ||
+		p.PropHeader.Length != 12 ||
+		p.InstructionIds[0].Type != OFPIT_GOTO_TABLE ||
+		p.InstructionIds[0].Length != 4 ||
+		p.InstructionIds[1].Type != OFPIT_WRITE_METADATA ||
+		p.InstructionIds[1].Length != 4 {
+		t.Log("Type           : ", p.PropHeader.Type)
+		t.Log("Length         : ", p.PropHeader.Length)
+		t.Log("Id[0] Type     : ", p.InstructionIds[0].Type)
+		t.Log("Id[0] Length   : ", p.InstructionIds[0].Length)
+		t.Log("Id[1] Type     : ", p.InstructionIds[1].Type)
+		t.Log("Id[1] Length   : ", p.InstructionIds[1].Length)
+		t.Error("Parsed value of OfpTableFeaturePropInstructions is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropNextTables                     */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableFeaturePropNextTables(t *testing.T) {
+	expect := []byte{
+		0x00, 0x02, // Type
+		0x00, 0x07, // Length
+		0x01,
+		0x02,
+		0x03,
+		0x00, //Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	p := NewOfpTableFeaturePropNextTables(
+		OFPTFPT_NEXT_TABLES, []uint8{1, 2, 3})
+	actual := p.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableFeaturePropNextTables is not equal to expected value.")
+	}
+}
+
+func TestParseTableFeatureStatsPropNextTables(t *testing.T) {
+	packet := []byte{
+		0x00, 0x02, // Type
+		0x00, 0x07, // Length
+		0x01,
+		0x02,
+		0x03,
+		0x00, //Padding
+	}
+
+	p := NewOfpTableFeaturePropNextTables(OFPTFPT_NEXT_TABLES, nil)
+	p.Parse(packet)
+	if p.PropHeader.Type != OFPTFPT_NEXT_TABLES ||
+		p.PropHeader.Length != 7 ||
+		p.NextTableIds[0] != 1 ||
+		p.NextTableIds[1] != 2 ||
+		p.NextTableIds[2] != 3 {
+		t.Log("Type           : ", p.PropHeader.Type)
+		t.Log("Length         : ", p.PropHeader.Length)
+		t.Log("Id[0]          : ", p.NextTableIds[0])
+		t.Log("Id[1]          : ", p.NextTableIds[1])
+		t.Log("Id[2]          : ", p.NextTableIds[2])
+		t.Error("Parsed value of OfpTableFeaturePropNextTables is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropActions                        */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableFeaturePropActions(t *testing.T) {
+	expect := []byte{
+		0x00, 0x04, // Type
+		0x00, 0x14, // Length
+		0x00, 0x00, // Type(OFPAT_OUTPUT)
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x0b, // Type(OFPAT_COPY_TTL_OUT)
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	ids := make([]OfpActionHeader, 2)
+	ids[0] = NewOfpActionHeader(OFPAT_OUTPUT, 8)
+	ids[1] = NewOfpActionHeader(OFPAT_COPY_TTL_OUT, 8)
+	p := NewOfpTableFeaturePropActions(OFPTFPT_WRITE_ACTIONS, ids)
+	actual := p.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableFeaturePropActions is not equal to expected value.")
+	}
+}
+
+func TestParseTableFeatureStatsPropActions(t *testing.T) {
+	packet := []byte{
+		0x00, 0x04, // Type
+		0x00, 0x14, // Length
+		0x00, 0x00, // Type(OFPAT_OUTPUT)
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x0b, // Type(OFPAT_COPY_TTL_OUT)
+		0x00, 0x08, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
+	p := NewOfpTableFeaturePropActions(OFPTFPT_WRITE_ACTIONS, nil)
+	p.Parse(packet)
+	if p.PropHeader.Type != OFPTFPT_WRITE_ACTIONS ||
+		p.PropHeader.Length != 20 ||
+		p.ActionIds[0].Type != OFPAT_OUTPUT ||
+		p.ActionIds[0].Length != 8 ||
+		p.ActionIds[1].Type != OFPAT_COPY_TTL_OUT ||
+		p.ActionIds[1].Length != 8 {
+		t.Log("Type               : ", p.PropHeader.Type)
+		t.Log("Length             : ", p.PropHeader.Length)
+		t.Log("ActionId[0] Type   : ", p.ActionIds[0].Type)
+		t.Log("ActionId[0] Length : ", p.ActionIds[0].Length)
+		t.Log("ActionId[1] Type   : ", p.ActionIds[1].Type)
+		t.Log("ActionId[1] Length : ", p.ActionIds[1].Length)
+		t.Error("Parsed value of OfpTableFeaturePropActions is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropOxm                            */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableFeaturePropOxm(t *testing.T) {
+	expect := []byte{
+		0x00, 0x08, // Type
+		0x00, 0x0c, // Length
+		0x80, 0x00, 0x00, 0x04, // OXM_OF_IN_PORT
+		0x80, 0x00, 0x02, 0x04, // OXM_OF_IN_PHY_PORT
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	ids := make([]uint32, 2)
+	ids[0] = OXM_OF_IN_PORT
+	ids[1] = OXM_OF_IN_PHY_PORT
+	p := NewOfpTableFeaturePropOxm(OFPTFPT_MATCH, ids)
+	actual := p.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableFeaturePropOxm is not equal to expected value.")
+	}
+}
+
+func TestParseTableFeatureStatsPropOxm(t *testing.T) {
+	packet := []byte{
+		0x00, 0x08, // Type
+		0x00, 0x0c, // Length
+		0x80, 0x00, 0x00, 0x04, // OXM_OF_IN_PORT
+		0x80, 0x00, 0x02, 0x04, // OXM_OF_IN_PHY_PORT
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
+	p := NewOfpTableFeaturePropOxm(OFPTFPT_MATCH, nil)
+	p.Parse(packet)
+	if p.PropHeader.Type != OFPTFPT_MATCH ||
+		p.PropHeader.Length != 12 ||
+		p.OxmIds[0] != OXM_OF_IN_PORT ||
+		p.OxmIds[1] != OXM_OF_IN_PHY_PORT {
+		t.Log("Type               : ", p.PropHeader.Type)
+		t.Log("Length             : ", p.PropHeader.Length)
+		t.Log("OxmId[0]           : ", p.OxmIds[0])
+		t.Log("OxmId[1]           : ", p.OxmIds[1])
+		t.Error("Parsed value of OfpTableFeaturePropOxm is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropExperimenter                   */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableFeaturePropExperimenter(t *testing.T) {
+	expect := []byte{
+		0xff, 0xfe, // Type
+		0x00, 0x14, // Length
+		0x00, 0x00, 0x00, 0x01, // Experimenter
+		0x00, 0x00, 0x00, 0x01, // ExpType
+		0x00, 0x00, 0x00, 0x01, // Data
+		0x00, 0x00, 0x00, 0x02, // Data
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	data := make([]uint32, 2)
+	data[0] = 1
+	data[1] = 2
+	p := NewOfpTableFeaturePropExperimenter(OFPTFPT_EXPERIMENTER, 1, 1, data)
+	actual := p.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableFeaturePropExperimenter is not equal to expected value.")
+	}
+}
+
+func TestParseTableFeatureStatsPropExperimenter(t *testing.T) {
+	packet := []byte{
+		0xff, 0xfe, // Type
+		0x00, 0x14, // Length
+		0x00, 0x00, 0x00, 0x01, // Experimenter
+		0x00, 0x00, 0x00, 0x01, // ExpType
+		0x00, 0x00, 0x00, 0x01, // Data
+		0x00, 0x00, 0x00, 0x02, // Data
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
+	p := NewOfpTableFeaturePropExperimenter(OFPTFPT_EXPERIMENTER, 0, 0, nil)
+	p.Parse(packet)
+	if p.PropHeader.Type != OFPTFPT_EXPERIMENTER ||
+		p.PropHeader.Length != 20 ||
+		p.ExperimenterData[0] != 1 ||
+		p.ExperimenterData[1] != 2 {
+		t.Log("Type               : ", p.PropHeader.Type)
+		t.Log("Length             : ", p.PropHeader.Length)
+		t.Log("Data[0]            : ", p.ExperimenterData[0])
+		t.Log("Data[1]            : ", p.ExperimenterData[1])
+		t.Error("Parsed value of OfpTableFeaturePropExperimenter is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpTableFeatures                                  */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeTableFeatures(t *testing.T) {
+	expect := []byte{
+		0x00, 0x58, // Length
+		0x00,                         // TableId
+		0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, // Name
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // MetadataMatch
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // MetadataWrite
+		0x00, 0x00, 0x00, 0x00, // Config
+		0x00, 0x00, 0x00, 0x00, // MaxEntries
+		0x00, 0x00, // Type(OFPTFPT_INSTRUCTIONS)
+		0x00, 0x0c, // Length
+		0x00, 0x01, // Type(OFPIT_GOTO_TABLE)
+		0x00, 0x04, // Length
+		0x00, 0x02, // Type(OFPIT_WRITE_METADATA)
+		0x00, 0x04, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x02, // Type(OFPTFPT_NEXT_TABLES)
+		0x00, 0x07, // Length
+		0x01,
+		0x02,
+		0x03,
+		0x00, //Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	ids := make([]*OfpInstructionId, 2)
+	ids[0] = NewOfpInstructionId(OFPIT_GOTO_TABLE, 4)
+	ids[1] = NewOfpInstructionId(OFPIT_WRITE_METADATA, 4)
+	pi := NewOfpTableFeaturePropInstructions(
+		OFPTFPT_INSTRUCTIONS, ids)
+
+	pn := NewOfpTableFeaturePropNextTables(
+		OFPTFPT_NEXT_TABLES, []uint8{1, 2, 3})
+
+	props := make([]OfpTableFeatureProp, 2)
+	props[0] = pi
+	props[1] = pn
+
+	p := NewOfpTableFeatures(
+		0,
+		nil,
+		0,
+		0,
+		0,
+		0,
+		props)
+
+	actual := p.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpTableFeaturesStats is not equal to expected value.")
+	}
+}
+
+func TestParseTableFeature(t *testing.T) {
+	packet := []byte{
+		0x00, 0x58, // Length
+		0x00,                         // TableId
+		0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, // Name
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // MetadataMatch
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // MetadataWrite
+		0x00, 0x00, 0x00, 0x00, // Config
+		0x00, 0x00, 0x00, 0x00, // MaxEntries
+		0x00, 0x00, // Type(OFPTFPT_INSTRUCTIONS)
+		0x00, 0x0c, // Length
+		0x00, 0x01, // Type(OFPIT_GOTO_TABLE)
+		0x00, 0x04, // Length
+		0x00, 0x02, // Type(OFPIT_WRITE_METADATA)
+		0x00, 0x04, // Length
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x02, // Type(OFPTFPT_NEXT_TABLES)
+		0x00, 0x07, // Length
+		0x01,
+		0x02,
+		0x03,
+		0x00, //Padding
+	}
+
+	p := NewOfpTableFeatures(
+		0,
+		nil,
+		0,
+		0,
+		0,
+		0,
+		nil)
+	p.Parse(packet)
+	if p.Length != 88 ||
+		p.TableId != 0 ||
+		p.MetadataMatch != 0 ||
+		p.MetadataWrite != 0 ||
+		p.Config != 0 ||
+		p.MaxEntries != 0 ||
+		p.Properties[0].(*OfpTableFeaturePropInstructions).
+			PropHeader.Type !=
+			OFPTFPT_INSTRUCTIONS ||
+		p.Properties[0].(*OfpTableFeaturePropInstructions).
+			PropHeader.Length != 12 ||
+		p.Properties[0].(*OfpTableFeaturePropInstructions).
+			InstructionIds[0].Type != OFPIT_GOTO_TABLE ||
+		p.Properties[0].(*OfpTableFeaturePropInstructions).
+			InstructionIds[0].Length != 4 ||
+		p.Properties[0].(*OfpTableFeaturePropInstructions).
+			InstructionIds[1].Type != OFPIT_WRITE_METADATA ||
+		p.Properties[0].(*OfpTableFeaturePropInstructions).
+			InstructionIds[1].Length != 4 ||
+		p.Properties[1].(*OfpTableFeaturePropNextTables).
+			PropHeader.Type != OFPTFPT_NEXT_TABLES ||
+		p.Properties[1].(*OfpTableFeaturePropNextTables).
+			PropHeader.Length != 7 ||
+		p.Properties[1].(*OfpTableFeaturePropNextTables).
+			NextTableIds[0] != 1 ||
+		p.Properties[1].(*OfpTableFeaturePropNextTables).
+			NextTableIds[1] != 2 ||
+		p.Properties[1].(*OfpTableFeaturePropNextTables).
+			NextTableIds[2] != 3 {
+		t.Log("Length             : ", p.Length)
+		t.Log("TableId            : ", p.TableId)
+		t.Log("MetadataMatch      : ", p.MetadataMatch)
+		t.Log("MetadataWrite      : ", p.MetadataWrite)
+		t.Log("Config             : ", p.Config)
+		t.Log("MaxEntries         : ", p.MaxEntries)
+		t.Error("Parsed value of OfpTableFeaturesStats is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpExperimenterMultipartHeader                    */
