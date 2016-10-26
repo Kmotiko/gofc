@@ -4645,8 +4645,11 @@ func NewOfpTableStatsRequest(flags uint16) *OfpMultipartRequest {
 	return m
 }
 
-func NewOfpPortStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpPortStatsRequest(portNo uint32, flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_PORT_STATS, flags)
+	m.Body = newOfpPortStatsRequestBody(portNo)
+	m.Header.Length = 24
+	return m
 }
 
 func NewOfpQueueStatsRequest() *OfpMultipartRequest {
@@ -4795,7 +4798,12 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 			index += mp.Size()
 		}
 	case OFPMP_PORT_STATS:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpPortStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_QUEUE:
 		// TODO: implements
 	case OFPMP_GROUP:
@@ -5716,49 +5724,180 @@ func (mp *OfpTableStats) MPType() uint16 {
 /*****************************************************/
 /* OfpPortStatsRequest                               */
 /*****************************************************/
-// TODO: implement
-func newOfpPortStatsRequestBody() *OfpPortStatsRequest {
-	return nil
+func newOfpPortStatsRequestBody(portNo uint32) *OfpPortStatsRequest {
+	mp := new(OfpPortStatsRequest)
+	mp.PortNo = portNo
+	return mp
 }
 
 func (mp *OfpPortStatsRequest) Serialize() []byte {
-	return nil
+	index := 0
+	packet := make([]byte, mp.Size())
+	binary.BigEndian.PutUint32(packet[index:], mp.PortNo)
+
+	return packet
 }
 
 func (mp *OfpPortStatsRequest) Parse(packet []byte) {
+	index := 0
+	mp.PortNo = binary.BigEndian.Uint32(packet[index:])
 	return
 }
 
 func (mp *OfpPortStatsRequest) Size() int {
-	return 0
+	return 8
 }
 
 func (mp *OfpPortStatsRequest) MPType() uint16 {
-	return 0
+	return OFPMP_PORT_STATS
 }
 
 /*****************************************************/
 /* OfpPortStats                                      */
 /*****************************************************/
-// TODO: implement
-func newOfpPortStats() *OfpPortStats {
-	return nil
+func newOfpPortStats(
+	portNo uint32,
+	rxPackets uint64,
+	txPackets uint64,
+	rxBytes uint64,
+	txBytes uint64,
+	rxDropped uint64,
+	txDropped uint64,
+	rxErrors uint64,
+	txErrors uint64,
+	rxFrameErr uint64,
+	rxOverErr uint64,
+	rxCrcErr uint64,
+	collisions uint64,
+	durationSec uint32,
+	durationNSec uint32) *OfpPortStats {
+	mp := new(OfpPortStats)
+	mp.PortNo = portNo
+	mp.RxPackets = rxPackets
+	mp.TxPackets = txPackets
+	mp.RxBytes = rxBytes
+	mp.TxBytes = txBytes
+	mp.RxDropped = rxDropped
+	mp.TxDropped = txDropped
+	mp.RxErrors = rxErrors
+	mp.TxErrors = txErrors
+	mp.RxFrameErr = rxFrameErr
+	mp.RxOverErr = rxOverErr
+	mp.RxCrcErr = rxCrcErr
+	mp.Collisions = collisions
+	mp.DurationSec = durationSec
+	mp.DurationNSec = durationNSec
+
+	return mp
 }
 
 func (mp *OfpPortStats) Serialize() []byte {
-	return nil
+	index := 0
+	packet := make([]byte, mp.Size())
+
+	binary.BigEndian.PutUint32(packet[index:], mp.PortNo)
+	index += 4
+
+	binary.BigEndian.PutUint64(packet[index:], mp.RxPackets)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.TxPackets)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.RxBytes)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.TxBytes)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.RxDropped)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.TxDropped)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.RxErrors)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.TxErrors)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.RxFrameErr)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.RxOverErr)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.RxCrcErr)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.Collisions)
+	index += 8
+
+	binary.BigEndian.PutUint32(packet[index:], mp.DurationSec)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.DurationNSec)
+
+	return packet
 }
 
 func (mp *OfpPortStats) Parse(packet []byte) {
+	index := 0
+
+	mp.PortNo = binary.BigEndian.Uint32(packet[index:])
+	index += 8
+
+	mp.RxPackets = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.TxPackets = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.RxBytes = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.TxBytes = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.RxDropped = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.TxDropped = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.RxErrors = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.TxErrors = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.RxFrameErr = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.RxOverErr = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.RxCrcErr = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.Collisions = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.DurationSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.DurationNSec = binary.BigEndian.Uint32(packet[index:])
+
 	return
 }
 
 func (mp *OfpPortStats) Size() int {
-	return 0
+	return 112
 }
 
 func (mp *OfpPortStats) MPType() uint16 {
-	return 0
+	return OFPMP_PORT_STATS
 }
 
 /*****************************************************/

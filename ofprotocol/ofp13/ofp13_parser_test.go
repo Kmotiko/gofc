@@ -4167,7 +4167,32 @@ func TestSerializeTableStatsRequest(t *testing.T) {
 /*****************************************************/
 /* OfpPortStatsRequest                               */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializePortStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x04, // Type(OFPMP_PORT_STATS)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, // PortNo
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpPortStatsRequest(0, 0)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpPortStatsRequest is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpQueueStatsRequest                              */
@@ -4700,7 +4725,72 @@ func TestParseTableStatsReply(t *testing.T) {
 /*****************************************************/
 /* OfpPortStatsReply                                 */
 /*****************************************************/
-// TODO: implements and test
+func TestParsePortStatsReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x13,       // Type
+		0x00, 0x80, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x04, // OFPMP_PORT_STATS
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // PortNo
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // RxPackets
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // TxPackets
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // RxBytes
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // TxBytes
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // RxDropped
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // TxDropped
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // RxErrors
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // TxErrors
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // RxFrameErr
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // RxOverErr
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // RxCrcErr
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // Collisions
+		0x00, 0x00, 0x00, 0x01, // DurationSec
+		0x00, 0x00, 0x00, 0x01, // DurationNSec
+	}
+
+	rep := NewOfpMultipartReply()
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 19 ||
+		rep.Header.Length != 128 || rep.Header.Xid != 0 ||
+		rep.Body[0].(*OfpPortStats).PortNo != 1 ||
+		rep.Body[0].(*OfpPortStats).RxPackets != 1 ||
+		rep.Body[0].(*OfpPortStats).TxPackets != 1 ||
+		rep.Body[0].(*OfpPortStats).RxBytes != 1 ||
+		rep.Body[0].(*OfpPortStats).TxBytes != 1 ||
+		rep.Body[0].(*OfpPortStats).RxDropped != 1 ||
+		rep.Body[0].(*OfpPortStats).TxDropped != 1 ||
+		rep.Body[0].(*OfpPortStats).RxErrors != 1 ||
+		rep.Body[0].(*OfpPortStats).TxErrors != 1 ||
+		rep.Body[0].(*OfpPortStats).RxFrameErr != 1 ||
+		rep.Body[0].(*OfpPortStats).RxOverErr != 1 ||
+		rep.Body[0].(*OfpPortStats).RxCrcErr != 1 ||
+		rep.Body[0].(*OfpPortStats).Collisions != 1 ||
+		rep.Body[0].(*OfpPortStats).DurationSec != 1 ||
+		rep.Body[0].(*OfpPortStats).DurationNSec != 1 {
+		t.Log("Version        : ", rep.Header.Version)
+		t.Log("Type           : ", rep.Header.Type)
+		t.Log("Length         : ", rep.Header.Length)
+		t.Log("Transaction ID : ", rep.Header.Xid)
+		t.Log("PortNo         : ", rep.Body[0].(*OfpPortStats).PortNo)
+		t.Log("RxPackets      : ", rep.Body[0].(*OfpPortStats).RxPackets)
+		t.Log("TxPackets      : ", rep.Body[0].(*OfpPortStats).TxPackets)
+		t.Log("RxBytes        : ", rep.Body[0].(*OfpPortStats).RxBytes)
+		t.Log("TxBytes        : ", rep.Body[0].(*OfpPortStats).TxBytes)
+		t.Log("RxDropped	  : ", rep.Body[0].(*OfpPortStats).RxDropped)
+		t.Log("TxDropped   	  : ", rep.Body[0].(*OfpPortStats).TxDropped)
+		t.Log("RxFrameErr     : ", rep.Body[0].(*OfpPortStats).RxFrameErr)
+		t.Log("RxOverErr      : ", rep.Body[0].(*OfpPortStats).RxOverErr)
+		t.Log("RxCrcErr       : ", rep.Body[0].(*OfpPortStats).RxCrcErr)
+		t.Log("Collisions     : ", rep.Body[0].(*OfpPortStats).Collisions)
+		t.Log("DurationSec    : ", rep.Body[0].(*OfpPortStats).DurationSec)
+		t.Log("DurationNSec   : ", rep.Body[0].(*OfpPortStats).DurationNSec)
+		t.Error("Parsed value of OfpPortStatsReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpQueueStats                                     */

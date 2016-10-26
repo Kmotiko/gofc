@@ -1482,12 +1482,12 @@ type OfpTableStats struct {
 
 type OfpPortStatsRequest struct {
 	PortNo uint32
-	Pad    [4]uint8
+	// Pad    [4]uint8
 }
 
 type OfpPortStats struct {
-	PortNo       uint32
-	Pad          [4]uint8
+	PortNo uint32
+	// Pad          [4]uint8
 	RxPackets    uint64
 	TxPackets    uint64
 	RxBytes      uint64
@@ -1501,7 +1501,7 @@ type OfpPortStats struct {
 	RxCrcErr     uint64
 	Collisions   uint64
 	DurationSec  uint32
-	DurationNsec uint32
+	DurationNSec uint32
 }
 
 type OfpQueueStatsRequest struct {

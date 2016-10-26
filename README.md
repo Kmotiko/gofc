@@ -189,7 +189,7 @@ func main() {
  - [x] FlowStats
  - [x] AggregateStats
  - [x] TableStats
- - [ ] PortStats
+ - [x] PortStats
  - [ ] QueueStats
  - [ ] GroupStats
  - [ ] GroupDescStats
