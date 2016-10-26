@@ -4197,12 +4197,62 @@ func TestSerializePortStatsRequest(t *testing.T) {
 /*****************************************************/
 /* OfpQueueStatsRequest                              */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeQueueStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x05, // Type(OFPMP_QUEUE)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // PortNo
+		0x00, 0x00, 0x00, 0x01, // QueueId
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpQueueStatsRequest(1, 1, 0)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpQueueStatsRequest is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpGroupStatsRequest                              */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeGroupStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x06, // Type(OFPMP_GROUP)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // GroupId
+		0x00, 0x00, 0x00, 0x00, // PaddingGroupId
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpGroupStatsRequest(1, 0)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpGroupStatsRequest is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpGroupDescStatsRequest                          */
@@ -4795,12 +4845,102 @@ func TestParsePortStatsReply(t *testing.T) {
 /*****************************************************/
 /* OfpQueueStats                                     */
 /*****************************************************/
-// TODO: implements and test
+func TestParseQueueStatsReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x13,       // Type
+		0x00, 0x38, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x05, // OFPMP_QUEUE
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // PortNo
+		0x00, 0x00, 0x00, 0x01, // QueueId
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // TxBytes
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // TxPackets
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // TxErrors
+		0x00, 0x00, 0x00, 0x01, // DurationSec
+		0x00, 0x00, 0x00, 0x01, // DurationNSec
+	}
+
+	rep := NewOfpMultipartReply()
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 19 ||
+		rep.Header.Length != 56 || rep.Header.Xid != 0 ||
+		rep.Body[0].(*OfpQueueStats).PortNo != 1 ||
+		rep.Body[0].(*OfpQueueStats).QueueId != 1 ||
+		rep.Body[0].(*OfpQueueStats).TxBytes != 1 ||
+		rep.Body[0].(*OfpQueueStats).TxPackets != 1 ||
+		rep.Body[0].(*OfpQueueStats).TxErrors != 1 ||
+		rep.Body[0].(*OfpQueueStats).DurationSec != 1 ||
+		rep.Body[0].(*OfpQueueStats).DurationNSec != 1 {
+		t.Log("Version        : ", rep.Header.Version)
+		t.Log("Type           : ", rep.Header.Type)
+		t.Log("Length         : ", rep.Header.Length)
+		t.Log("Transaction ID : ", rep.Header.Xid)
+		t.Log("PortNo         : ", rep.Body[0].(*OfpQueueStats).PortNo)
+		t.Log("QueueId        : ", rep.Body[0].(*OfpQueueStats).QueueId)
+		t.Log("TxBytes        : ", rep.Body[0].(*OfpQueueStats).TxBytes)
+		t.Log("TxPackets      : ", rep.Body[0].(*OfpQueueStats).TxPackets)
+		t.Log("TxErrors       : ", rep.Body[0].(*OfpQueueStats).TxErrors)
+		t.Log("DurationSec    : ", rep.Body[0].(*OfpQueueStats).DurationSec)
+		t.Log("DurationNSec   : ", rep.Body[0].(*OfpQueueStats).DurationNSec)
+		t.Error("Parsed value of OfpQueueStatsReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpGroupStatsReply                                */
 /*****************************************************/
-// TODO: implements and test
+func TestParseGroupStatsReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x13,       // Type
+		0x00, 0x68, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x06, // OFPMP_GROUP
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x58, // Length
+		0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // GroupId
+		0x00, 0x00, 0x00, 0x01, // RefCount
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // PacketCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // ByteCount
+		0x00, 0x00, 0x00, 0x01, // DurationSec
+		0x00, 0x00, 0x00, 0x01, // DurationNSec
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // PacketCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // ByteCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, // PacketCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, // ByteCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, // PacketCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, // ByteCount
+	}
+
+	rep := NewOfpMultipartReply()
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 19 ||
+		rep.Header.Length != 104 || rep.Header.Xid != 0 ||
+		rep.Body[0].(*OfpGroupStats).GroupId != 1 ||
+		rep.Body[0].(*OfpGroupStats).RefCount != 1 ||
+		rep.Body[0].(*OfpGroupStats).PacketCount != 1 ||
+		rep.Body[0].(*OfpGroupStats).ByteCount != 1 ||
+		rep.Body[0].(*OfpGroupStats).DurationSec != 1 ||
+		rep.Body[0].(*OfpGroupStats).DurationNSec != 1 {
+		t.Log("Version        : ", rep.Header.Version)
+		t.Log("Type           : ", rep.Header.Type)
+		t.Log("Length         : ", rep.Header.Length)
+		t.Log("Transaction ID : ", rep.Header.Xid)
+		t.Log("GroupId        : ", rep.Body[0].(*OfpGroupStats).GroupId)
+		t.Log("RefCount       : ", rep.Body[0].(*OfpGroupStats).RefCount)
+		t.Log("PacketCount    : ", rep.Body[0].(*OfpGroupStats).PacketCount)
+		t.Log("ByteCount      : ", rep.Body[0].(*OfpGroupStats).ByteCount)
+		t.Log("DurationSec    : ", rep.Body[0].(*OfpGroupStats).DurationSec)
+		t.Log("DurationNSec   : ", rep.Body[0].(*OfpGroupStats).DurationNSec)
+		t.Error("Parsed value of OfpGroupStatsReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpGroupDesc                                      */

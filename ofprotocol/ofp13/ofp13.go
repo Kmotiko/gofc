@@ -1530,16 +1530,16 @@ type OfpBucketCounter struct {
 }
 
 type OfpGroupStats struct {
-	Length       uint16
-	Pad          [2]uint8
-	GroupId      uint32
-	RefCount     uint32
-	Pad2         [4]uint8
+	Length uint16
+	// Pad          [2]uint8
+	GroupId  uint32
+	RefCount uint32
+	// Pad2         [4]uint8
 	PacketCount  uint64
 	ByteCount    uint64
 	DurationSec  uint32
 	DurationNSec uint32
-	BucketStats  []OfpBucketCounter
+	BucketStats  []*OfpBucketCounter
 }
 
 type OfpGroupDesc struct {

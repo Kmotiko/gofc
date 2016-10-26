@@ -4652,12 +4652,18 @@ func NewOfpPortStatsRequest(portNo uint32, flags uint16) *OfpMultipartRequest {
 	return m
 }
 
-func NewOfpQueueStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpQueueStatsRequest(portNo uint32, queueId uint32, flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_QUEUE, flags)
+	m.Body = newOfpQueueStatsRequestBody(portNo, queueId)
+	m.Header.Length = 24
+	return m
 }
 
-func NewOfpGroupStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpGroupStatsRequest(groupId uint32, flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_GROUP, flags)
+	m.Body = newOfpGroupStatsRequestBody(groupId)
+	m.Header.Length += 8
+	return m
 }
 
 func NewOfpGroupDescStatsRequest() *OfpMultipartRequest {
@@ -4805,9 +4811,19 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 			index += mp.Size()
 		}
 	case OFPMP_QUEUE:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpQueueStats(0, 0, 0, 0, 0, 0, 0)
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_GROUP:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpGroupStats(0, 0, 0, 0, 0, 0, 0, nil)
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_GROUP_DESC:
 		// TODO: implements
 	case OFPMP_GROUP_FEATURES:
@@ -5687,7 +5703,6 @@ func (mp *OfpTableFeatures) MPType() uint16 {
 /*****************************************************/
 /* OfpTableStats                                     */
 /*****************************************************/
-// TODO: implement
 func newOfpTableStats() *OfpTableStats {
 	mp := new(OfpTableStats)
 	return mp
@@ -5903,97 +5918,308 @@ func (mp *OfpPortStats) MPType() uint16 {
 /*****************************************************/
 /* OfpQueueStatsRequest                              */
 /*****************************************************/
-// TODO: implement
-func newOfpQueueStatsRequestBody() *OfpQueueStatsRequest {
-	return nil
+func newOfpQueueStatsRequestBody(portNo uint32, queueId uint32) *OfpQueueStatsRequest {
+	mp := new(OfpQueueStatsRequest)
+	mp.PortNo = portNo
+	mp.QueueId = queueId
+	return mp
 }
 
 func (mp *OfpQueueStatsRequest) Serialize() []byte {
-	return nil
+	index := 0
+	packet := make([]byte, mp.Size())
+
+	binary.BigEndian.PutUint32(packet[index:], mp.PortNo)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.QueueId)
+
+	return packet
 }
 
 func (mp *OfpQueueStatsRequest) Parse(packet []byte) {
+	index := 0
+
+	mp.PortNo = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.QueueId = binary.BigEndian.Uint32(packet[index:])
+
 	return
 }
 
 func (mp *OfpQueueStatsRequest) Size() int {
-	return 0
+	return 8
 }
 
 func (mp *OfpQueueStatsRequest) MPType() uint16 {
-	return 0
+	return OFPMP_QUEUE
 }
 
 /*****************************************************/
 /* OfpQueueStats                                     */
 /*****************************************************/
-// TODO: implement
-func newOfpQueueStats() *OfpQueueStats {
-	return nil
+func newOfpQueueStats(
+	portNo uint32,
+	queueId uint32,
+	txBytes uint64,
+	txPackets uint64,
+	txErrors uint64,
+	durationSec uint32,
+	durationNSec uint32,
+) *OfpQueueStats {
+	mp := new(OfpQueueStats)
+	mp.PortNo = portNo
+	mp.QueueId = queueId
+	mp.TxBytes = txBytes
+	mp.TxPackets = txPackets
+	mp.TxErrors = txErrors
+	mp.DurationSec = durationSec
+	mp.DurationNSec = durationNSec
+
+	return mp
 }
 
 func (mp *OfpQueueStats) Serialize() []byte {
-	return nil
+	index := 0
+	packet := make([]byte, mp.Size())
+
+	binary.BigEndian.PutUint32(packet[index:], mp.PortNo)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.QueueId)
+	index += 4
+
+	binary.BigEndian.PutUint64(packet[index:], mp.TxBytes)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.TxPackets)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.TxErrors)
+	index += 8
+
+	binary.BigEndian.PutUint32(packet[index:], mp.DurationSec)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.DurationNSec)
+
+	return packet
 }
 
 func (mp *OfpQueueStats) Parse(packet []byte) {
+	index := 0
+
+	mp.PortNo = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.QueueId = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.TxBytes = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.TxPackets = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.TxErrors = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.DurationSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.DurationNSec = binary.BigEndian.Uint32(packet[index:])
+
 	return
 }
 
 func (mp *OfpQueueStats) Size() int {
-	return 0
+	return 40
 }
 
 func (mp *OfpQueueStats) MPType() uint16 {
-	return 0
+	return OFPMP_QUEUE
 }
 
 /*****************************************************/
 /* OfpGroupStatsRequest                              */
 /*****************************************************/
-// TODO: implement
-func newOfpGroupStatsRequestBody() *OfpGroupStatsRequest {
-	return nil
+func newOfpGroupStatsRequestBody(groupId uint32) *OfpGroupStatsRequest {
+	mp := new(OfpGroupStatsRequest)
+	mp.GroupId = groupId
+	return mp
 }
 
 func (mp *OfpGroupStatsRequest) Serialize() []byte {
-	return nil
+	index := 0
+	packet := make([]byte, mp.Size())
+
+	binary.BigEndian.PutUint32(packet[index:], mp.GroupId)
+
+	return packet
 }
 
 func (mp *OfpGroupStatsRequest) Parse(packet []byte) {
+	index := 0
+
+	mp.GroupId = binary.BigEndian.Uint32(packet[index:])
+
 	return
 }
 
 func (mp *OfpGroupStatsRequest) Size() int {
-	return 0
+	return 8
 }
 
 func (mp *OfpGroupStatsRequest) MPType() uint16 {
-	return 0
+	return OFPMP_GROUP
+}
+
+/*****************************************************/
+/* OfpBucketCounter                                  */
+/*****************************************************/
+func newOfpBucketCounter(
+	packetCount uint64,
+	byteCount uint64) *OfpBucketCounter {
+	bc := new(OfpBucketCounter)
+	bc.PacketCount = packetCount
+	bc.ByteCount = byteCount
+
+	return bc
+}
+
+func (bc *OfpBucketCounter) Serialize() []byte {
+	index := 0
+	packet := make([]byte, bc.Size())
+
+	binary.BigEndian.PutUint64(packet[index:], bc.PacketCount)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], bc.ByteCount)
+
+	return packet
+}
+
+func (bc *OfpBucketCounter) Parse(packet []byte) {
+	index := 0
+
+	bc.PacketCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	bc.ByteCount = binary.BigEndian.Uint64(packet[index:])
+
+	return
+}
+
+func (bc *OfpBucketCounter) Size() int {
+	return 16
 }
 
 /*****************************************************/
 /* OfpGroupStats                                     */
 /*****************************************************/
-// TODO: implement
-func newOfpGroupStats() *OfpGroupStats {
-	return nil
+func newOfpGroupStats(
+	length uint16,
+	groupId uint32,
+	refCount uint32,
+	packetCount uint64,
+	byteCount uint64,
+	durationSec uint32,
+	durationNSec uint32,
+	bucketStats []*OfpBucketCounter) *OfpGroupStats {
+	mp := new(OfpGroupStats)
+	mp.Length = length
+	mp.GroupId = groupId
+	mp.RefCount = refCount
+	mp.PacketCount = packetCount
+	mp.ByteCount = byteCount
+	mp.DurationSec = durationSec
+	mp.DurationNSec = durationNSec
+	if mp.BucketStats != nil {
+		mp.BucketStats = bucketStats
+	}
+
+	return mp
 }
 
 func (mp *OfpGroupStats) Serialize() []byte {
-	return nil
+	index := 0
+	packet := make([]byte, mp.Size())
+
+	binary.BigEndian.PutUint16(packet[index:], mp.Length)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.GroupId)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.RefCount)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.PacketCount)
+	index += 8
+
+	binary.BigEndian.PutUint64(packet[index:], mp.ByteCount)
+	index += 8
+
+	binary.BigEndian.PutUint32(packet[index:], mp.DurationSec)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.DurationNSec)
+	index += 4
+
+	for _, bc := range mp.BucketStats {
+		bc_packet := bc.Serialize()
+		copy(packet[index:], bc_packet)
+		index += bc.Size()
+	}
+
+	return packet
 }
 
 func (mp *OfpGroupStats) Parse(packet []byte) {
+	index := 0
+
+	mp.Length = binary.BigEndian.Uint16(packet[index:])
+	index += 4
+
+	mp.GroupId = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.RefCount = binary.BigEndian.Uint32(packet[index:])
+	index += 8
+
+	mp.PacketCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.ByteCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.DurationSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.DurationNSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	for index < (int)(mp.Length) {
+		bc := newOfpBucketCounter(0, 0)
+		bc.Parse(packet[index:])
+		mp.BucketStats = append(mp.BucketStats, bc)
+		index += bc.Size()
+	}
+
 	return
 }
 
 func (mp *OfpGroupStats) Size() int {
-	return 0
+	size := 40
+	if mp.BucketStats != nil {
+		size += len(mp.BucketStats) * 16
+	}
+	return size
 }
 
 func (mp *OfpGroupStats) MPType() uint16 {
-	return 0
+	return OFPMP_GROUP
 }
 
 /*****************************************************/
