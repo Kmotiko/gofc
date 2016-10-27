@@ -175,7 +175,9 @@ func (dp *Datapath) handlePacket(buf []byte) {
 			case ofp13.OFPMP_GROUP_DESC:
 				// TODO: implement
 			case ofp13.OFPMP_GROUP_FEATURES:
-				// TODO: implement
+				if obj, ok := app.(Of13GroupFeaturesStatsReplyHandler); ok {
+					obj.HandleGroupFeaturesStatsReply(msgi, dp)
+				}
 			case ofp13.OFPMP_METER:
 				// TODO: implement
 			case ofp13.OFPMP_METER_CONFIG:

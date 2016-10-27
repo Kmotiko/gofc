@@ -4670,8 +4670,9 @@ func NewOfpGroupDescStatsRequest() *OfpMultipartRequest {
 	return nil
 }
 
-func NewOfpGroupFeaturesStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpGroupFeaturesStatsRequest(flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_GROUP_FEATURES, flags)
+	return m
 }
 
 func NewOfpMeterStatsRequest() *OfpMultipartRequest {
@@ -4827,7 +4828,16 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 	case OFPMP_GROUP_DESC:
 		// TODO: implements
 	case OFPMP_GROUP_FEATURES:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpGroupFeaturesStats(
+				0,
+				0,
+				[4]uint32{0, 0, 0, 0},
+				[4]uint32{0, 0, 0, 0})
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_METER:
 		// TODO: implements
 	case OFPMP_METER_CONFIG:
@@ -6225,25 +6235,86 @@ func (mp *OfpGroupStats) MPType() uint16 {
 /*****************************************************/
 /* OfpGroupFeatures                                  */
 /*****************************************************/
-// TODO: implement
-func newOfpGroupFeaturesStats() *OfpGroupFeaturesStats {
-	return nil
+func newOfpGroupFeaturesStats(
+	t uint32,
+	capabilities uint32,
+	maxGroups [4]uint32,
+	actions [4]uint32) *OfpGroupFeaturesStats {
+	mp := new(OfpGroupFeaturesStats)
+	mp.Type = t
+	mp.Capabilities = capabilities
+	mp.MaxGroups = maxGroups
+	mp.Actions = actions
+	return mp
 }
 
 func (mp *OfpGroupFeaturesStats) Serialize() []byte {
-	return nil
+	index := 0
+	packet := make([]byte, mp.Size())
+
+	binary.BigEndian.PutUint32(packet[index:], mp.Type)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.Capabilities)
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.MaxGroups[0])
+	index += 4
+	binary.BigEndian.PutUint32(packet[index:], mp.MaxGroups[1])
+	index += 4
+	binary.BigEndian.PutUint32(packet[index:], mp.MaxGroups[2])
+	index += 4
+	binary.BigEndian.PutUint32(packet[index:], mp.MaxGroups[3])
+	index += 4
+
+	binary.BigEndian.PutUint32(packet[index:], mp.Actions[0])
+	index += 4
+	binary.BigEndian.PutUint32(packet[index:], mp.Actions[1])
+	index += 4
+	binary.BigEndian.PutUint32(packet[index:], mp.Actions[2])
+	index += 4
+	binary.BigEndian.PutUint32(packet[index:], mp.Actions[3])
+	index += 4
+
+	return packet
 }
 
 func (mp *OfpGroupFeaturesStats) Parse(packet []byte) {
+	index := 0
+
+	mp.Type = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.Capabilities = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.MaxGroups[0] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+	mp.MaxGroups[1] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+	mp.MaxGroups[2] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+	mp.MaxGroups[3] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.Actions[0] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+	mp.Actions[1] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+	mp.Actions[2] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+	mp.Actions[3] = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
 	return
 }
 
 func (mp *OfpGroupFeaturesStats) Size() int {
-	return 0
+	return 40
 }
 
 func (mp *OfpGroupFeaturesStats) MPType() uint16 {
-	return 0
+	return OFPMP_GROUP_FEATURES
 }
 
 /*****************************************************/

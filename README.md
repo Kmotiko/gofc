@@ -193,7 +193,7 @@ func main() {
  - [x] QueueStats
  - [x] GroupStats
  - [ ] GroupDescStats
- - [ ] GroupFeaturesStats
+ - [x] GroupFeaturesStats
  - [ ] MeterStats
  - [ ] MeterConfigStats
  - [ ] MeterFeaturesStats
