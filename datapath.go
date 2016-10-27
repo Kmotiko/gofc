@@ -167,11 +167,17 @@ func (dp *Datapath) handlePacket(buf []byte) {
 					obj.HandleTableStatsReply(msgi, dp)
 				}
 			case ofp13.OFPMP_PORT_STATS:
-				// TODO: implement
+				if obj, ok := app.(Of13PortStatsReplyHandler); ok {
+					obj.HandlePortStatsReply(msgi, dp)
+				}
 			case ofp13.OFPMP_QUEUE:
-				// TODO: implement
+				if obj, ok := app.(Of13QueueStatsReplyHandler); ok {
+					obj.HandleQueueStatsReply(msgi, dp)
+				}
 			case ofp13.OFPMP_GROUP:
-				// TODO: implement
+				if obj, ok := app.(Of13GroupStatsReplyHandler); ok {
+					obj.HandleGroupStatsReply(msgi, dp)
+				}
 			case ofp13.OFPMP_GROUP_DESC:
 				// TODO: implement
 			case ofp13.OFPMP_GROUP_FEATURES:

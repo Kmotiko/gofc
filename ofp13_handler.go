@@ -86,6 +86,27 @@ type Of13TableStatsReplyHandler interface {
 }
 
 /*****************************************************/
+/* OfpPortStatsReply                                 */
+/*****************************************************/
+type Of13PortStatsReplyHandler interface {
+	HandlePortStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
+/* OfpQueueStatsReply                                */
+/*****************************************************/
+type Of13QueueStatsReplyHandler interface {
+	HandleQueueStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
+/* OfpGroupStatsReply                                */
+/*****************************************************/
+type Of13GroupStatsReplyHandler interface {
+	HandleGroupStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
 /* OfpGroupFeaturesStatsReply                        */
 /*****************************************************/
 type Of13GroupFeaturesStatsReplyHandler interface {
