@@ -1576,14 +1576,14 @@ type OfpMeterStats struct {
 	ByteInCount   uint64
 	DurationSec   uint32
 	DurationNSec  uint32
-	BandStats     []OfpMeterBandStats
+	BandStats     []*OfpMeterBandStats
 }
 
 type OfpMeterConfig struct {
 	Length  uint16
 	Flags   uint16
 	MeterId uint32
-	Bands   []OfpMeterBandHeader
+	Bands   []OfpMeterBand
 }
 
 type OfpMeterFeatures struct {

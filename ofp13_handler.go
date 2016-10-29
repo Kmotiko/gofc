@@ -121,7 +121,21 @@ type Of13GroupFeaturesStatsReplyHandler interface {
 }
 
 /*****************************************************/
-/* OfpTableFeaturesStatsReply                                */
+/* OfpMeterStatsReply                                */
+/*****************************************************/
+type Of13MeterStatsReplyHandler interface {
+	HandleMeterStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
+/* OfpMeterConfigStatsReply                          */
+/*****************************************************/
+type Of13MeterConfigStatsReplyHandler interface {
+	HandleMeterConfigStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
+/* OfpTableFeaturesStatsReply                        */
 /*****************************************************/
 type Of13TableFeaturesStatsReplyHandler interface {
 	HandleTableFeaturesStatsReply(*ofp13.OfpMultipartReply, *Datapath)

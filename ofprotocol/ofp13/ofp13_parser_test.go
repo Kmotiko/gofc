@@ -4313,12 +4313,60 @@ func TestSerializeGroupFeaturesStatsRequest(t *testing.T) {
 /*****************************************************/
 /* OfpMeterStatsRequest                              */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeMeterStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x09, // Type(OFPMP_METER)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // MeterId
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpMeterStatsRequest(1, 0)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpMeterStatsRequest is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpMeterConfigStatsRequest                        */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeMeterConfigStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x0a, // Type(OFPMP_METER_CONFIG)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpMeterConfigStatsRequest(0)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpMeterConfigStatsRequest is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpMeterFeatruresStatsRequest                     */
@@ -5100,12 +5148,108 @@ func TestParseGroupFeaturesStatsReply(t *testing.T) {
 /*****************************************************/
 /* OfpMeterStats                                     */
 /*****************************************************/
-// TODO: implements and test
+func TestParseMeterStatsReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x13,       // Type
+		0x00, 0x48, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x09, // OFPMP_METER
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // MeterId
+		0x00, 0x38, // Length
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // FlowCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // PacketInCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // ByteInCount
+		0x00, 0x00, 0x00, 0x01, // DurationSec
+		0x00, 0x00, 0x00, 0x01, // DurationNSec
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // PacketBandCount
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // ByteBandCount
+	}
+
+	rep := NewOfpMultipartReply()
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 19 ||
+		rep.Header.Length != 72 || rep.Header.Xid != 0 ||
+		rep.Body[0].(*OfpMeterStats).MeterId != 1 ||
+		rep.Body[0].(*OfpMeterStats).Length != 56 ||
+		rep.Body[0].(*OfpMeterStats).FlowCount != 1 ||
+		rep.Body[0].(*OfpMeterStats).PacketInCount != 1 ||
+		rep.Body[0].(*OfpMeterStats).ByteInCount != 1 ||
+		rep.Body[0].(*OfpMeterStats).DurationSec != 1 ||
+		rep.Body[0].(*OfpMeterStats).DurationNSec != 1 ||
+		rep.Body[0].(*OfpMeterStats).BandStats[0].PacketBandCount != 1 ||
+		rep.Body[0].(*OfpMeterStats).BandStats[0].ByteBandCount != 1 {
+		t.Log("Version        : ", rep.Header.Version)
+		t.Log("Type           : ", rep.Header.Type)
+		t.Log("Length         : ", rep.Header.Length)
+		t.Log("Transaction ID : ", rep.Header.Xid)
+		t.Log("Type           : ", rep.Type)
+		t.Log("Flags          : ", rep.Flags)
+		t.Log("MeterId        : ", rep.Body[0].(*OfpMeterStats).MeterId)
+		t.Log("Length         : ", rep.Body[0].(*OfpMeterStats).Length)
+		t.Log("FlowCount      : ", rep.Body[0].(*OfpMeterStats).FlowCount)
+		t.Log("PacketInCount  : ", rep.Body[0].(*OfpMeterStats).PacketInCount)
+		t.Log("ByteInCount    : ", rep.Body[0].(*OfpMeterStats).ByteInCount)
+		t.Log("DurationSec    : ", rep.Body[0].(*OfpMeterStats).DurationSec)
+		t.Log("DurationNSec   : ", rep.Body[0].(*OfpMeterStats).DurationNSec)
+		t.Log("PacketBandCount: ", rep.Body[0].(*OfpMeterStats).BandStats[0].PacketBandCount)
+		t.Log("ByteBandCount  : ", rep.Body[0].(*OfpMeterStats).BandStats[0].ByteBandCount)
+		t.Error("Parsed value of OfpMeterStatsReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpMeterConfig                                    */
 /*****************************************************/
-// TODO: implements and test
+func TestParseMeterConfigStatsReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x13,       // Type
+		0x00, 0x28, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x0a, // OFPMP_METER
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x18, // Length
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x01, // MeterId
+		0x00, 0x01, // OFPMBT_DROP
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x64, // Rate
+		0x00, 0x00, 0x00, 0x00, // Burst Size
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
+	rep := NewOfpMultipartReply()
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 19 ||
+		rep.Header.Length != 40 || rep.Header.Xid != 0 ||
+		rep.Body[0].(*OfpMeterConfig).MeterId != 1 ||
+		rep.Body[0].(*OfpMeterConfig).Length != 24 ||
+		rep.Body[0].(*OfpMeterConfig).Flags != 0 ||
+		rep.Body[0].(*OfpMeterConfig).Bands[0].(*OfpMeterBandDrop).Header.Rate != 100 ||
+		rep.Body[0].(*OfpMeterConfig).Bands[0].(*OfpMeterBandDrop).Header.BurstSize != 0 {
+		t.Log("Version        : ", rep.Header.Version)
+		t.Log("Type           : ", rep.Header.Type)
+		t.Log("Length         : ", rep.Header.Length)
+		t.Log("Transaction ID : ", rep.Header.Xid)
+		t.Log("Type           : ", rep.Type)
+		t.Log("Flags          : ", rep.Flags)
+		t.Log("MeterId        : ", rep.Body[0].(*OfpMeterConfig).MeterId)
+		t.Log("Length         : ", rep.Body[0].(*OfpMeterConfig).Length)
+		t.Log("Flags          : ", rep.Body[0].(*OfpMeterConfig).Flags)
+		t.Log("MeterBandType  : ", rep.Type)
+		t.Log("Flags          : ", rep.Flags)
+		t.Log("Rate           : ",
+			rep.Body[0].(*OfpMeterConfig).Bands[0].(*OfpMeterBandDrop).Header.Rate)
+		t.Log("BurstSize      : ",
+			rep.Body[0].(*OfpMeterConfig).Bands[0].(*OfpMeterBandDrop).Header.BurstSize)
+		t.Error("Parsed value of OfpMeterConfigStatsReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpMeterFeatures                                  */

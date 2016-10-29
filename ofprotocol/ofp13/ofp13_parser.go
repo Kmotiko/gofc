@@ -795,10 +795,32 @@ func (m *OfpPacketOut) AppendAction(a OfpAction) {
 	m.ActionLen += 1
 }
 
+/*
+ * MeterBand Parser
+ */
+func ParseMeter(packet []byte) (mb OfpMeterBand) {
+	index := 0
+	bType := binary.BigEndian.Uint16(packet[index:])
+
+	switch bType {
+	case OFPMBT_DROP:
+		mb = NewOfpMeterBandDrop(0, 0)
+		mb.Parse(packet)
+	case OFPMBT_DSCP_REMARK:
+		mb = NewOfpMeterBandDscpRemark(0, 0, 0)
+		mb.Parse(packet)
+	case OFPMBT_EXPERIMENTER:
+		mb = NewOfpMeterBandExperimenter(0, 0, 0)
+		mb.Parse(packet)
+	default:
+	}
+
+	return mb
+}
+
 /*****************************************************/
 /* OfpMeterBandHeader                                */
 /*****************************************************/
-// TODO: implement
 func NewOfpMeterBandHeader(t uint16, rate uint32, burstSize uint32) OfpMeterBandHeader {
 	m := OfpMeterBandHeader{}
 	m.Type = t
@@ -827,6 +849,20 @@ func (m *OfpMeterBandHeader) Serialize() []byte {
 }
 
 func (m *OfpMeterBandHeader) Parse(packet []byte) {
+	index := 0
+
+	m.Type = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	m.Length = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	m.Rate = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	m.BurstSize = binary.BigEndian.Uint32(packet[index:])
+
+	return
 }
 
 func (m *OfpMeterBandHeader) Size() int {
@@ -836,7 +872,6 @@ func (m *OfpMeterBandHeader) Size() int {
 /*****************************************************/
 /* OfpMeterBandDrop                                  */
 /*****************************************************/
-// TODO: implement
 func NewOfpMeterBandDrop(rate uint32, burstSize uint32) *OfpMeterBandDrop {
 	m := new(OfpMeterBandDrop)
 	m.Header = NewOfpMeterBandHeader(OFPMBT_DROP, rate, burstSize)
@@ -853,6 +888,8 @@ func (m *OfpMeterBandDrop) Serialize() []byte {
 }
 
 func (m *OfpMeterBandDrop) Parse(packet []byte) {
+	m.Header.Parse(packet)
+	return
 }
 
 func (m *OfpMeterBandDrop) Size() int {
@@ -866,7 +903,6 @@ func (m *OfpMeterBandDrop) MeterBandType() uint16 {
 /*****************************************************/
 /* OfpMeterBandDscpRemark                            */
 /*****************************************************/
-// TODO: implement
 func NewOfpMeterBandDscpRemark(rate uint32, burstSize uint32, precLevel uint8) *OfpMeterBandDscpRemark {
 	m := new(OfpMeterBandDscpRemark)
 	m.Header = NewOfpMeterBandHeader(OFPMBT_DSCP_REMARK, rate, burstSize)
@@ -886,6 +922,14 @@ func (m *OfpMeterBandDscpRemark) Serialize() []byte {
 }
 
 func (m *OfpMeterBandDscpRemark) Parse(packet []byte) {
+	index := 0
+
+	m.Header.Parse(packet)
+	index += m.Header.Size()
+
+	m.PrecLevel = packet[index]
+
+	return
 }
 
 func (m *OfpMeterBandDscpRemark) Size() int {
@@ -899,7 +943,6 @@ func (m *OfpMeterBandDscpRemark) MeterBandType() uint16 {
 /*****************************************************/
 /* OfpMeterBandExperimenter                          */
 /*****************************************************/
-// TODO: implement
 func NewOfpMeterBandExperimenter(rate uint32, burstSize uint32, experimenter uint32) *OfpMeterBandExperimenter {
 	m := new(OfpMeterBandExperimenter)
 	m.Header = NewOfpMeterBandHeader(OFPMBT_EXPERIMENTER, rate, burstSize)
@@ -920,6 +963,12 @@ func (m *OfpMeterBandExperimenter) Serialize() []byte {
 }
 
 func (m *OfpMeterBandExperimenter) Parse(packet []byte) {
+	index := 0
+
+	m.Header.Parse(packet)
+	index += m.Header.Size()
+
+	m.Experimenter = binary.BigEndian.Uint32(packet[index:])
 }
 
 func (m *OfpMeterBandExperimenter) Size() int {
@@ -4675,12 +4724,16 @@ func NewOfpGroupFeaturesStatsRequest(flags uint16) *OfpMultipartRequest {
 	return m
 }
 
-func NewOfpMeterStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpMeterStatsRequest(meterId uint32, flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_METER, flags)
+	m.Body = newOfpMeterMultipartRequestBody(meterId)
+	m.Header.Length += 8
+	return m
 }
 
-func NewOfpMeterConfigStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpMeterConfigStatsRequest(flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_METER_CONFIG, flags)
+	return m
 }
 
 func NewOfpMeterFeaturesStatsRequest() *OfpMultipartRequest {
@@ -4844,9 +4897,19 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 			index += mp.Size()
 		}
 	case OFPMP_METER:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpMeterStats(0, 0, 0, 0, 0, 0, nil)
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_METER_CONFIG:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpMeterConfig(0, 0, nil)
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_METER_FEATURES:
 		// TODO: implements
 	case OFPMP_TABLE_FEATURES:
@@ -6387,13 +6450,19 @@ func (mp *OfpGroupFeaturesStats) MPType() uint16 {
 /*****************************************************/
 /* OfpMeterMultipartRequest                          */
 /*****************************************************/
-// TODO: implement
-func newOfpMeterMultipartRequestBody() *OfpMeterMultipartRequest {
-	return nil
+func newOfpMeterMultipartRequestBody(meterId uint32) *OfpMeterMultipartRequest {
+	mp := new(OfpMeterMultipartRequest)
+	mp.MeterId = meterId
+	return mp
 }
 
 func (mp *OfpMeterMultipartRequest) Serialize() []byte {
-	return nil
+	index := 0
+	packet := make([]byte, mp.Size())
+
+	binary.BigEndian.PutUint32(packet[index:], mp.MeterId)
+
+	return packet
 }
 
 func (mp *OfpMeterMultipartRequest) Parse(packet []byte) {
@@ -6401,19 +6470,67 @@ func (mp *OfpMeterMultipartRequest) Parse(packet []byte) {
 }
 
 func (mp *OfpMeterMultipartRequest) Size() int {
-	return 0
+	return 8
 }
 
 func (mp *OfpMeterMultipartRequest) MPType() uint16 {
-	return 0
+	return OFPMP_METER
+}
+
+/*****************************************************/
+/* OfpMeterBandStats                                 */
+/*****************************************************/
+func newOfpMeterBandStats(
+	packetBandCount uint64,
+	byteBandCount uint64) *OfpMeterBandStats {
+	mb := new(OfpMeterBandStats)
+	mb.PacketBandCount = packetBandCount
+	mb.ByteBandCount = byteBandCount
+	return mb
+}
+
+func (mb *OfpMeterBandStats) Serialize() []byte {
+	return nil
+}
+
+func (mb *OfpMeterBandStats) Parse(packet []byte) {
+	index := 0
+
+	mb.PacketBandCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+	mb.ByteBandCount = binary.BigEndian.Uint64(packet[index:])
+
+	return
+}
+
+func (mb *OfpMeterBandStats) Size() int {
+	return 16
 }
 
 /*****************************************************/
 /* OfpMeterStats                                      */
 /*****************************************************/
-// TODO: implement
-func newOfpMeterStats() *OfpMeterStats {
-	return nil
+func newOfpMeterStats(
+	meterId uint32,
+	flowCount uint32,
+	packetInCount uint64,
+	byteInCount uint64,
+	durationSec uint32,
+	durationNSec uint32,
+	bandStats []*OfpMeterBandStats) *OfpMeterStats {
+	mp := new(OfpMeterStats)
+	mp.MeterId = meterId
+	mp.Length = 40
+	mp.FlowCount = flowCount
+	mp.PacketInCount = packetInCount
+	mp.ByteInCount = byteInCount
+	mp.DurationSec = durationSec
+	mp.DurationNSec = durationNSec
+	if bandStats != nil {
+		mp.BandStats = bandStats
+		mp.Length += (uint16)(len(bandStats) * 16)
+	}
+	return mp
 }
 
 func (mp *OfpMeterStats) Serialize() []byte {
@@ -6421,23 +6538,71 @@ func (mp *OfpMeterStats) Serialize() []byte {
 }
 
 func (mp *OfpMeterStats) Parse(packet []byte) {
+	index := 0
+
+	mp.MeterId = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.Length = binary.BigEndian.Uint16(packet[index:])
+	index += 8
+
+	mp.FlowCount = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.PacketInCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.ByteInCount = binary.BigEndian.Uint64(packet[index:])
+	index += 8
+
+	mp.DurationSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.DurationNSec = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	for index < (int)(mp.Length) {
+		mb := newOfpMeterBandStats(0, 0)
+		mb.Parse(packet[index:])
+		mp.BandStats = append(mp.BandStats, mb)
+		index += mb.Size()
+	}
+
 	return
 }
 
 func (mp *OfpMeterStats) Size() int {
-	return 0
+	size := 40
+	if mp.BandStats != nil {
+		size += len(mp.BandStats) * 16
+	}
+	return size
 }
 
 func (mp *OfpMeterStats) MPType() uint16 {
-	return 0
+	return OFPMP_METER
 }
 
 /*****************************************************/
 /* OfpMeterConfig                                    */
 /*****************************************************/
-// TODO: implement
-func newOfpMeterConfig() *OfpMeterConfig {
-	return nil
+func newOfpMeterConfig(
+	flags uint16,
+	meterId uint32,
+	bands []OfpMeterBand,
+) *OfpMeterConfig {
+	mp := new(OfpMeterConfig)
+	mp.Length = 8
+	mp.Flags = flags
+	mp.MeterId = meterId
+	if bands != nil {
+		mp.Bands = bands
+		for _, mb := range bands {
+			mp.Length += (uint16)(mb.Size())
+		}
+	}
+
+	return mp
 }
 
 func (mp *OfpMeterConfig) Serialize() []byte {
@@ -6445,15 +6610,36 @@ func (mp *OfpMeterConfig) Serialize() []byte {
 }
 
 func (mp *OfpMeterConfig) Parse(packet []byte) {
+	index := 0
+
+	mp.Length = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	mp.Flags = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	mp.MeterId = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	for index < (int)(mp.Length) {
+		mb := ParseMeter(packet[index:])
+		mp.Bands = append(mp.Bands, mb)
+		index += mb.Size()
+	}
+
 	return
 }
 
 func (mp *OfpMeterConfig) Size() int {
-	return 0
+	size := 8
+	for _, mp := range mp.Bands {
+		size += mp.Size()
+	}
+	return size
 }
 
 func (mp *OfpMeterConfig) MPType() uint16 {
-	return 0
+	return OFPMP_METER_CONFIG
 }
 
 /*****************************************************/
