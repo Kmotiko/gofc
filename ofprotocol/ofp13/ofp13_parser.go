@@ -5072,6 +5072,10 @@ func (mp *OfpFlowStats) Parse(packet []byte) {
 			mp.Instructions = append(mp.Instructions, instruction)
 			index += instruction.Size()
 		case OFPIT_METER:
+			instruction := NewOfpInstructionMeter(0)
+			instruction.Parse(packet[index:])
+			mp.Instructions = append(mp.Instructions, instruction)
+			index += instruction.Size()
 		case OFPIT_EXPERIMENTER:
 		default:
 
