@@ -1542,12 +1542,12 @@ type OfpGroupStats struct {
 	BucketStats  []*OfpBucketCounter
 }
 
-type OfpGroupDesc struct {
+type OfpGroupDescStats struct {
 	Length  uint16
 	Type    uint8
 	Pad     uint8
 	GroupId uint32
-	Buckets []OfpBucket
+	Buckets []*OfpBucket
 }
 
 type OfpGroupFeaturesStats struct {

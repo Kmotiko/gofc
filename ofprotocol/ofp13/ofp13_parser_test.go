@@ -4257,7 +4257,30 @@ func TestSerializeGroupStatsRequest(t *testing.T) {
 /*****************************************************/
 /* OfpGroupDescStatsRequest                          */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeGroupDescStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x07, // Type(OFPMP_GROUP_DESC)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpGroupDescStatsRequest(0)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpGroupDescStats is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpGroupFeaturesStatsRequest                      */
@@ -4968,7 +4991,55 @@ func TestParseGroupStatsReply(t *testing.T) {
 /*****************************************************/
 /* OfpGroupDesc                                      */
 /*****************************************************/
-// TODO: implements and test
+func TestParseGroupDescStatsReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x13,       // Type
+		0x00, 0x38, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x07, // OFPMP_GROUP_DESC
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x28, // Length
+		0x01,                   // Type
+		0x00,                   // Padding
+		0x00, 0x00, 0x00, 0x01, // GroupId
+		0x00, 0x20, // Length
+		0x00, 0x01, // Weight
+		0x00, 0x00, 0x00, 0x01, // Watch Port
+		0x00, 0x00, 0x00, 0x01, // Watch Group
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, // Output
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x01, // Port
+		0xff, 0xe5, // Max Length
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
+	rep := NewOfpMultipartReply()
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 19 ||
+		rep.Header.Length != 56 || rep.Header.Xid != 0 ||
+		rep.Body[0].(*OfpGroupDescStats).Length != 40 ||
+		rep.Body[0].(*OfpGroupDescStats).Type != OFPGT_SELECT ||
+		rep.Body[0].(*OfpGroupDescStats).GroupId != 1 ||
+		rep.Body[0].(*OfpGroupDescStats).Buckets[0].Length != 32 ||
+		rep.Body[0].(*OfpGroupDescStats).Buckets[0].Weight != 1 ||
+		rep.Body[0].(*OfpGroupDescStats).Buckets[0].WatchPort != 1 ||
+		rep.Body[0].(*OfpGroupDescStats).Buckets[0].WatchGroup != 1 {
+		t.Log("Version               : ", rep.Header.Version)
+		t.Log("Type                  : ", rep.Header.Type)
+		t.Log("Length                : ", rep.Header.Length)
+		t.Log("Transaction ID        : ", rep.Header.Xid)
+		t.Log("Type                  : ", rep.Body[0].(*OfpGroupDescStats).Type)
+		t.Log("GroupId               : ", rep.Body[0].(*OfpGroupDescStats).GroupId)
+		t.Log("Buckets[0] Length     : ", rep.Body[0].(*OfpGroupDescStats).Buckets[0].Length)
+		t.Log("Buckets[1] Weight     : ", rep.Body[0].(*OfpGroupDescStats).Buckets[0].Weight)
+		t.Log("Buckets[2] WatchPort  : ", rep.Body[0].(*OfpGroupDescStats).Buckets[0].WatchPort)
+		t.Log("Buckets[3] WatchGroup : ", rep.Body[0].(*OfpGroupDescStats).Buckets[0].WatchGroup)
+		t.Error("Parsed value of OfpGroupFeaturesStatsReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpGroupFeatures                                  */

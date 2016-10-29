@@ -107,6 +107,13 @@ type Of13GroupStatsReplyHandler interface {
 }
 
 /*****************************************************/
+/* OfpGroupDescStatsReply                            */
+/*****************************************************/
+type Of13GroupDescStatsReplyHandler interface {
+	HandleGroupDescStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
 /* OfpGroupFeaturesStatsReply                        */
 /*****************************************************/
 type Of13GroupFeaturesStatsReplyHandler interface {

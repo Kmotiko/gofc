@@ -624,7 +624,28 @@ func (b *OfpBucket) Serialize() []byte {
 	return packet
 }
 
-func (b *OfpBucket) Parse() {
+func (b *OfpBucket) Parse(packet []byte) {
+	index := 0
+
+	b.Length = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	b.Weight = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	b.WatchPort = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	b.WatchGroup = binary.BigEndian.Uint32(packet[index:])
+	index += 8
+
+	for index < (int)(b.Length) {
+		action := ParseAction(packet[index:])
+		b.Append(action)
+		index += action.Size()
+	}
+
+	return
 }
 
 func (b *OfpBucket) Size() int {
@@ -3560,96 +3581,9 @@ func (i *OfpInstructionActions) Parse(packet []byte) {
 
 	// for index < len(packet) {
 	for index < (int)(i.Header.Length) {
-		a_type := binary.BigEndian.Uint16(packet[index:])
-		switch a_type {
-		//TODO:implement
-		case OFPAT_OUTPUT:
-			action := NewOfpActionOutput(0, 0)
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_COPY_TTL_OUT:
-			action := NewOfpActionCopyTtlOut()
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_COPY_TTL_IN:
-			action := NewOfpActionCopyTtlIn()
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_SET_MPLS_TTL:
-			action := NewOfpActionSetMplsTtl(0)
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_DEC_MPLS_TTL:
-			action := NewOfpActionDecMplsTtl()
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_PUSH_VLAN:
-			action := NewOfpActionPushVlan()
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_POP_VLAN:
-			action := NewOfpActionPopVlan(0)
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_PUSH_MPLS:
-			action := NewOfpActionPushMpls()
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_POP_MPLS:
-			action := NewOfpActionPopMpls(0)
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_SET_QUEUE:
-			action := NewOfpActionSetQueue(0)
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_GROUP:
-			action := NewOfpActionGroup(0)
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_SET_NW_TTL:
-			action := NewOfpActionSetNwTtl(0)
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_DEC_NW_TTL:
-			action := NewOfpActionDecNwTtl()
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_SET_FIELD:
-			action := newEmptyOfpActionSetField()
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_PUSH_PBB:
-			action := NewOfpActionPushPbb()
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_POP_PBB:
-			action := NewOfpActionPopPbb(0)
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		case OFPAT_EXPERIMENTER:
-			action := NewOfpActionExperimenter(0)
-			action.Parse(packet[index:])
-			i.Append(action)
-			index += action.Size()
-		default:
-		}
+		action := ParseAction(packet[index:])
+		i.Append(action)
+		index += action.Size()
 	}
 }
 
@@ -3776,6 +3710,71 @@ func (h *OfpActionHeader) Parse(packet []byte) {
 
 func (h *OfpActionHeader) Size() int {
 	return 8
+}
+
+/*
+ * OfpAction Parser
+ */
+func ParseAction(packet []byte) (action OfpAction) {
+	index := 0
+	a_type := binary.BigEndian.Uint16(packet[index:])
+	switch a_type {
+	case OFPAT_OUTPUT:
+		action = NewOfpActionOutput(0, 0)
+		action.Parse(packet[index:])
+	case OFPAT_COPY_TTL_OUT:
+		action = NewOfpActionCopyTtlOut()
+		action.Parse(packet[index:])
+	case OFPAT_COPY_TTL_IN:
+		action = NewOfpActionCopyTtlIn()
+		action.Parse(packet[index:])
+	case OFPAT_SET_MPLS_TTL:
+		action = NewOfpActionSetMplsTtl(0)
+		action.Parse(packet[index:])
+	case OFPAT_DEC_MPLS_TTL:
+		action = NewOfpActionDecMplsTtl()
+		action.Parse(packet[index:])
+	case OFPAT_PUSH_VLAN:
+		action = NewOfpActionPushVlan()
+		action.Parse(packet[index:])
+	case OFPAT_POP_VLAN:
+		action = NewOfpActionPopVlan(0)
+		action.Parse(packet[index:])
+	case OFPAT_PUSH_MPLS:
+		action = NewOfpActionPushMpls()
+		action.Parse(packet[index:])
+	case OFPAT_POP_MPLS:
+		action = NewOfpActionPopMpls(0)
+		action.Parse(packet[index:])
+	case OFPAT_SET_QUEUE:
+		action = NewOfpActionSetQueue(0)
+		action.Parse(packet[index:])
+	case OFPAT_GROUP:
+		action = NewOfpActionGroup(0)
+		action.Parse(packet[index:])
+	case OFPAT_SET_NW_TTL:
+		action = NewOfpActionSetNwTtl(0)
+		action.Parse(packet[index:])
+	case OFPAT_DEC_NW_TTL:
+		action = NewOfpActionDecNwTtl()
+		action.Parse(packet[index:])
+	case OFPAT_SET_FIELD:
+		action = newEmptyOfpActionSetField()
+		action.Parse(packet[index:])
+	case OFPAT_PUSH_PBB:
+		action = NewOfpActionPushPbb()
+		action.Parse(packet[index:])
+	case OFPAT_POP_PBB:
+		action = NewOfpActionPopPbb(0)
+		action.Parse(packet[index:])
+	case OFPAT_EXPERIMENTER:
+		action = NewOfpActionExperimenter(0)
+		action.Parse(packet[index:])
+	default:
+		// TODO: error handling
+	}
+	return action
+
 }
 
 /*
@@ -4666,8 +4665,9 @@ func NewOfpGroupStatsRequest(groupId uint32, flags uint16) *OfpMultipartRequest 
 	return m
 }
 
-func NewOfpGroupDescStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpGroupDescStatsRequest(flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_GROUP_DESC, flags)
+	return m
 }
 
 func NewOfpGroupFeaturesStatsRequest(flags uint16) *OfpMultipartRequest {
@@ -4826,7 +4826,12 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 			index += mp.Size()
 		}
 	case OFPMP_GROUP_DESC:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpGroupDescStats(0, 0, nil)
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_GROUP_FEATURES:
 		for (uint16)(index) < m.Header.Length {
 			mp := newOfpGroupFeaturesStats(
@@ -6230,6 +6235,64 @@ func (mp *OfpGroupStats) Size() int {
 
 func (mp *OfpGroupStats) MPType() uint16 {
 	return OFPMP_GROUP
+}
+
+/*****************************************************/
+/* OfpGroupDesc                                      */
+/*****************************************************/
+func newOfpGroupDescStats(
+	t uint8,
+	groupId uint32,
+	buckets []*OfpBucket) *OfpGroupDescStats {
+	mp := new(OfpGroupDescStats)
+	mp.Length = 16
+	mp.Type = t
+	mp.GroupId = groupId
+	if buckets != nil {
+		mp.Buckets = buckets
+		for _, b := range buckets {
+			mp.Length += (uint16)(b.Size())
+		}
+	}
+	return mp
+}
+
+func (mp *OfpGroupDescStats) Serialize() []byte {
+	return nil
+}
+
+func (mp *OfpGroupDescStats) Parse(packet []byte) {
+	index := 0
+
+	mp.Length = binary.BigEndian.Uint16(packet[index:])
+	index += 2
+
+	mp.Type = packet[index]
+	index += 2
+
+	mp.GroupId = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	for index < (int)(mp.Length) {
+		b := NewOfpBucket(0, 0, 0)
+		b.Parse(packet[index:])
+		mp.Buckets = append(mp.Buckets, b)
+		index += b.Size()
+	}
+
+	return
+}
+
+func (mp *OfpGroupDescStats) Size() int {
+	size := 16
+	for _, b := range mp.Buckets {
+		size += b.Size()
+	}
+	return size
+}
+
+func (mp *OfpGroupDescStats) MPType() uint16 {
+	return OFPMP_GROUP_DESC
 }
 
 /*****************************************************/
