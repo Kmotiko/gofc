@@ -4371,7 +4371,30 @@ func TestSerializeMeterConfigStatsRequest(t *testing.T) {
 /*****************************************************/
 /* OfpMeterFeatruresStatsRequest                     */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializeMeterFeaturesStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x0b, // Type(OFPMP_METER_FEATURES)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpMeterFeaturesStatsRequest(0)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpMeterFeaturesStatsRequest is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpTableFeatruresStatsRequest                     */
@@ -5254,7 +5277,46 @@ func TestParseMeterConfigStatsReply(t *testing.T) {
 /*****************************************************/
 /* OfpMeterFeatures                                  */
 /*****************************************************/
-// TODO: implements and test
+func TestParseMeterFeaturesStatsReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x13,       // Type
+		0x00, 0x20, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x0b, // OFPMP_METER_FEATURES
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // MaxMeter
+		0x00, 0x00, 0x00, 0x01, // BandTypes
+		0x00, 0x00, 0x00, 0x01, // Capabilities
+		0x00,       // MaxBands
+		0x00,       // MaxColor
+		0x00, 0x00, // Padding
+	}
+
+	rep := NewOfpMultipartReply()
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 19 ||
+		rep.Header.Length != 32 || rep.Header.Xid != 0 ||
+		rep.Body[0].(*OfpMeterFeatures).MaxMeter != 1 ||
+		rep.Body[0].(*OfpMeterFeatures).BandTypes != 1 ||
+		rep.Body[0].(*OfpMeterFeatures).Capabilities != 1 ||
+		rep.Body[0].(*OfpMeterFeatures).MaxBands != 0 ||
+		rep.Body[0].(*OfpMeterFeatures).MaxColor != 0 {
+		t.Log("Version        : ", rep.Header.Version)
+		t.Log("Type           : ", rep.Header.Type)
+		t.Log("Length         : ", rep.Header.Length)
+		t.Log("Transaction ID : ", rep.Header.Xid)
+		t.Log("Type           : ", rep.Type)
+		t.Log("Flags          : ", rep.Flags)
+		t.Log("MaxMeter       : ", rep.Body[0].(*OfpMeterFeatures).MaxMeter)
+		t.Log("BandTypes      : ", rep.Body[0].(*OfpMeterFeatures).BandTypes)
+		t.Log("Capabilities   : ", rep.Body[0].(*OfpMeterFeatures).Capabilities)
+		t.Log("MaxBands       : ", rep.Body[0].(*OfpMeterFeatures).MaxBands)
+		t.Log("MaxColor       : ", rep.Body[0].(*OfpMeterFeatures).MaxColor)
+		t.Error("Parsed value of OfpMeterFeaturesStatsReply is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpTableFeaturePropHeader                         */

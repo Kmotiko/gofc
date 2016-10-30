@@ -196,7 +196,7 @@ func main() {
  - [x] GroupFeaturesStats
  - [x] MeterStats
  - [x] MeterConfigStats
- - [ ] MeterFeaturesStats
+ - [x] MeterFeaturesStats
  - [x] TableFeaturesStats
  - [ ] PortDescStats
  - [ ] ExperimenterStats

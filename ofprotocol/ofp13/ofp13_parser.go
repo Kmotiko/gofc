@@ -4736,8 +4736,9 @@ func NewOfpMeterConfigStatsRequest(flags uint16) *OfpMultipartRequest {
 	return m
 }
 
-func NewOfpMeterFeaturesStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpMeterFeaturesStatsRequest(flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_METER_FEATURES, flags)
+	return m
 }
 
 func NewOfpTableFeaturesStatsRequest(flags uint16, body *OfpTableFeatures) *OfpMultipartRequest {
@@ -4911,7 +4912,12 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 			index += mp.Size()
 		}
 	case OFPMP_METER_FEATURES:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpMeterFeaturesStats(0, 0, 0, 0, 0)
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_TABLE_FEATURES:
 		for (uint16)(index) < m.Header.Length {
 			mp := NewOfpTableFeatures(
@@ -6645,9 +6651,19 @@ func (mp *OfpMeterConfig) MPType() uint16 {
 /*****************************************************/
 /* OfpMeterFeatures                                  */
 /*****************************************************/
-// TODO: implement
-func newOfpMeterFeatures() *OfpMeterFeatures {
-	return nil
+func newOfpMeterFeaturesStats(
+	maxMeter uint32,
+	bandTypes uint32,
+	capabilities uint32,
+	maxBands uint8,
+	maxColor uint8) *OfpMeterFeatures {
+	mp := new(OfpMeterFeatures)
+	mp.MaxMeter = maxMeter
+	mp.BandTypes = bandTypes
+	mp.Capabilities = capabilities
+	mp.MaxBands = maxBands
+	mp.MaxColor = maxColor
+	return mp
 }
 
 func (mp *OfpMeterFeatures) Serialize() []byte {
@@ -6655,15 +6671,31 @@ func (mp *OfpMeterFeatures) Serialize() []byte {
 }
 
 func (mp *OfpMeterFeatures) Parse(packet []byte) {
+	index := 0
+
+	mp.MaxMeter = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.BandTypes = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.Capabilities = binary.BigEndian.Uint32(packet[index:])
+	index += 4
+
+	mp.MaxBands = packet[index]
+	index++
+
+	mp.MaxColor = packet[index]
+
 	return
 }
 
 func (mp *OfpMeterFeatures) Size() int {
-	return 0
+	return 16
 }
 
 func (mp *OfpMeterFeatures) MPType() uint16 {
-	return 0
+	return OFPMP_METER_FEATURES
 }
 
 /*****************************************************/

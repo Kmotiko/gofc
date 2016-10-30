@@ -135,6 +135,13 @@ type Of13MeterConfigStatsReplyHandler interface {
 }
 
 /*****************************************************/
+/* OfpMeterFeaturesStatsReply                        */
+/*****************************************************/
+type Of13MeterFeaturesStatsReplyHandler interface {
+	HandleMeterFeaturesStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
 /* OfpTableFeaturesStatsReply                        */
 /*****************************************************/
 type Of13TableFeaturesStatsReplyHandler interface {
