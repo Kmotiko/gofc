@@ -180,7 +180,7 @@ func main() {
 ### MeterBand
 
  - [x] MeterBandDrop
- - [ ] MeterBandDscpRemark
+ - [x] MeterBandDscpRemark
  - [ ] MeterBandExperimenter
 
 ### Multipart Message

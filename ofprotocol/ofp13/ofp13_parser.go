@@ -915,10 +915,12 @@ func NewOfpMeterBandDscpRemark(rate uint32, burstSize uint32, precLevel uint8) *
 }
 
 func (m *OfpMeterBandDscpRemark) Serialize() []byte {
-	packet := make([]byte, m.Size())
-	h_packet := m.Header.Serialize()
 	index := 0
+	packet := make([]byte, m.Size())
+
+	h_packet := m.Header.Serialize()
 	copy(packet[index:], h_packet)
+	index += m.Header.Size()
 
 	packet[index] = m.PrecLevel
 
@@ -955,9 +957,10 @@ func NewOfpMeterBandExperimenter(rate uint32, burstSize uint32, experimenter uin
 }
 
 func (m *OfpMeterBandExperimenter) Serialize() []byte {
-	packet := make([]byte, m.Size())
-	h_packet := m.Header.Serialize()
 	index := 0
+	packet := make([]byte, m.Size())
+
+	h_packet := m.Header.Serialize()
 	copy(packet[index:], h_packet)
 	index += m.Header.Size()
 

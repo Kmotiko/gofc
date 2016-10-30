@@ -3890,6 +3890,85 @@ func TestSerializeMeterModRequest(t *testing.T) {
 }
 
 /*****************************************************/
+/* OfpMeterBandDrop                                  */
+/*****************************************************/
+func TestSerializeMeterBandDrop(t *testing.T) {
+	expect := []byte{
+		0x00, 0x01, // OFPMBT_DROP
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x64, // Rate
+		0x00, 0x00, 0x00, 0x00, // Burst Size
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mb := NewOfpMeterBandDrop(100, 0)
+	actual := mb.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpMeterBandDrop is not equal to expected value.")
+	}
+}
+
+/*****************************************************/
+/* OfpMeterBandDscpRemark                            */
+/*****************************************************/
+func TestSerializeMeterBandDscpRemark(t *testing.T) {
+	expect := []byte{
+		0x00, 0x02, // OFPMBT_DSCP_REMARK
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x64, // Rate
+		0x00, 0x00, 0x00, 0x00, // Burst Size
+		0x01,             // PrecLevel
+		0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mb := NewOfpMeterBandDscpRemark(100, 0, 1)
+	actual := mb.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpMeterBandDscpRemark is not equal to expected value.")
+	}
+}
+
+/*****************************************************/
+/* OfpMeterBandExperimenter                          */
+/*****************************************************/
+func TestSerializeMeterBandDscpExperimenter(t *testing.T) {
+	expect := []byte{
+		0xff, 0xff, // OFPMBT_EXPERIMENTER
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x64, // Rate
+		0x00, 0x00, 0x00, 0x00, // Burst Size
+		0x00, 0x00, 0x01, 0x00, // Experimenter
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mb := NewOfpMeterBandExperimenter(100, 0, 256)
+	actual := mb.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpMeterBandExperimenter is not equal to expected value.")
+	}
+}
+
+/*****************************************************/
 /* OfpPacketIn                                       */
 /*****************************************************/
 // TODO: implements and test
