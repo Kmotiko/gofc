@@ -23,11 +23,32 @@ func Parse(packet []byte) (msg OFMessage) {
 	case OFPT_FEATURES_REPLY:
 		msg = NewOfpFeaturesReply()
 		msg.Parse(packet)
+	case OFPT_GET_CONFIG_REPLY:
+		msg = NewOfpGetConfig()
+		msg.Parse(packet)
 	case OFPT_PACKET_IN:
 		msg = NewOfpPacketIn()
 		msg.Parse(packet)
+	case OFPT_FLOW_REMOVED:
+		msg = NewOfpFlowRemoved()
+		msg.Parse(packet)
+	case OFPT_PORT_STATUS:
+		msg = NewOfpPortStatus()
+		msg.Parse(packet)
 	case OFPT_MULTIPART_REPLY:
 		msg = NewOfpMultipartReply()
+		msg.Parse(packet)
+	case OFPT_BARRIER_REPLY:
+		msg = NewOfpBarrierReply()
+		msg.Parse(packet)
+	case OFPT_QUEUE_GET_CONFIG_REPLY:
+		msg = NewOfpQueueGetConfigReply()
+		msg.Parse(packet)
+	case OFPT_ROLE_REPLY:
+		msg = NewOfpRoleReply()
+		msg.Parse(packet)
+	case OFPT_GET_ASYNC_REPLY:
+		msg = NewOfpGetAsyncReply()
 		msg.Parse(packet)
 	default:
 	}
