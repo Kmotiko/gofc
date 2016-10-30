@@ -1199,13 +1199,7 @@ func (m *OfpFlowRemoved) Size() int {
  tunnel_id		OFPXMT_OFB_TUNNEL_ID
  ipv6_exthdr	OFPXMT_OFB_IPV6_EXTHDR
 */
-// func NewOfpMatch() *OfpMatch {
-// 	m := new(OfpMatch)
-// 	m.OxmFields = make([]OxmField, 0)
-// 	return m
-// }
 
-//func NewOfpMatch(fields []OxmField) *OfpMatch {
 func NewOfpMatch() *OfpMatch {
 	m := new(OfpMatch)
 	m.Type = OFPMT_OXM
@@ -1214,7 +1208,7 @@ func NewOfpMatch() *OfpMatch {
 }
 
 func (m *OfpMatch) Serialize() []byte {
-	// TODO: set Size
+	// set Size
 	m.Length = 4
 	for _, e := range m.OxmFields {
 		m.Length += uint16(e.Size())
@@ -1259,10 +1253,6 @@ func (m *OfpMatch) Size() int {
 func (m *OfpMatch) Append(f OxmField) {
 	m.OxmFields = append(m.OxmFields, f)
 }
-
-/*
- * TODO: implements OxmField
- */
 
 func parseOxmField(packet []byte) OxmField {
 	header := binary.BigEndian.Uint32(packet[0:])
@@ -3916,7 +3906,6 @@ func (a *OfpActionCopyTtlOut) OfpActionType() uint16 {
 /*
  * OfpActionCopyTtlIn
  */
-// TODO: implement
 func NewOfpActionCopyTtlIn() *OfpActionCopyTtlIn {
 	action := new(OfpActionCopyTtlIn)
 	header := NewOfpActionHeader(OFPAT_COPY_TTL_IN, 8)
@@ -4175,9 +4164,9 @@ func (a *OfpActionGroup) OfpActionType() uint16 {
 	return a.ActionHeader.Type
 }
 
-/*
- * OfpActionSetQueue
- */
+/*****************************************************/
+/* OfpActionSetQueue                                 */
+/*****************************************************/
 func NewOfpActionSetQueue(id uint32) *OfpActionSetQueue {
 	action := new(OfpActionSetQueue)
 	header := NewOfpActionHeader(OFPAT_SET_QUEUE, 8)
@@ -4285,8 +4274,6 @@ func (a *OfpActionDecNwTtl) OfpActionType() uint16 {
 /*
  * OfpActionSetField
  */
-// TODO: implements
-//
 func NewOfpActionSetField(oxm OxmField) *OfpActionSetField {
 	a := new(OfpActionSetField)
 	length := 4 + oxm.Size()
@@ -4315,7 +4302,6 @@ func (a *OfpActionSetField) Serialize() []byte {
 }
 
 func (a *OfpActionSetField) Parse(packet []byte) {
-	// TODO: implement OxmField Parser
 	index := 0
 	a.ActionHeader.Parse(packet)
 	index += 4
@@ -4628,7 +4614,6 @@ func (m *OfpErrorMsg) Size() int {
 /*****************************************************/
 /* OfpMultipartRequest                               */
 /*****************************************************/
-// TODO: implement
 /**
 OFPMP_DESC
 OFPMP_FLOW
@@ -5123,7 +5108,6 @@ func (mp *OfpFlowStats) Parse(packet []byte) {
 		// don't forward index ,
 		// because type and length will be parsed in instruction's paraser
 
-		// TODO: implements parse process for other instruction type
 		switch t {
 		case OFPIT_GOTO_TABLE:
 			instruction := NewOfpInstructionGotoTable(0)
@@ -6709,51 +6693,6 @@ func (mp *OfpMeterFeatures) MPType() uint16 {
 }
 
 /*****************************************************/
-/* OfpExperimenterMultipartHeader                    */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
-/* OfpQueuePropHeader                                */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
-/* OfpQueuePropMinRate                               */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
-/* OfpQueuePropMaxRate                               */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
-/* OfpQueuePropExperimenter                          */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
-/* OfpPacketQueue                                    */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
-/* OfpActionSetQueue                                 */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
-/* OfpQueueStatsRequest                              */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
-/* OfpQueueStats                                     */
-/*****************************************************/
-// TODO: implement
-
-/*****************************************************/
 /* OfpQueueGetConfigRequest                          */
 /*****************************************************/
 func NewOfpQueueGetConfigRequest(port uint32) *OfpQueueGetConfigRequest {
@@ -6788,7 +6727,12 @@ func (m *OfpQueueGetConfigRequest) Size() int {
 }
 
 /*****************************************************/
-/* OfpQueueGetConfigReply                            */
+/* OfpExperimenterMultipartHeader                    */
+/*****************************************************/
+// TODO: implement
+
+/*****************************************************/
+/* OfpQueuePropHeader                                */
 /*****************************************************/
 // OfpQueuePropHeader
 func newOfpQueuePropHeader(prop uint16, length uint16) OfpQueuePropHeader {
@@ -6811,7 +6755,9 @@ func (h OfpQueuePropHeader) Size() int {
 	return 8
 }
 
-// OfpQueuePropMinRate
+/*****************************************************/
+/* OfpQueuePropMinRate                               */
+/*****************************************************/
 func newOfpQueuePropMinRate() *OfpQueuePropMinRate {
 	header := newOfpQueuePropHeader(OFPQT_MIN_RATE, 16)
 	p := new(OfpQueuePropMinRate)
@@ -6838,7 +6784,9 @@ func (p *OfpQueuePropMinRate) Property() uint16 {
 	return OFPQT_MIN_RATE
 }
 
-// OfpQueuePropMaxRate
+/*****************************************************/
+/* OfpQueuePropMaxRate                               */
+/*****************************************************/
 func newOfpQueuePropMaxRate() *OfpQueuePropMaxRate {
 	header := newOfpQueuePropHeader(OFPQT_MAX_RATE, 16)
 	p := new(OfpQueuePropMaxRate)
@@ -6865,7 +6813,9 @@ func (p *OfpQueuePropMaxRate) Property() uint16 {
 	return OFPQT_MAX_RATE
 }
 
-// OfpQueuePropExperimenter
+/*****************************************************/
+/* OfpQueuePropExperimenter                          */
+/*****************************************************/
 func newOfpQueuePropExperimenter() *OfpQueuePropExperimenter {
 	header := newOfpQueuePropHeader(OFPQT_EXPERIMENTER, 16)
 	p := new(OfpQueuePropExperimenter)
@@ -6899,7 +6849,9 @@ func (p *OfpQueuePropExperimenter) Property() uint16 {
 	return OFPQT_EXPERIMENTER
 }
 
-// OfpPacketQueue
+/*****************************************************/
+/* OfpPacketQueue                                    */
+/*****************************************************/
 func newOfpPacketQueue() *OfpPacketQueue {
 	q := new(OfpPacketQueue)
 	return q
@@ -6951,7 +6903,9 @@ func (q *OfpPacketQueue) Size() int {
 	return size
 }
 
-// OfpQueueGetConfigReply
+/*****************************************************/
+/* OfpQueueGetConfigReply                            */
+/*****************************************************/
 func NewOfpQueueGetConfigReply() *OfpQueueGetConfigReply {
 	header := NewOfpHeader(OFPT_QUEUE_GET_CONFIG_REPLY)
 	m := new(OfpQueueGetConfigReply)

@@ -5,7 +5,6 @@ import (
 )
 
 type OFMessage interface {
-	//serialize(ofMessage *OFMessage) []byte;
 	Serialize() []byte
 	Parse(packet []byte)
 	Size() int
@@ -237,8 +236,6 @@ const (
 	OFP_VLAN_NONE = OFPVID_NONE
 )
 
-//
-//const(
 var OFPXMT_OFB_ALL uint64 = ((1 << 40) - 1)
 var OXM_OF_IN_PORT = oxmHeader(0x8000, OFPXMT_OFB_IN_PORT, 4)
 var OXM_OF_IN_PHY_PORT = oxmHeader(0x8000, OFPXMT_OFB_IN_PHY_PORT, 4)
@@ -294,8 +291,6 @@ var OXM_OF_TUNNEL_ID = oxmHeader(0x8000, OFPXMT_OFB_TUNNEL_ID, 8)
 var OXM_OF_TUNNEL_ID_W = oxmHeaderW(0x8000, OFPXMT_OFB_TUNNEL_ID, 8)
 var OXM_OF_IPV6_EXTHDR = oxmHeader(0x8000, OFPXMT_OFB_IPV6_EXTHDR, 2)
 var OXM_OF_IPV6_EXTHDR_W = oxmHeaderW(0x8000, OFPXMT_OFB_IPV6_EXTHDR, 2)
-
-//)
 
 // ofp_ipv6exthdr_flags
 const (
@@ -761,11 +756,9 @@ type OfpTableMod struct {
 type OfpPort struct {
 	PortNo uint32
 	// Pad    [4]uint8
-	// HwAddr    [OFP_ETH_ALEN]uint8 //6
 	HwAddr net.HardwareAddr
 	// Pad2   [2]uint8
-	// Name      [OFP_MAX_PORT_NAME_LEN]byte //16
-	Name       []byte //16
+	Name       []byte // 16
 	Config     uint32
 	State      uint32
 	Curr       uint32
@@ -776,8 +769,6 @@ type OfpPort struct {
 	MaxSpeed   uint32
 }
 
-///
-///
 type OfpSwitchFeatures struct {
 	Header       OfpHeader
 	DatapathId   uint64
@@ -800,8 +791,7 @@ type OfpPortMod struct {
 	Header OfpHeader
 	PortNo uint32
 	// Pad       [4]uint8
-	// HwAddr [OFP_ETH_ALEN]byte //6
-	HwAddr net.HardwareAddr //6
+	HwAddr net.HardwareAddr // 6
 	// Pad2      [2]uint8
 	Config    uint32
 	Mask      uint32
@@ -825,17 +815,6 @@ type OxmField interface {
 	Length() uint32
 	Size() int
 }
-
-// type OxmField struct {
-// 	// Class   uint16
-// 	// Field   uint8
-// 	// HasMask bool
-// 	// Length  uint8
-// 	// Value   []uint8
-// 	TlvHeader uint32
-// 	Value     OxmFieldValue
-// 	Pad       []uint8
-// }
 
 /*
  * MatchField definition
@@ -862,9 +841,6 @@ type OxmEth struct {
 	Value     net.HardwareAddr
 	Mask      net.HardwareAddr
 }
-
-//type OxmEthDst OxmEth
-//type OxmEthSrc OxmEth
 
 type OxmEthType struct {
 	TlvHeader uint32
@@ -903,32 +879,20 @@ type OxmIpv4 struct {
 	Mask      net.IPMask
 }
 
-//type OxmIpv4Src OxmIpv4
-//type OxmIpv4Dst OxmIpv4
-
 type OxmTcp struct {
 	TlvHeader uint32
 	Value     uint16
 }
-
-//type OxmTcpSrc OxmTcp
-//type OxmTcpDst OxmTcp
 
 type OxmUdp struct {
 	TlvHeader uint32
 	Value     uint16
 }
 
-//type OxmUdpSrc OxmUdp
-//type OxmUdpDst OxmUdp
-
 type OxmSctp struct {
 	TlvHeader uint32
 	Value     uint16
 }
-
-//type OxmSctpSrc OxmSctp
-//type OxmSctpDst OxmSctp
 
 type OxmIcmpType struct {
 	TlvHeader uint32
@@ -951,26 +915,17 @@ type OxmArpPa struct {
 	Mask      net.IPMask
 }
 
-//type OxmArpSpa OxmArpPa
-//type OxmArpTpa OxmArpPa
-
 type OxmArpHa struct {
 	TlvHeader uint32
 	//Value     [6]uint8
 	Value net.HardwareAddr
 }
 
-//type OxmArpSha OxmArpHa
-//type OxmArpTha OxmArpHa
-
 type OxmIpv6 struct {
 	TlvHeader uint32
 	Value     net.IP
 	Mask      net.IPMask
 }
-
-//type OxmIpv6Src OxmIpv6
-//type OxmIpv6Dst OxmIpv6
 
 type OxmIpv6FLabel struct {
 	TlvHeader uint32
@@ -1263,29 +1218,17 @@ type OfpMeterBandHeader struct {
 }
 
 type OfpMeterBandDrop struct {
-	// Type      uint16 // OFPBMT_DROP
-	// Length    uint16
-	// Rate      uint32
-	// BurstSize uint32
 	Header OfpMeterBandHeader
 	// Pad    [4]uint8
 }
 
 type OfpMeterBandDscpRemark struct {
-	// Type      uint16 // OFPBMT_DSCP_REMARK
-	// Length    uint16
-	// Rate      uint32
-	// BurstSize uint32
 	Header    OfpMeterBandHeader
 	PrecLevel uint8
 	// Pad       [3]uint8
 }
 
 type OfpMeterBandExperimenter struct {
-	// Type         uint16 // One of OFPBMT_*
-	// Length       uint16
-	// Rate         uint32
-	// BurstSize    uint32
 	Header       OfpMeterBandHeader
 	Experimenter uint32
 }
@@ -1409,50 +1352,26 @@ type OfpInstructionId struct {
 }
 
 type OfpTableFeaturePropInstructions struct {
-	// Type           uint16 // OFPTFPT_INSTRUCTIONS,
-	// Length         uint16
 	PropHeader     OfpTableFeaturePropHeader
 	InstructionIds []*OfpInstructionId
 }
 
 type OfpTableFeaturePropNextTables struct {
-	// OFPTFPT_NEXT_TABLES,
-	// OFPTFPT_NEXT_TABLES_MISS
-	// Type         uint16
-	// Length       uint16
 	PropHeader   OfpTableFeaturePropHeader
 	NextTableIds []uint8
 }
 
 type OfpTableFeaturePropActions struct {
-	// OFPTFPT_WRITE_ACTIONS,
-	// OFPTFPT_WRITE_ACTIONS_MISS,
-	// OFPTFPT_APPLY_ACTIONS,
-	// OFPTFPT_APPLY_ACTIONS_MISS
-	// Type      uint16
-	// Length    uint16
 	PropHeader OfpTableFeaturePropHeader
 	ActionIds  []OfpActionHeader
 }
 
 type OfpTableFeaturePropOxm struct {
-	// OFPTFPT_MATCH,
-	// OFPTFPT_WILDCARDS,
-	// OFPTFPT_WRITE_SETFIELD,
-	// OFPTFPT_WRITE_SETFIELD_MISS,
-	// OFPTFPT_APPLY_SETFIELD,
-	// OFPTFPT_APPLY_SETFIELD_MISS
-	// Type   uint16
-	// Length uint16
 	PropHeader OfpTableFeaturePropHeader
 	OxmIds     []uint32
 }
 
 type OfpTableFeaturePropExperimenter struct {
-	// OFPTFPT_EXPERIMENTER,
-	// OFPTFPT_EXPERIMENTER_MISS
-	// Type             uint16
-	// Length           uint16
 	PropHeader       OfpTableFeaturePropHeader
 	Experimenter     uint32
 	ExpType          uint32
@@ -1463,7 +1382,6 @@ type OfpTableFeatures struct {
 	Length  uint16
 	TableId uint8
 	// Pad           [5]uint8
-	// Name          [OFP_MAX_TABLE_NAME_LEN]byte
 	Name          []byte
 	MetadataMatch uint64
 	MetadataWrite uint64
@@ -1559,7 +1477,7 @@ type OfpGroupFeaturesStats struct {
 
 type OfpMeterMultipartRequest struct {
 	MeterId uint32
-	Pad     [4]uint8
+	// Pad     [4]uint8
 }
 
 type OfpMeterBandStats struct {
@@ -1568,9 +1486,9 @@ type OfpMeterBandStats struct {
 }
 
 type OfpMeterStats struct {
-	MeterId       uint32
-	Length        uint16
-	Pad           [6]uint8
+	MeterId uint32
+	Length  uint16
+	// Pad           [6]uint8
 	FlowCount     uint32
 	PacketInCount uint64
 	ByteInCount   uint64
@@ -1652,12 +1570,6 @@ type OfpQueueGetConfigReply struct {
 	// Pad    [4]uint8
 	Queue []*OfpPacketQueue
 }
-
-// type OfpActionSetQueue struct {
-// 	Type    uint16
-// 	Length  uint16
-// 	QueueId uint32
-// }
 
 type OfpRole struct {
 	Header OfpHeader

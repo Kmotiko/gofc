@@ -257,8 +257,6 @@ func TestParseSwitchConfig(t *testing.T) {
 	}
 }
 
-// TODO : test all other ofp13 messages
-
 /*****************************************************/
 /* OfpTableMod                                       */
 /*****************************************************/
@@ -517,8 +515,6 @@ func TestSerializeFlowMod(t *testing.T) {
 		t.Error("Serialized binary of OfpFlowMod is not equal to expected value.")
 	}
 }
-
-// TODO: Test all match fields, instructions and actions.
 
 // MatchField types
 //  in_port			OFPXMT_OFB_IN_PORT
@@ -3779,7 +3775,6 @@ func TestSerializeActionExperimenter(t *testing.T) {
 	}
 }
 
-// TODO : test all other ofp13 messages
 /*****************************************************/
 /* OfpGroupMod                                       */
 /*****************************************************/
@@ -3894,9 +3889,6 @@ func TestSerializeMeterModRequest(t *testing.T) {
 	}
 }
 
-// TODO: test all other MeterBand Type
-
-// TODO : test all other ofp13 messages
 /*****************************************************/
 /* OfpPacketIn                                       */
 /*****************************************************/
@@ -5882,46 +5874,6 @@ func TestParsePortDescStatsReply(t *testing.T) {
 
 /*****************************************************/
 /* OfpExperimenterMultipartHeader                    */
-/*****************************************************/
-// TODO: implements and test
-
-/*****************************************************/
-/* OfpQueuePropHeader                                */
-/*****************************************************/
-// TODO: implements and test
-
-/*****************************************************/
-/* OfpQueuePropMinRate                               */
-/*****************************************************/
-// TODO: implements and test
-
-/*****************************************************/
-/* OfpQueuePropMaxRate                               */
-/*****************************************************/
-// TODO: implements and test
-
-/*****************************************************/
-/* OfpQueuePropExperimenter                          */
-/*****************************************************/
-// TODO: implements and test
-
-/*****************************************************/
-/* OfpPacketQueue                                    */
-/*****************************************************/
-// TODO: implements and test
-
-/*****************************************************/
-/* OfpQueueGetConfigRequest                          */
-/*****************************************************/
-// TODO: implements and test
-
-/*****************************************************/
-/* OfpActionSetQueue                                 */
-/*****************************************************/
-// TODO: implements and test
-
-/*****************************************************/
-/* OfpQueueStatsRequest                              */
 /*****************************************************/
 // TODO: implements and test
 
