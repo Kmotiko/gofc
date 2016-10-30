@@ -149,6 +149,13 @@ type Of13TableFeaturesStatsReplyHandler interface {
 }
 
 /*****************************************************/
+/* OfpPortDescStatsReply                             */
+/*****************************************************/
+type Of13PortDescStatsReplyHandler interface {
+	HandlePortDescStatsReply(*ofp13.OfpMultipartReply, *Datapath)
+}
+
+/*****************************************************/
 /* RoleReply Message                                 */
 /*****************************************************/
 type Of13RoleReplyHandler interface {

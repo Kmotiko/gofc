@@ -203,7 +203,9 @@ func (dp *Datapath) handlePacket(buf []byte) {
 					obj.HandleTableFeaturesStatsReply(msgi, dp)
 				}
 			case ofp13.OFPMP_PORT_DESC:
-				// TODO: implement
+				if obj, ok := app.(Of13PortDescStatsReplyHandler); ok {
+					obj.HandlePortDescStatsReply(msgi, dp)
+				}
 			case ofp13.OFPMP_EXPERIMENTER:
 				// TODO: implement
 			default:

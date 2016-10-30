@@ -298,7 +298,7 @@ func TestParsePortStatus(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, // Transaction ID
 		0x00,                                     // Reason
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
-		0x00, 0x00, 0x000, 0x01, // PortNo
+		0x00, 0x00, 0x00, 0x01, // PortNo
 		0x00, 0x00, 0x00, 0x00, // Padding
 		0x11, 0x22, 0x33, 0x44, 0x55, 0x66, // HwAddr
 		0x00, 0x00, // Padding
@@ -4427,7 +4427,30 @@ func TestSerializeTableFeaturesStatsRequest(t *testing.T) {
 /*****************************************************/
 /* OfpPortDescStatsRequest                           */
 /*****************************************************/
-// TODO: implements and test
+func TestSerializePortDescStatsRequest(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x12,       // Type
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x0d, // Type(OFPMP_PORT_DESC)
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	mp := NewOfpPortDescStatsRequest(0)
+	actual := mp.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpPortDescStatsRequest is not equal to expected value.")
+	}
+}
 
 /*****************************************************/
 /* OfpExperimenterStatsRequest                       */
@@ -5790,6 +5813,70 @@ func TestParseTableFeature(t *testing.T) {
 		t.Log("Config             : ", p.Config)
 		t.Log("MaxEntries         : ", p.MaxEntries)
 		t.Error("Parsed value of OfpTableFeaturesStats is invalid.")
+	}
+}
+
+/*****************************************************/
+/* PortDescStatsReply                                */
+/*****************************************************/
+func TestParsePortDescStatsReply(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x13,       // Type
+		0x00, 0x50, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x0d, // OFPMP_PORT_DESC
+		0x00, 0x00, // Flags
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x01, // PortNo
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x11, 0x22, 0x33, 0x44, 0x55, 0x66, // HwAddr
+		0x00, 0x00, // Padding
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, // Name
+		0x00, 0x00, 0x00, 0x20, // Config
+		0x00, 0x00, 0x00, 0x04, // State
+		0x00, 0x00, 0x00, 0x01, // Curr
+		0x00, 0x00, 0x00, 0x01, // Advertised
+		0x00, 0x00, 0x00, 0x01, // Supported
+		0x00, 0x00, 0x00, 0x01, // Peer
+		0x00, 0x00, 0x01, 0x00, // CurrSpeed
+		0x00, 0x00, 0x01, 0x00, // MaxSpeed
+	}
+
+	rep := NewOfpMultipartReply()
+	rep.Parse(packet)
+	if rep.Header.Version != 4 || rep.Header.Type != 19 ||
+		rep.Header.Length != 80 || rep.Header.Xid != 0 ||
+		rep.Body[0].(*OfpPort).PortNo != 1 ||
+		rep.Body[0].(*OfpPort).HwAddr.String() != "11:22:33:44:55:66" ||
+		rep.Body[0].(*OfpPort).Config != 32 ||
+		rep.Body[0].(*OfpPort).State != 4 ||
+		rep.Body[0].(*OfpPort).Curr != 1 ||
+		rep.Body[0].(*OfpPort).Advertised != 1 ||
+		rep.Body[0].(*OfpPort).Supported != 1 ||
+		rep.Body[0].(*OfpPort).Peer != 1 ||
+		rep.Body[0].(*OfpPort).CurrSpeed != 256 ||
+		rep.Body[0].(*OfpPort).MaxSpeed != 256 {
+		t.Log("Version        : ", rep.Header.Version)
+		t.Log("Type           : ", rep.Header.Type)
+		t.Log("Length         : ", rep.Header.Length)
+		t.Log("Transaction ID : ", rep.Header.Xid)
+		t.Log("Type           : ", rep.Type)
+		t.Log("Flags          : ", rep.Flags)
+		t.Log("PortNo         : ", rep.Body[0].(*OfpPort).PortNo)
+		t.Log("HwAddr         : ", rep.Body[0].(*OfpPort).HwAddr)
+		t.Log("Config         : ", rep.Body[0].(*OfpPort).Config)
+		t.Log("State          : ", rep.Body[0].(*OfpPort).State)
+		t.Log("Curr           : ", rep.Body[0].(*OfpPort).Curr)
+		t.Log("Advertised     : ", rep.Body[0].(*OfpPort).Advertised)
+		t.Log("Supported      : ", rep.Body[0].(*OfpPort).Supported)
+		t.Log("Peer           : ", rep.Body[0].(*OfpPort).Peer)
+		t.Log("CurrSpeed      : ", rep.Body[0].(*OfpPort).CurrSpeed)
+		t.Log("MaxSpeed       : ", rep.Body[0].(*OfpPort).MaxSpeed)
+		t.Error("Parsed value of PortDescStatsReply is invalid.")
 	}
 }
 

@@ -325,7 +325,11 @@ func (p *OfpPort) Parse(packet []byte) {
 }
 
 func (p *OfpPort) Size() int {
-	return 0
+	return 64
+}
+
+func (p *OfpPort) MPType() uint16 {
+	return OFPMP_PORT_DESC
 }
 
 func NewOfpPortStatus() *OfpPortStatus {
@@ -4749,8 +4753,9 @@ func NewOfpTableFeaturesStatsRequest(flags uint16, body *OfpTableFeatures) *OfpM
 	return m
 }
 
-func NewOfpPortDescStatsRequest() *OfpMultipartRequest {
-	return nil
+func NewOfpPortDescStatsRequest(flags uint16) *OfpMultipartRequest {
+	m := NewOfpMultipartRequest(OFPMP_PORT_DESC, flags)
+	return m
 }
 
 func NewOfpExperimenterStatsRequest() *OfpMultipartRequest {
@@ -4933,7 +4938,12 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 			index += mp.Size()
 		}
 	case OFPMP_PORT_DESC:
-		// TODO: implements
+		for (uint16)(index) < m.Header.Length {
+			mp := newOfpPort()
+			mp.Parse(packet[index:])
+			m.Append(mp)
+			index += mp.Size()
+		}
 	case OFPMP_EXPERIMENTER:
 		// TODO: implements
 	default:
