@@ -3971,7 +3971,66 @@ func TestSerializeMeterBandDscpExperimenter(t *testing.T) {
 /*****************************************************/
 /* OfpPacketIn                                       */
 /*****************************************************/
-// TODO: implements and test
+func TestParsePacketIn(t *testing.T) {
+	packet := []byte{
+		0x04,       // Version
+		0x0a,       // Type
+		0x00, 0x54, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x00, // BufferId
+		0x00, 0x2a, // TotalLen
+		0x00,                                           // Reason(OFPR_NO_MATCH)
+		0x01,                                           // TableId
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Cookie
+		0x00, 0x01, // Type
+		0x00, 0x0c, // Length
+		0x80, 0x00, // OFPXMC_OPENFLOW_BASIC
+		0x00,                   // OFPXMT_OFB_IN_PORT, HasMask is false
+		0x04,                   // Length
+		0xff, 0xff, 0xff, 0xfe, // Value
+		0x00, 0x00, 0x00, 0x00, // Padding
+		0x00, 0x00, // Padding
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, //
+		0x00, 0x23, 0x20, 0x90, 0x00, 0x00, //
+		0x80, 0x35,
+		0x00, 0x01,
+		0x08, 0x00,
+		0x06,
+		0x04,
+		0x00, 0x03,
+		0x00, 0x23, 0x20, 0x90, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x23, 0x20, 0x90, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00,
+	}
+
+	m := NewOfpPacketIn()
+	m.Parse(packet)
+	if m.Header.Version != 4 || m.Header.Type != OFPT_PACKET_IN ||
+		m.Header.Length != 84 || m.Header.Xid != 0 ||
+		m.BufferId != 0 || m.TotalLen != 42 ||
+		m.Reason != OFPR_NO_MATCH || m.TableId != 1 ||
+		m.Cookie != 0 ||
+		m.Match.Type != 1 ||
+		m.Match.Length != 12 ||
+		m.Match.OxmFields[0].(*OxmInPort).TlvHeader != OXM_OF_IN_PORT ||
+		m.Match.OxmFields[0].(*OxmInPort).Value != 0xfffffffe {
+		t.Log("Version        : ", m.Header.Version)
+		t.Log("Type           : ", m.Header.Type)
+		t.Log("Length         : ", m.Header.Length)
+		t.Log("Transaction ID : ", m.Header.Xid)
+		t.Log("BufferId       : ", m.BufferId)
+		t.Log("TotalLen       : ", m.TotalLen)
+		t.Log("Reason         : ", m.Reason)
+		t.Log("TableId        : ", m.TableId)
+		t.Log("Cookie         : ", m.Cookie)
+		t.Log("Type           : ", m.Match.Type)
+		t.Log("Length         : ", m.Match.Length)
+		t.Log("TlvHeader      : ", m.Match.OxmFields[0].(*OxmInPort).TlvHeader)
+		t.Log("Value          : ", m.Match.OxmFields[0].(*OxmInPort).Value)
+		t.Error("Parsed value of OfpPacketIn is invalid.")
+	}
+}
 
 /*****************************************************/
 /* OfpFlowRemoved                                    */
