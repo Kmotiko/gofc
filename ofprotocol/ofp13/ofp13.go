@@ -582,8 +582,8 @@ const (
 // ofp_queue_op_failed_code
 const (
 	OFPQOFC_BAD_PORT = iota
-	OFPQQFC_BAD_QUEUE
-	OFPQQFC_EPERM
+	OFPQOFC_BAD_QUEUE
+	OFPQOFC_EPERM
 )
 
 // ofp_switch_config_failed_code
