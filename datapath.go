@@ -25,8 +25,6 @@ func NewDatapath(conn *net.TCPConn) *Datapath {
 	dp := new(Datapath)
 	dp.sendBuffer = make(chan *ofp13.OFMessage, 10)
 	dp.conn = conn
-	go dp.recvLoop()
-	go dp.sendLoop()
 	return dp
 }
 
