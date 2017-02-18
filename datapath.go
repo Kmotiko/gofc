@@ -70,15 +70,19 @@ func (dp *Datapath) recvLoop() {
 func (dp *Datapath) handlePacket(buf []byte) {
 	// parse data
 	msg := ofp13.Parse(buf[0:])
-	apps := GetAppManager().GetApplications()
 
-	// handle hello
 	if _, ok := msg.(*ofp13.OfpHello); ok {
+		// handle hello
 		featureReq := ofp13.NewOfpFeaturesRequest()
 		dp.Send(featureReq)
+	} else {
+		// dispatch handler
+		dp.dispatchHandler(msg)
 	}
+}
 
-	// dispatch handler
+func (dp *Datapath) dispatchHandler(msg ofp13.OFMessage) {
+	apps := GetAppManager().GetApplications()
 	for _, app := range apps {
 		switch msgi := msg.(type) {
 		// if message is OfpHeader
