@@ -512,7 +512,86 @@ func (m *OfpSwitchFeatures) Size() int {
 /*****************************************************/
 /* OfpFlowMod                                        */
 /*****************************************************/
-func NewOfpFlowMod(
+func NewOfpFlowModAdd(
+	cookie uint64,
+	cookieMask uint64,
+	tableId uint8,
+	priority uint16,
+	flags uint16,
+	match *OfpMatch,
+	instructions []OfpInstruction,
+) *OfpFlowMod {
+	return newOfpFlowMod(
+		cookie,
+		cookieMask,
+		tableId,
+		OFPFC_ADD,
+		0, // idle timeout, 0 means permanent
+		0, // hard timeout, 0 means permanent
+		priority,
+		OFP_NO_BUFFER,
+		OFPP_ANY,
+		OFPG_ANY,
+		flags,
+		match,
+		instructions,
+	)
+}
+
+func NewOfpFlowModModify(
+	cookie uint64,
+	cookieMask uint64,
+	tableId uint8,
+	priority uint16,
+	flags uint16,
+	match *OfpMatch,
+	instructions []OfpInstruction,
+) *OfpFlowMod {
+	return newOfpFlowMod(
+		cookie,
+		cookieMask,
+		tableId,
+		OFPFC_MODIFY,
+		0, // idle timeout is ignored in modify
+		0, // hard timeout is ignored in modify
+		priority,
+		OFP_NO_BUFFER,
+		OFPP_ANY,
+		OFPG_ANY,
+		flags,
+		match,
+		instructions,
+	)
+}
+
+func NewOfpFlowModDelete(
+	cookie uint64,
+	cookieMask uint64,
+	tableId uint8,
+	priority uint16,
+	outPort uint32,
+	outGroup uint32,
+	flags uint16,
+	match *OfpMatch,
+) *OfpFlowMod {
+	return newOfpFlowMod(
+		cookie,
+		cookieMask,
+		tableId,
+		OFPFC_DELETE,
+		0, // idle timeout, 0 means permanent
+		0, // hard timeout, 0 means permanent
+		priority,
+		OFP_NO_BUFFER,
+		OFPP_ANY,
+		OFPG_ANY,
+		flags,
+		match,
+		make([]OfpInstruction, 0),
+	)
+}
+
+func newOfpFlowMod(
 	cookie uint64,
 	cookieMask uint64,
 	tableId uint8,
@@ -524,6 +603,8 @@ func NewOfpFlowMod(
 	outPort uint32,
 	outGroup uint32,
 	flags uint16,
+	match *OfpMatch,
+	instructions []OfpInstruction,
 ) *OfpFlowMod {
 	m := new(OfpFlowMod)
 	m.Header = NewOfpHeader(OFPT_FLOW_MOD)
@@ -538,7 +619,9 @@ func NewOfpFlowMod(
 	m.OutPort = outPort
 	m.OutGroup = outGroup
 	m.Flags = flags
-	m.Match = NewOfpMatch()
+	m.Match = match
+	m.Instructions = instructions
+
 	return m
 }
 
@@ -755,6 +838,7 @@ func NewOfpPacketOut(
 	m.Header = header
 	m.BufferId = bufferId
 	m.InPort = inPort
+
 	if actions != nil {
 		m.ActionLen = (uint16)(len(actions))
 		m.Actions = actions
@@ -4874,60 +4958,56 @@ func (m *OfpMultipartReply) Parse(packet []byte) {
 		}
 	case OFPMP_PORT_STATS:
 		for (uint16)(index) < m.Header.Length {
-			mp := newOfpPortStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+			mp := newOfpPortStats()
 			mp.Parse(packet[index:])
 			m.Append(mp)
 			index += mp.Size()
 		}
 	case OFPMP_QUEUE:
 		for (uint16)(index) < m.Header.Length {
-			mp := newOfpQueueStats(0, 0, 0, 0, 0, 0, 0)
+			mp := newOfpQueueStats()
 			mp.Parse(packet[index:])
 			m.Append(mp)
 			index += mp.Size()
 		}
 	case OFPMP_GROUP:
 		for (uint16)(index) < m.Header.Length {
-			mp := newOfpGroupStats(0, 0, 0, 0, 0, 0, 0, nil)
+			mp := newOfpGroupStats()
 			mp.Parse(packet[index:])
 			m.Append(mp)
 			index += mp.Size()
 		}
 	case OFPMP_GROUP_DESC:
 		for (uint16)(index) < m.Header.Length {
-			mp := newOfpGroupDescStats(0, 0, nil)
+			mp := newOfpGroupDescStats()
 			mp.Parse(packet[index:])
 			m.Append(mp)
 			index += mp.Size()
 		}
 	case OFPMP_GROUP_FEATURES:
 		for (uint16)(index) < m.Header.Length {
-			mp := newOfpGroupFeaturesStats(
-				0,
-				0,
-				[4]uint32{0, 0, 0, 0},
-				[4]uint32{0, 0, 0, 0})
+			mp := newOfpGroupFeaturesStats()
 			mp.Parse(packet[index:])
 			m.Append(mp)
 			index += mp.Size()
 		}
 	case OFPMP_METER:
 		for (uint16)(index) < m.Header.Length {
-			mp := newOfpMeterStats(0, 0, 0, 0, 0, 0, nil)
+			mp := newOfpMeterStats()
 			mp.Parse(packet[index:])
 			m.Append(mp)
 			index += mp.Size()
 		}
 	case OFPMP_METER_CONFIG:
 		for (uint16)(index) < m.Header.Length {
-			mp := newOfpMeterConfig(0, 0, nil)
+			mp := newOfpMeterConfig()
 			mp.Parse(packet[index:])
 			m.Append(mp)
 			index += mp.Size()
 		}
 	case OFPMP_METER_FEATURES:
 		for (uint16)(index) < m.Header.Length {
-			mp := newOfpMeterFeaturesStats(0, 0, 0, 0, 0)
+			mp := newOfpMeterFeaturesStats()
 			mp.Parse(packet[index:])
 			m.Append(mp)
 			index += mp.Size()
@@ -5673,11 +5753,7 @@ func NewOfpTableFeatures(
 	properties []OfpTableFeatureProp) *OfpTableFeatures {
 	mp := new(OfpTableFeatures)
 	mp.TableId = tableId
-	if name != nil {
-		mp.Name = name
-	} else {
-		mp.Name = make([]byte, 32)
-	}
+	mp.Name = name
 	mp.MetadataMatch = metadataMatch
 	mp.MetadataWrite = metadataWrite
 	mp.Config = config
@@ -5876,39 +5952,8 @@ func (mp *OfpPortStatsRequest) MPType() uint16 {
 /*****************************************************/
 /* OfpPortStats                                      */
 /*****************************************************/
-func newOfpPortStats(
-	portNo uint32,
-	rxPackets uint64,
-	txPackets uint64,
-	rxBytes uint64,
-	txBytes uint64,
-	rxDropped uint64,
-	txDropped uint64,
-	rxErrors uint64,
-	txErrors uint64,
-	rxFrameErr uint64,
-	rxOverErr uint64,
-	rxCrcErr uint64,
-	collisions uint64,
-	durationSec uint32,
-	durationNSec uint32) *OfpPortStats {
+func newOfpPortStats() *OfpPortStats {
 	mp := new(OfpPortStats)
-	mp.PortNo = portNo
-	mp.RxPackets = rxPackets
-	mp.TxPackets = txPackets
-	mp.RxBytes = rxBytes
-	mp.TxBytes = txBytes
-	mp.RxDropped = rxDropped
-	mp.TxDropped = txDropped
-	mp.RxErrors = rxErrors
-	mp.TxErrors = txErrors
-	mp.RxFrameErr = rxFrameErr
-	mp.RxOverErr = rxOverErr
-	mp.RxCrcErr = rxCrcErr
-	mp.Collisions = collisions
-	mp.DurationSec = durationSec
-	mp.DurationNSec = durationNSec
-
 	return mp
 }
 
@@ -6065,24 +6110,8 @@ func (mp *OfpQueueStatsRequest) MPType() uint16 {
 /*****************************************************/
 /* OfpQueueStats                                     */
 /*****************************************************/
-func newOfpQueueStats(
-	portNo uint32,
-	queueId uint32,
-	txBytes uint64,
-	txPackets uint64,
-	txErrors uint64,
-	durationSec uint32,
-	durationNSec uint32,
-) *OfpQueueStats {
+func newOfpQueueStats() *OfpQueueStats {
 	mp := new(OfpQueueStats)
-	mp.PortNo = portNo
-	mp.QueueId = queueId
-	mp.TxBytes = txBytes
-	mp.TxPackets = txPackets
-	mp.TxErrors = txErrors
-	mp.DurationSec = durationSec
-	mp.DurationNSec = durationNSec
-
 	return mp
 }
 
@@ -6224,27 +6253,8 @@ func (bc *OfpBucketCounter) Size() int {
 /*****************************************************/
 /* OfpGroupStats                                     */
 /*****************************************************/
-func newOfpGroupStats(
-	length uint16,
-	groupId uint32,
-	refCount uint32,
-	packetCount uint64,
-	byteCount uint64,
-	durationSec uint32,
-	durationNSec uint32,
-	bucketStats []*OfpBucketCounter) *OfpGroupStats {
+func newOfpGroupStats() *OfpGroupStats {
 	mp := new(OfpGroupStats)
-	mp.Length = length
-	mp.GroupId = groupId
-	mp.RefCount = refCount
-	mp.PacketCount = packetCount
-	mp.ByteCount = byteCount
-	mp.DurationSec = durationSec
-	mp.DurationNSec = durationNSec
-	if mp.BucketStats != nil {
-		mp.BucketStats = bucketStats
-	}
-
 	return mp
 }
 
@@ -6331,20 +6341,8 @@ func (mp *OfpGroupStats) MPType() uint16 {
 /*****************************************************/
 /* OfpGroupDesc                                      */
 /*****************************************************/
-func newOfpGroupDescStats(
-	t uint8,
-	groupId uint32,
-	buckets []*OfpBucket) *OfpGroupDescStats {
+func newOfpGroupDescStats() *OfpGroupDescStats {
 	mp := new(OfpGroupDescStats)
-	mp.Length = 16
-	mp.Type = t
-	mp.GroupId = groupId
-	if buckets != nil {
-		mp.Buckets = buckets
-		for _, b := range buckets {
-			mp.Length += (uint16)(b.Size())
-		}
-	}
 	return mp
 }
 
@@ -6389,16 +6387,8 @@ func (mp *OfpGroupDescStats) MPType() uint16 {
 /*****************************************************/
 /* OfpGroupFeatures                                  */
 /*****************************************************/
-func newOfpGroupFeaturesStats(
-	t uint32,
-	capabilities uint32,
-	maxGroups [4]uint32,
-	actions [4]uint32) *OfpGroupFeaturesStats {
+func newOfpGroupFeaturesStats() *OfpGroupFeaturesStats {
 	mp := new(OfpGroupFeaturesStats)
-	mp.Type = t
-	mp.Capabilities = capabilities
-	mp.MaxGroups = maxGroups
-	mp.Actions = actions
 	return mp
 }
 
@@ -6534,26 +6524,8 @@ func (mb *OfpMeterBandStats) Size() int {
 /*****************************************************/
 /* OfpMeterStats                                      */
 /*****************************************************/
-func newOfpMeterStats(
-	meterId uint32,
-	flowCount uint32,
-	packetInCount uint64,
-	byteInCount uint64,
-	durationSec uint32,
-	durationNSec uint32,
-	bandStats []*OfpMeterBandStats) *OfpMeterStats {
+func newOfpMeterStats() *OfpMeterStats {
 	mp := new(OfpMeterStats)
-	mp.MeterId = meterId
-	mp.Length = 40
-	mp.FlowCount = flowCount
-	mp.PacketInCount = packetInCount
-	mp.ByteInCount = byteInCount
-	mp.DurationSec = durationSec
-	mp.DurationNSec = durationNSec
-	if bandStats != nil {
-		mp.BandStats = bandStats
-		mp.Length += (uint16)(len(bandStats) * 16)
-	}
 	return mp
 }
 
@@ -6610,22 +6582,8 @@ func (mp *OfpMeterStats) MPType() uint16 {
 /*****************************************************/
 /* OfpMeterConfig                                    */
 /*****************************************************/
-func newOfpMeterConfig(
-	flags uint16,
-	meterId uint32,
-	bands []OfpMeterBand,
-) *OfpMeterConfig {
+func newOfpMeterConfig() *OfpMeterConfig {
 	mp := new(OfpMeterConfig)
-	mp.Length = 8
-	mp.Flags = flags
-	mp.MeterId = meterId
-	if bands != nil {
-		mp.Bands = bands
-		for _, mb := range bands {
-			mp.Length += (uint16)(mb.Size())
-		}
-	}
-
 	return mp
 }
 
@@ -6669,18 +6627,8 @@ func (mp *OfpMeterConfig) MPType() uint16 {
 /*****************************************************/
 /* OfpMeterFeatures                                  */
 /*****************************************************/
-func newOfpMeterFeaturesStats(
-	maxMeter uint32,
-	bandTypes uint32,
-	capabilities uint32,
-	maxBands uint8,
-	maxColor uint8) *OfpMeterFeatures {
+func newOfpMeterFeaturesStats() *OfpMeterFeatures {
 	mp := new(OfpMeterFeatures)
-	mp.MaxMeter = maxMeter
-	mp.BandTypes = bandTypes
-	mp.Capabilities = capabilities
-	mp.MaxBands = maxBands
-	mp.MaxColor = maxColor
 	return mp
 }
 

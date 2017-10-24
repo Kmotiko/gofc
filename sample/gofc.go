@@ -16,27 +16,14 @@ func NewSampleController() *SampleController {
 }
 
 func (c *SampleController) HandleSwitchFeatures(msg *ofp13.OfpSwitchFeatures, dp *gofc.Datapath) {
-	// create flow mod
-	fm := ofp13.NewOfpFlowMod(
-		0,
-		0,
-		0,
-		ofp13.OFPFC_ADD,
-		0,
-		0,
-		0,
-		ofp13.OFP_NO_BUFFER,
-		ofp13.OFPP_ANY,
-		ofp13.OFPG_ANY,
-		ofp13.OFPFF_SEND_FLOW_REM)
-
 	// create match
 	ethdst, _ := ofp13.NewOxmEthDst("00:00:00:00:00:00")
 	if ethdst == nil {
 		fmt.Println(ethdst)
 		return
 	}
-	fm.AppendMatchField(ethdst)
+	match := ofp13.NewOfpMatch()
+	match.Append(ethdst)
 
 	// create Instruction
 	instruction := ofp13.NewOfpInstructionActions(ofp13.OFPIT_APPLY_ACTIONS)
@@ -46,7 +33,19 @@ func (c *SampleController) HandleSwitchFeatures(msg *ofp13.OfpSwitchFeatures, dp
 	instruction.Append(ofp13.NewOfpActionSetField(seteth))
 
 	// append Instruction
-	fm.AppendInstruction(instruction)
+	instructions := make([]ofp13.OfpInstruction, 0)
+	instructions = append(instructions, instruction)
+
+	// create flow mod
+	fm := ofp13.NewOfpFlowModModify(
+		0, // cookie
+		0, // cookie mask
+		0, // tableid
+		0, // priority
+		ofp13.OFPFF_SEND_FLOW_REM,
+		match,
+		instructions,
+	)
 
 	// send FlowMod
 	dp.Send(fm)

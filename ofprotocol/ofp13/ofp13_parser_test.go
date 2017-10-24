@@ -485,27 +485,27 @@ func TestSerializeFlowMod(t *testing.T) {
 	// reset xid for test
 	xid = 0
 
-	fmod := NewOfpFlowMod(
-		0,
-		0,
-		0,
-		OFPFC_ADD,
-		0,
-		0,
-		0,
-		OFP_NO_BUFFER,
-		OFPP_ANY,
-		OFPG_ANY,
-		OFPFF_SEND_FLOW_REM)
 	ethdst, _ := NewOxmEthDst("11:22:33:44:55:66")
 	if ethdst == nil {
 		t.Error("Failed to create OxmEthDst.")
 		return
 	}
-	fmod.AppendMatchField(ethdst)
+	match := NewOfpMatch()
+	match.Append(ethdst)
 	instruction := NewOfpInstructionActions(OFPIT_APPLY_ACTIONS)
 	instruction.Append(NewOfpActionOutput(0, 0))
-	fmod.AppendInstruction(instruction)
+	instructions := make([]OfpInstruction, 0)
+	instructions = append(instructions, instruction)
+
+	fmod := NewOfpFlowModAdd(
+		0,
+		0,
+		0,
+		0,
+		OFPFF_SEND_FLOW_REM,
+		match,
+		instructions,
+	)
 
 	actual := fmod.Serialize()
 	a_str := hex.EncodeToString(actual)
