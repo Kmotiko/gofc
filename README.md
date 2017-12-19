@@ -25,7 +25,7 @@ For example, if you want to handle PacketIn message, you should implement Handle
 import (
 	"github.com/Kmotiko/gofc"
 	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
-}
+)
 
 type SampleController struct {
 	// add any paramter used in controller.
