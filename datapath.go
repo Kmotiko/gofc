@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
 	"net"
+
+	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
 )
 
 // datapath
