@@ -3973,7 +3973,7 @@ func TestSerializeMeterBandDscpExperimenter(t *testing.T) {
 /* OfpPacketIn                                       */
 /*****************************************************/
 func TestParsePacketIn(t *testing.T) {
-	packetWithoutPacketIn := []byte{
+	packetInWithoutReceivedData := []byte{
 		0x04,       // Version
 		0x0a,       // Type
 		0x00, 0x54, // Length
@@ -3993,7 +3993,7 @@ func TestParsePacketIn(t *testing.T) {
 		0x00, 0x00, // Padding
 	}
 
-	packetIn := []byte{
+	receivedData := []byte{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // Ethernet destination
 		0x00, 0x23, 0x20, 0x90, 0x00, 0x00, // Ethernet source
 		0x80, 0x35, // Protocol : RARP / see rfc903
@@ -4007,7 +4007,7 @@ func TestParsePacketIn(t *testing.T) {
 		0x00, 0x23, 0x20, 0x90, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00,
 	}
-	packet := append(packetWithoutPacketIn,packetIn...)
+	packet := append(packetInWithoutReceivedData,receivedData...)
 
 	m := NewOfpPacketIn()
 	m.Parse(packet)
@@ -4020,8 +4020,8 @@ func TestParsePacketIn(t *testing.T) {
 		m.Match.Length != 12 ||
 		m.Match.OxmFields[0].(*OxmInPort).TlvHeader != OXM_OF_IN_PORT ||
 		m.Match.OxmFields[0].(*OxmInPort).Value != 0xfffffffe ||
-		len(m.Data) != len(packetIn) ||
-		!bytes.Equal(m.Data,packetIn) {
+		len(m.Data) != len(receivedData) ||
+		!bytes.Equal(m.Data,receivedData) {
 		t.Log("Version        : ", m.Header.Version)
 		t.Log("Type           : ", m.Header.Type)
 		t.Log("Length         : ", m.Header.Length)
