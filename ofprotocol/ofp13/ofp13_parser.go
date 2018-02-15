@@ -4386,7 +4386,7 @@ func NewOfpActionSetField(oxm OxmField) *OfpActionSetField {
 	a := new(OfpActionSetField)
 	length := 4 + oxm.Size()
 	length += (8 - (length % 8))
-	header := NewOfpActionHeader(OFPAT_SET_FIELD, (uint16)(4+oxm.Size()+2))
+	header := NewOfpActionHeader(OFPAT_SET_FIELD, (uint16)(length))
 	a.ActionHeader = header
 	a.Oxm = oxm
 	return a
