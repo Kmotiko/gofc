@@ -1,6 +1,7 @@
 package ofp13
 
 import (
+	"bytes"
 	"encoding/hex"
 	"math"
 	"testing"
@@ -3972,7 +3973,7 @@ func TestSerializeMeterBandDscpExperimenter(t *testing.T) {
 /* OfpPacketIn                                       */
 /*****************************************************/
 func TestParsePacketIn(t *testing.T) {
-	packet := []byte{
+	packetInWithoutReceivedData := []byte{
 		0x04,       // Version
 		0x0a,       // Type
 		0x00, 0x54, // Length
@@ -3990,19 +3991,23 @@ func TestParsePacketIn(t *testing.T) {
 		0xff, 0xff, 0xff, 0xfe, // Value
 		0x00, 0x00, 0x00, 0x00, // Padding
 		0x00, 0x00, // Padding
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, //
-		0x00, 0x23, 0x20, 0x90, 0x00, 0x00, //
-		0x80, 0x35,
+	}
+
+	receivedData := []byte{
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // Ethernet destination
+		0x00, 0x23, 0x20, 0x90, 0x00, 0x00, // Ethernet source
+		0x80, 0x35, // Protocol : RARP / see rfc903
 		0x00, 0x01,
 		0x08, 0x00,
 		0x06,
 		0x04,
 		0x00, 0x03,
-		0x00, 0x23, 0x20, 0x90, 0x00, 0x00, //
+		0x00, 0x23, 0x20, 0x90, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00,
-		0x00, 0x23, 0x20, 0x90, 0x00, 0x00, //
+		0x00, 0x23, 0x20, 0x90, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00,
 	}
+	packet := append(packetInWithoutReceivedData,receivedData...)
 
 	m := NewOfpPacketIn()
 	m.Parse(packet)
@@ -4014,7 +4019,9 @@ func TestParsePacketIn(t *testing.T) {
 		m.Match.Type != 1 ||
 		m.Match.Length != 12 ||
 		m.Match.OxmFields[0].(*OxmInPort).TlvHeader != OXM_OF_IN_PORT ||
-		m.Match.OxmFields[0].(*OxmInPort).Value != 0xfffffffe {
+		m.Match.OxmFields[0].(*OxmInPort).Value != 0xfffffffe ||
+		len(m.Data) != len(receivedData) ||
+		!bytes.Equal(m.Data,receivedData) {
 		t.Log("Version        : ", m.Header.Version)
 		t.Log("Type           : ", m.Header.Type)
 		t.Log("Length         : ", m.Header.Length)
@@ -4028,6 +4035,8 @@ func TestParsePacketIn(t *testing.T) {
 		t.Log("Length         : ", m.Match.Length)
 		t.Log("TlvHeader      : ", m.Match.OxmFields[0].(*OxmInPort).TlvHeader)
 		t.Log("Value          : ", m.Match.OxmFields[0].(*OxmInPort).Value)
+		t.Log("Data length    : ", len(m.Data))
+		t.Log("Data           : ", m.Data)
 		t.Error("Parsed value of OfpPacketIn is invalid.")
 	}
 }
