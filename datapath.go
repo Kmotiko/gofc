@@ -31,19 +31,15 @@ func NewDatapath(conn *net.TCPConn) *Datapath {
 
 func (dp *Datapath) sendLoop() {
 	for {
-		select {
 		// wait channel
-		case msg := <-(dp.sendBuffer):
-			// serialize data
-			byteData := (*msg).Serialize()
-			_, err := dp.conn.Write(byteData)
-			if err != nil {
-				fmt.Println("failed to write conn")
-				fmt.Println(err)
-				return
-			}
-		default:
-			continue
+		msg := <-(dp.sendBuffer)
+		// serialize data
+		byteData := (*msg).Serialize()
+		_, err := dp.conn.Write(byteData)
+		if err != nil {
+			fmt.Println("failed to write conn")
+			fmt.Println(err)
+			return
 		}
 	}
 }
