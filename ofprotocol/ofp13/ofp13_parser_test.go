@@ -6231,54 +6231,58 @@ func TestSerializeSetAsync(t *testing.T) {
 	}
 }
 
-func verifySerializedMessage(t *testing.T, expect []byte, msg OFMessage) {
-	actual := msg.Serialize()
+func TestSerializeActionSetFieldOxmVlan(t *testing.T) {
+	expect := []byte{
+		0x00, 0x19, // Type
+		0x00, 0x10, // Length
+		0x80, 0x00, // OFPXMC_OPENFLOW_BASIC
+		0x0c,       // OFPXMT_OFB_VLAN_VID, HasMask is false
+		0x02,       // Length
+		0x10, 0x01, // Value
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
 	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	setvlanvid := NewOxmVlanVid(1 + 0x1000)
+	action := NewOfpActionSetField(setvlanvid)
+	actual := action.Serialize()
 	a_str := hex.EncodeToString(actual)
 	if len(expect) != len(actual) || e_str != a_str {
 		t.Log("Expected Value is : ", e_str)
 		t.Log("Actual Value is   : ", a_str)
-		t.Error("Serialized binary is not equal to expected value.")
+		t.Error("Serialized binary of OfpActionSetField is not equal to expected value.")
 	}
 }
 
-/*
-I create an OVS switch named s1 and use the following command to get the data
-send from the command line ovs-ofct to the switch :
-sudo strace -xx -s 16000 -e trace=sendto ovs-ofctl -Oopenflow13  add-flow s1 "cookie=0x401,table=1,priority=7000,in_port=1,vlan_tci=0x0000/0x0fff,actions=push_vlan:0x8100,set_field:4097->vlan_vi
-d,goto_table:2" 2>&1 > /dev/null | grep sendto | awk -F'"' 'BEGIN{nd=0;}{nd++;if (nd == 4) print $2}' | sed 's%\\x%,0x%g'
-*/
-func TestFunctionalAddVlan(t *testing.T) {
+func TestSerializeActionSetFieldOxmSrcIpv6(t *testing.T) {
 	expect := []byte{
-		0x04, 0x0e, 0x00, 0x70, 0x00, 0x00, 0x00, 0x04,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x01,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1b, 0x58,
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-		0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x01, 0x00, 0x14, 0x80, 0x00, 0x00, 0x04,
-		0x00, 0x00, 0x00, 0x01, 0x80, 0x00, 0x0d, 0x04,
-		0x00, 0x00, 0x0f, 0xff, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x04, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x11, 0x00, 0x08, 0x81, 0x00, 0x00, 0x00,
-		0x00, 0x19, 0x00, 0x10, 0x80, 0x00, 0x0c, 0x02,
-		0x10, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x01, 0x00, 0x08, 0x02, 0x00, 0x00, 0x00,
+		0x00, 0x19, // Type
+		0x00, 0x18, // Length
+		0x80, 0x00, // Class(OFPXMC_OPENFLOW_BASIC)
+		0x34,                   // OFPXMT_OFB_IPV6_SRC, Has mask is false
+		0x10,                   // Length
+		0xfe, 0x80, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x0e, 0x4d, 0xee, 0xff, //
+		0xfe, 0x00, 0x90, 0xcc,
 	}
-	match := NewOfpMatch()
-	match.Append(NewOxmInPort(1))
-	match.Append(NewOxmVlanVidW(0, 0x0FFF))
-	instructions := make([]OfpInstruction, 2)
-	actions := NewOfpInstructionActions(OFPIT_APPLY_ACTIONS)
-	pushVlanAction := NewOfpActionPushVlan()
-	actions.Append(pushVlanAction)
-	setFieldAction := NewOfpActionSetField(NewOxmVlanVid(1 + 0x1000))
-	actions.Append(setFieldAction)
-	goToTable := NewOfpInstructionGotoTable(2)
-	instructions[0] = actions
-	instructions[1] = goToTable
-	cookie := uint64(0x0400 + 1)
-	flowMfp := NewOfpFlowModAdd(cookie, 0, 1, 7000, 0, match, instructions)
-	flowMfp.Header.Xid = 0x04
-	verifySerializedMessage(t, expect, flowMfp)
+
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	setipv6src, _ := NewOxmIpv6Src("fe80::e4d:eeff:fe00:90cc")
+	action := NewOfpActionSetField(setipv6src)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionSetField is not equal to expected value.")
+	}
 }

@@ -4384,8 +4384,8 @@ func (a *OfpActionDecNwTtl) OfpActionType() uint16 {
  */
 func NewOfpActionSetField(oxm OxmField) *OfpActionSetField {
 	a := new(OfpActionSetField)
-	length := 4 + oxm.Size()
-	length += (8 - (length % 8))
+	// oxmLength + 4 + 7 => oxmLength + 11
+	length := ((uint32(oxm.Size()) + 11) / 8) * 8
 	header := NewOfpActionHeader(OFPAT_SET_FIELD, (uint16)(length))
 	a.ActionHeader = header
 	a.Oxm = oxm
@@ -4624,8 +4624,8 @@ func (a *OfpActionSetField) Parse(packet []byte) {
 }
 
 func (a *OfpActionSetField) Size() int {
-	size := 4 + a.Oxm.Size()
-	size += (8 - (size % 8))
+	// oxmLength + 4 + 7 => oxmLength + 11
+	size := ((a.Oxm.Size() + 11) / 8) * 8
 	return size
 }
 
