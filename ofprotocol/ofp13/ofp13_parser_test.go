@@ -3708,6 +3708,62 @@ func TestSerializeActionSetField(t *testing.T) {
 	}
 }
 
+func TestSerializeActionSetFieldOxmVlan(t *testing.T) {
+	expect := []byte{
+		0x00, 0x19, // Type
+		0x00, 0x10, // Length
+		0x80, 0x00, // OFPXMC_OPENFLOW_BASIC
+		0x0c,       // OFPXMT_OFB_VLAN_VID, HasMask is false
+		0x02,       // Length
+		0x10, 0x01, // Value
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	setvlanvid := NewOxmVlanVid(1 + 0x1000)
+	action := NewOfpActionSetField(setvlanvid)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionSetField is not equal to expected value.")
+	}
+}
+
+func TestSerializeActionSetFieldOxmSrcIpv6(t *testing.T) {
+	expect := []byte{
+		0x00, 0x19, // Type
+		0x00, 0x18, // Length
+		0x80, 0x00, // Class(OFPXMC_OPENFLOW_BASIC)
+		0x34,                   // OFPXMT_OFB_IPV6_SRC, Has mask is false
+		0x10,                   // Length
+		0xfe, 0x80, 0x00, 0x00, //
+		0x00, 0x00, 0x00, 0x00, //
+		0x0e, 0x4d, 0xee, 0xff, //
+		0xfe, 0x00, 0x90, 0xcc,
+	}
+
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	setipv6src, _ := NewOxmIpv6Src("fe80::e4d:eeff:fe00:90cc")
+	action := NewOfpActionSetField(setipv6src)
+	actual := action.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpActionSetField is not equal to expected value.")
+	}
+}
+
 // OFPAT_PUSH_PBB
 func TestSerializeActionPushPbb(t *testing.T) {
 	expect := []byte{
