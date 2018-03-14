@@ -517,6 +517,78 @@ func TestSerializeFlowMod(t *testing.T) {
 	}
 }
 
+func TestSerializeFlowModNonStatic(t *testing.T) {
+	expect := []byte{
+		0x04,       // Version
+		0x0e,       // Type
+		0x00, 0x58, // Length
+		0x00, 0x00, 0x00, 0x00, // Transaction ID
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Cookie
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Cookie Mask
+		0x00,       // Table ID
+		0x00,       // Command(OFPFC_ADD)
+		0x00, 0x10, // Idle Timeout
+		0x00, 0x10, // Hard Timeout
+		0x00, 0x00, // Priority
+		0xff, 0xff, 0xff, 0xff, // Buffer ID(OFP_NO_BUFFER)
+		0xff, 0xff, 0xff, 0xff, // Out port(OFPP_ANY)
+		0xff, 0xff, 0xff, 0xff, // Out group(OFPG_ANY)
+		0x00, 0x01, // Flags
+		0x00, 0x00, // Padding
+		0x00, 0x01, // Match Type(OFPMT_OXM)
+		0x00, 0x0e, // Length
+		0x80, 0x00, // OFPXMC_OPENFLOW_BASIC
+		0x06,                               // OFPXMT_OFB_ETH_DST, has mask is false.
+		0x06,                               // Length
+		0x11, 0x22, 0x33, 0x44, 0x55, 0x66, //Value
+		0x00, 0x00, // Padding
+		0x00, 0x04, // OFPIT_APPLY_ACTIONS
+		0x00, 0x18, // Length
+		0x00, 0x00, 0x00, 0x00, // Length
+		0x00, 0x00, // OFPAT_OUTPUT
+		0x00, 0x10, // Length
+		0x00, 0x00, 0x00, 0x00, // Port
+		0x00, 0x00, // Max Length
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Padding
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	ethdst, _ := NewOxmEthDst("11:22:33:44:55:66")
+	if ethdst == nil {
+		t.Error("Failed to create OxmEthDst.")
+		return
+	}
+	match := NewOfpMatch()
+	match.Append(ethdst)
+	instruction := NewOfpInstructionActions(OFPIT_APPLY_ACTIONS)
+	instruction.Append(NewOfpActionOutput(0, 0))
+	instructions := make([]OfpInstruction, 0)
+	instructions = append(instructions, instruction)
+
+	fmod := NewOfpFlowModAddNonStatic(
+		0,
+		0,
+		0,
+		0,
+		OFPFF_SEND_FLOW_REM,
+		0x10,
+		0x10,
+		match,
+		instructions,
+	)
+
+	actual := fmod.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OfpFlowMod is not equal to expected value.")
+	}
+}
+
 // MatchField types
 //  in_port			OFPXMT_OFB_IN_PORT
 func TestSerializeOxmMatchInPort(t *testing.T) {
