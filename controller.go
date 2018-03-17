@@ -57,7 +57,7 @@ func (c *OFController) sendEchoLoop() {
 func ServerLoop(listenPort int) {
 	var port int
 
-	if listenPort == 0 {
+	if listenPort <= 0 {
 		port = DEFAULT_PORT
 	} else {
 		port = listenPort
