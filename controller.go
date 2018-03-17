@@ -2,9 +2,12 @@ package gofc
 
 import (
 	"fmt"
-	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
 	"net"
+
+	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
 )
+
+var DEFAULT_PORT = 6653
 
 /**
  * basic controller
@@ -51,9 +54,16 @@ func (c *OFController) sendEchoLoop() {
 	// send echo request forever
 }
 
-func ServerLoop() {
-	serverStr := ":6633"
-	tcpAddr, err := net.ResolveTCPAddr("tcp", serverStr)
+func ServerLoop(listenPort int) {
+	var port int
+
+	if listenPort == 0 {
+		port = DEFAULT_PORT
+	} else {
+		port = listenPort
+	}
+
+	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf(":%d", port))
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 
 	ofc := NewOFController()

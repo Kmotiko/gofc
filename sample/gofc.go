@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/Kmotiko/gofc"
 	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
 )
@@ -74,5 +75,5 @@ func main() {
 	gofc.GetAppManager().RegistApplication(ofc)
 
 	// start server
-	gofc.ServerLoop()
+	gofc.ServerLoop(gofc.DEFAULT_PORT)
 }
