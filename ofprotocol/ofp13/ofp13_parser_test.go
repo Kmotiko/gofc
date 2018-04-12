@@ -756,6 +756,30 @@ func TestParseOxmMatchEthDst(t *testing.T) {
 	}
 }
 
+//Multicast ethernet match testing
+func TestSerializeOxmMatchMulticastEthDstW(t *testing.T) {
+	expect := []byte{
+		0x80, 0x00, // Class(OFPXMC_OPENFLOW_BASIC)
+		0x07,                               // OFPXMT_OFB_ETH_DST, Has mask is true
+		0x0c,                               // Length
+		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, // Value
+		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, // Mask
+	}
+	e_str := hex.EncodeToString(expect)
+
+	// reset xid for test
+	xid = 0
+
+	oxm, _ := NewOxmEthDstW("01:00:00:00:00:00", "01:00:00:00:00:00")
+	actual := oxm.Serialize()
+	a_str := hex.EncodeToString(actual)
+	if len(expect) != len(actual) || e_str != a_str {
+		t.Log("Expected Value is : ", e_str)
+		t.Log("Actual Value is   : ", a_str)
+		t.Error("Serialized binary of OxmEthDst is not equal to expected value.")
+	}
+}
+
 func TestSerializeOxmMatchEthDstW(t *testing.T) {
 	expect := []byte{
 		0x80, 0x00, // Class(OFPXMC_OPENFLOW_BASIC)
@@ -4063,7 +4087,7 @@ func TestParsePacketIn(t *testing.T) {
 		0x00, 0x23, 0x20, 0x90, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00,
 	}
-	packet := append(packetInWithoutReceivedData,receivedData...)
+	packet := append(packetInWithoutReceivedData, receivedData...)
 
 	m := NewOfpPacketIn()
 	m.Parse(packet)
@@ -4077,7 +4101,7 @@ func TestParsePacketIn(t *testing.T) {
 		m.Match.OxmFields[0].(*OxmInPort).TlvHeader != OXM_OF_IN_PORT ||
 		m.Match.OxmFields[0].(*OxmInPort).Value != 0xfffffffe ||
 		len(m.Data) != len(receivedData) ||
-		!bytes.Equal(m.Data,receivedData) {
+		!bytes.Equal(m.Data, receivedData) {
 		t.Log("Version        : ", m.Header.Version)
 		t.Log("Type           : ", m.Header.Type)
 		t.Log("Length         : ", m.Header.Length)

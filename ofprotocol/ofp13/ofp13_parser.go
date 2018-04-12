@@ -1835,7 +1835,7 @@ func (m *OxmEth) Serialize() []byte {
 
 	if oxmHasMask(m.TlvHeader) == 1 {
 		for i := 0; i < 6; i++ {
-			packet[index] = m.Mask[0]
+			packet[index] = m.Mask[i]
 			index++
 		}
 	}
