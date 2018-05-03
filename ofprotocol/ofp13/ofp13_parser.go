@@ -868,7 +868,7 @@ func (m *OfpPacketOut) Serialize() []byte {
 	actionLen := 0
 	aSize := 0
 	for _, a := range m.Actions {
-		actionLen += 1
+		actionLen += a.Size()
 		a_packet := a.Serialize()
 		copy(packet[(index+8+aSize):], a_packet)
 		aSize += len(a_packet)
