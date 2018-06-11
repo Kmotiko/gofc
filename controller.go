@@ -57,11 +57,11 @@ func (c *OFController) sendEchoLoop() {
 func ServerLoop(listenPort int) {
 	var port int
 
-	if listenPort <= 0 {
-		port = DEFAULT_PORT
-	} else {
-		port = listenPort
+	if listenPort <= 0 || listenPort >= 65536 {
+		fmt.Println("Invalid port was specified. listen port must be between 0 - 65535.")
+		return
 	}
+	port = listenPort
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf(":%d", port))
 	listener, err := net.ListenTCP("tcp", tcpAddr)
