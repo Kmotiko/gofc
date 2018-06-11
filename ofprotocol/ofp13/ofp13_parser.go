@@ -840,7 +840,10 @@ func NewOfpPacketOut(
 	m.InPort = inPort
 
 	if actions != nil {
-		m.ActionLen = (uint16)(len(actions))
+		m.ActionLen = 0
+		for _, a := range actions {
+			m.ActionLen += (uint16)(a.Size())
+		}
 		m.Actions = actions
 	} else {
 		m.ActionLen = 0
@@ -868,7 +871,7 @@ func (m *OfpPacketOut) Serialize() []byte {
 	actionLen := 0
 	aSize := 0
 	for _, a := range m.Actions {
-		actionLen += 1
+		actionLen += a.Size()
 		a_packet := a.Serialize()
 		copy(packet[(index+8+aSize):], a_packet)
 		aSize += len(a_packet)
@@ -901,7 +904,7 @@ func (m *OfpPacketOut) Size() int {
 
 func (m *OfpPacketOut) AppendAction(a OfpAction) {
 	m.Actions = append(m.Actions, a)
-	m.ActionLen += 1
+	m.ActionLen += (uint16)(a.Size())
 }
 
 /*
