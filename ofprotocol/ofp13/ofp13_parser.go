@@ -538,6 +538,35 @@ func NewOfpFlowModAdd(
 	)
 }
 
+func NewOfpFlowModAddWithTimeout(
+	cookie uint64,
+	cookieMask uint64,
+	tableId uint8,
+	idleTimeout uint16,
+	hardTimeout uint16,
+	priority uint16,
+	flags uint16,
+	match *OfpMatch,
+	instructions []OfpInstruction,
+) *OfpFlowMod {
+	return newOfpFlowMod(
+		cookie,
+		cookieMask,
+		tableId,
+		OFPFC_ADD,
+		idleTimeout, // idle timeout, 0 means permanent
+		hardTimeout, // hard timeout, 0 means permanent
+		priority,
+		OFP_NO_BUFFER,
+		OFPP_ANY,
+		OFPG_ANY,
+		flags,
+		match,
+		instructions,
+	)
+}
+
+
 func NewOfpFlowModModify(
 	cookie uint64,
 	cookieMask uint64,

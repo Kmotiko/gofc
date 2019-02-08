@@ -1,7 +1,7 @@
 gofc
 ==================
 
-[![Build Status](https://travis-ci.org/Kmotiko/gofc.svg?branch=master)](https://travis-ci.org/Kmotiko/gofc)
+[![Build Status](https://travis-ci.org/nutanix/gofc.svg?branch=master)](https://travis-ci.org/nutanix/gofc)
 
 
 ## What is this?
@@ -23,8 +23,8 @@ For example, if you want to handle PacketIn message, you should implement Handle
 
 ```
 import (
-	"github.com/Kmotiko/gofc"
-	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
+	"github.com/nutanix/gofc"
+	"github.com/nutanix/gofc/ofprotocol/ofp13"
 )
 
 type SampleController struct {
