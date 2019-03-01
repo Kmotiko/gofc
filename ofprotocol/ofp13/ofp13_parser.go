@@ -566,7 +566,6 @@ func NewOfpFlowModAddWithTimeout(
 	)
 }
 
-
 func NewOfpFlowModModify(
 	cookie uint64,
 	cookieMask uint64,
