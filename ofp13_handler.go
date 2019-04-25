@@ -30,6 +30,13 @@ type Of13BarrierReplyHandler interface {
 }
 
 /*****************************************************/
+/* BarrierReply Message                              */
+/*****************************************************/
+type Of13PortStatusHandler interface {
+	HandlePortStatus(*ofp13.OfpPortStatus, *Datapath)
+}
+
+/*****************************************************/
 /* OfpSwitchFeatures                                 */
 /*****************************************************/
 type Of13SwitchFeaturesHandler interface {

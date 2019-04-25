@@ -111,6 +111,12 @@ func (dp *Datapath) dispatchHandler(msg ofp13.OFMessage) {
 				obj.HandleErrorMsg(msgi, dp)
 			}
 
+		// Recv PortStatus
+		case *ofp13.OfpPortStatus:
+			if obj, ok := app.(Of13PortStatusHandler); ok {
+				obj.HandlePortStatus(msgi, dp)
+			}
+
 		// Recv RoleReply
 		case *ofp13.OfpRole:
 			if obj, ok := app.(Of13RoleReplyHandler); ok {
