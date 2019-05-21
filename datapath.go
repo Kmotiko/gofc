@@ -1,6 +1,7 @@
 package gofc
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/binary"
 	"fmt"
@@ -45,22 +46,35 @@ func (dp *Datapath) sendLoop() {
 }
 
 func (dp *Datapath) recvLoop() {
+	// for more information see https://www.opennetworking.org/wp-content/uploads/2014/10/openflow-spec-v1.3.0.pdf
+	const kHeaderSize = 8
+	reader := bufio.NewReader(dp.conn)
 	buf := make([]byte, 1024*64)
 	for {
-		// read
-		size, err := dp.conn.Read(buf)
-		if err != nil {
-			fmt.Println("failed to read conn")
-			fmt.Println(err)
-			return
+		for i := 0; i < kHeaderSize; i++ {
+			b, err := reader.ReadByte() // read len prefix and len
+			if err != nil {
+				fmt.Println("failed to read conn")
+				fmt.Println(err)
+				return
+			}
+			buf[i] = b
 		}
-
-		// tmp := make([]byte, 2048)
-		for i := 0; i < size; {
-			msgLen := binary.BigEndian.Uint16(buf[i+2:])
-			dp.handlePacket(buf[i : i+(int)(msgLen)])
-			i += (int)(msgLen)
+		msgLen := (int)(binary.BigEndian.Uint16(buf[2:]))
+		bufPos := kHeaderSize
+		for bufPos < msgLen {
+			read, err := reader.Read(buf[bufPos:msgLen])
+			if err != nil {
+				fmt.Println("failed to read conn")
+				fmt.Println(err)
+				return
+			}
+			bufPos += read
 		}
+		if bufPos != msgLen {
+			fmt.Printf("Strange ofp packet, len in packet %d, received len %d\n", msgLen, bufPos)
+		}
+		dp.handlePacket(buf[0:bufPos])
 	}
 }
 
