@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/nutanix/gofc/ofprotocol/ofp13"
 )
@@ -243,4 +244,14 @@ func (dp *Datapath) Send(message ofp13.OFMessage) bool {
 	// push data
 	(dp.sendBuffer) <- &message
 	return true
+}
+
+func (dp *Datapath) GetRemoteIp() string {
+	ip := dp.conn.RemoteAddr().String()
+	return ip[:strings.IndexByte(ip, ':')]
+}
+
+func (dp *Datapath) GetLocalIp() string {
+	ip := dp.conn.LocalAddr().String()
+	return ip[:strings.IndexByte(ip, ':')]
 }
