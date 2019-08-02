@@ -1419,7 +1419,7 @@ func (m *OfpMatch) Size() int {
 	for _, e := range m.OxmFields {
 		size += e.Size()
 	}
-	size += (8 - (size % 8))
+	size += (8 - (size % 8)) & 7 // add 0~7 bytes padding
 	return size
 }
 
