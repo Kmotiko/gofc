@@ -45,7 +45,7 @@ func (dp *Datapath) sendLoop() {
 }
 
 func (dp *Datapath) recvLoop() {
-	buf := make([]byte, 1024*64)
+	buf := make([]byte, 1024*256)
 	for {
 		// read
 		size, err := dp.conn.Read(buf)
@@ -58,6 +58,10 @@ func (dp *Datapath) recvLoop() {
 		// tmp := make([]byte, 2048)
 		for i := 0; i < size; {
 			msgLen := binary.BigEndian.Uint16(buf[i+2:])
+			if msgLen < 1 || i+(int)(msgLen) > size {
+				fmt.Println("msgLen is 0 or exceeding size")
+				break
+			}
 			dp.handlePacket(buf[i : i+(int)(msgLen)])
 			i += (int)(msgLen)
 		}
