@@ -6319,3 +6319,54 @@ func TestSerializeSetAsync(t *testing.T) {
 		t.Error("Serialized binary of OfpSetAsync is not equal to expected value.")
 	}
 }
+
+/*******************************************************************/
+/* OfpFlowStatsRequest Test                                        */                                                                                                                                                                         
+/* Confirm seralize result for OfpMatch which has no padding field */
+/*******************************************************************/                                                  
+func TestSerializeOfpMatchHasNotPadding(t *testing.T) {
+  expect := []byte{
+    0x04,       // Version
+    0x12,       // Type
+    0x00, 0x48, // Length                                                                                              
+    0x00, 0x00, 0x00, 0x00, // Transaction ID
+    0x00, 0x01, // Type(OFPMP_FLOW)
+    0x00, 0x00, // Flags
+    0x00, 0x00, 0x00, 0x00, // Padding
+    0x00,             // Table ID
+    0x00, 0x00, 0x00, // Padding
+    0xff, 0xff, 0xff, 0xff, // OutPort
+    0xff, 0xff, 0xff, 0xff, // OutGroup
+    0x00, 0x00, 0x00, 0x00, // Padding
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Cookie
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Cookie Mask
+    0x00, 0x01, // Match Type(OFPMT_OXM)
+    0x00, 0x18, // Length
+    0x80, 0x00, // Class(OFPXMC_OPENFLOW_BASIC)
+    0x06,                               // OFPXMT_OFB_ETH_DST, has mask is false
+    0x06,                               // Length
+    0x11, 0x22, 0x33, 0x44, 0x55, 0x66, // Value
+    0x80, 0x00, // Class(OFPXMC_OPENFLOW_BASIC)
+    0x08,                               // OFPXMT_OFB_ETH_SRC, has mask is false
+    0x06,                               // Length
+    0x11, 0x22, 0x33, 0x44, 0x55, 0x66, // Value
+  }
+  e_str := hex.EncodeToString(expect)
+
+  // reset xid for test
+  xid = 0
+
+  mf := NewOfpMatch()
+  ethdst, _ := NewOxmEthDst("11:22:33:44:55:66")
+  mf.Append(ethdst)
+  ethsrc, _ := NewOxmEthSrc("11:22:33:44:55:66")
+  mf.Append(ethsrc)
+  mp := NewOfpFlowStatsRequest(0, 0, OFPP_ANY, OFPG_ANY, 0, 0, mf)
+  actual := mp.Serialize()
+  a_str := hex.EncodeToString(actual)
+  if len(expect) != len(actual) || e_str != a_str {
+    t.Log("Expected Value is : ", e_str)
+    t.Log("Actual Value is   : ", a_str)
+    t.Error("Serialized binary of OfpFlowStatsRequest is not equal to expected value.")
+  }
+}
