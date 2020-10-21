@@ -7,7 +7,7 @@ import (
 	"github.com/Kmotiko/gofc/ofprotocol/ofp13"
 )
 
-var DEFAULT_PORT = 6653
+var DEFAULT_PORT = 6633
 
 /**
  * basic controller
@@ -33,6 +33,24 @@ func (c *OFController) HandleSwitchFeatures(msg *ofp13.OfpSwitchFeatures, dp *Da
 	fmt.Println("recv SwitchFeatures")
 	// handle FeatureReply
 	dp.datapathId = msg.DatapathId
+
+	match := ofp13.NewOfpMatch()
+	instruction := ofp13.NewOfpInstructionActions(ofp13.OFPIT_APPLY_ACTIONS)
+	instruction.Append(ofp13.NewOfpActionOutput(ofp13.OFPP_CONTROLLER, 0))
+	instructions := make([]ofp13.OfpInstruction, 0)
+	instructions = append(instructions, instruction)
+	fmod := ofp13.NewOfpFlowModAdd(
+		0,
+		0,
+		0,
+		0,
+		ofp13.OFPFF_SEND_FLOW_REM,
+		match,
+		instructions,
+	)
+	//rule for packet send to controllers is not match any rule
+	dp.Send(fmod)
+
 }
 
 func (c *OFController) HandleEchoRequest(msg *ofp13.OfpHeader, dp *Datapath) {
@@ -73,6 +91,7 @@ func ServerLoop(listenPort int) {
 		return
 	}
 
+	fmt.Printf("openflow1.3 controller started :%d",listenPort)
 	// wait for connect from switch
 	for {
 		conn, err := listener.AcceptTCP()
@@ -81,6 +100,7 @@ func ServerLoop(listenPort int) {
 		}
 		go handleConnection(conn)
 	}
+
 }
 
 /**

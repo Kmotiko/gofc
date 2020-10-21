@@ -3,6 +3,7 @@ package ofp13
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"net"
 )
 
@@ -1227,6 +1228,11 @@ func (m *OfpPacketIn) Parse(packet []byte) {
 
 	m.Data = make([]uint8, len(packet[index:]))
 	copy(m.Data, packet[index:])
+
+	if err := m.DataEth.UnmarshalBinary(packet[index:]); err!=nil {
+		fmt.Errorf("DataEth.UnmarshalBinary err:%v",err)
+	}
+
 }
 
 func (m *OfpPacketIn) Size() int {

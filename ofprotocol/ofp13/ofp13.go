@@ -2,6 +2,7 @@ package ofp13
 
 import (
 	"net"
+	"github.com/Kmotiko/gofc/protocol/eth"
 )
 
 type OFMessage interface {
@@ -1186,6 +1187,7 @@ type OfpPacketIn struct {
 	Match    *OfpMatch
 	Pad      [2]uint8
 	Data     []uint8
+	DataEth     eth.Ethernet
 }
 
 type OfpFlowRemoved struct {
