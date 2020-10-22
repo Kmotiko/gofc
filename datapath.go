@@ -29,6 +29,10 @@ func NewDatapath(conn *net.TCPConn) *Datapath {
 	return dp
 }
 
+func (dp *Datapath) GetDatapathId() uint64 {
+	return dp.datapathId
+}
+
 func (dp *Datapath) sendLoop() {
 	for {
 		// wait channel
