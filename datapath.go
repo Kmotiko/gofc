@@ -29,6 +29,10 @@ func NewDatapath(conn *net.TCPConn) *Datapath {
 	return dp
 }
 
+func (dp *Datapath) GetSendBuffer() chan *ofp13.OFMessage {
+	return dp.sendBuffer
+}
+
 func (dp *Datapath) GetDatapathId() uint64 {
 	return dp.datapathId
 }

@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"github.com/Kmotiko/gofc"
@@ -69,6 +69,7 @@ func (l2sw *SimpleSwitch) add_flow(dp *gofc.Datapath, priority uint16, match *of
 	dp.Send(fmod)
 }
 
+
 func (l2sw *SimpleSwitch) HandlePacketIn(msg *ofp13.OfpPacketIn, dp *gofc.Datapath) {
 
 	eth := msg.DataEth
@@ -101,6 +102,8 @@ func (l2sw *SimpleSwitch) HandlePacketIn(msg *ofp13.OfpPacketIn, dp *gofc.Datapa
 				instructions1 := make([]ofp13.OfpInstruction, 0)
 				instructions1 = append(instructions1, instruction1)
 				l2sw.add_flow(dp, 1, match_dst, instructions1)
+
+
 			}
 
 			//flood
@@ -120,11 +123,11 @@ func (l2sw *SimpleSwitch) HandlePacketIn(msg *ofp13.OfpPacketIn, dp *gofc.Datapa
 	}
 }
 
-func main() {
-	// regist app
-	ofc := NewSimpleSwitch()
-	gofc.GetAppManager().RegistApplication(ofc)
-
-	// start server
-	gofc.ServerLoop(gofc.DEFAULT_PORT)
-}
+//func main() {
+//	// regist app
+//	ofc := NewSimpleSwitch()
+//	gofc.GetAppManager().RegistApplication(ofc)
+//
+//	// start server
+//	gofc.ServerLoop(gofc.DEFAULT_PORT)
+//}
