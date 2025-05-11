@@ -1,9 +1,6 @@
 gofc
 ==================
 
-[![Build Status](https://travis-ci.org/Kmotiko/gofc.svg?branch=master)](https://travis-ci.org/Kmotiko/gofc)
-
-
 ## What is this?
 
 OpenFlow Controller written in golang.
